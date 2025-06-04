@@ -88,19 +88,19 @@ export default defineConfig([globalIgnores([
         "react/jsx-uses-react": "off",
         "react/react-in-jsx-scope": "off",
         "react-hooks/exhaustive-deps": "off",
-        "jsx-a11y/click-events-have-key-events": "warn",
-        "jsx-a11y/interactive-supports-focus": "warn",
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/interactive-supports-focus": "off",
         "no-unused-vars": "off",
         "unused-imports/no-unused-vars": "off",
-        "unused-imports/no-unused-imports": "warn",
+        "unused-imports/no-unused-imports": "off",
 
-        "@typescript-eslint/no-unused-vars": ["warn", {
+        "@typescript-eslint/no-unused-vars": ["off", {
             args: "after-used",
             ignoreRestSiblings: false,
             argsIgnorePattern: "^_.*?$",
         }],
 
-        "import/order": ["warn", {
+        "import/order": ["off", {
             groups: [
                 "type",
                 "builtin",
@@ -121,7 +121,7 @@ export default defineConfig([globalIgnores([
             "newlines-between": "always",
         }],
 
-        "react/self-closing-comp": "warn",
+        "react/self-closing-comp": "off",
 
         "react/jsx-sort-props": ["warn", {
             callbacksLast: true,
