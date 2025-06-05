@@ -4,9 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prismaClient";
 import { getAdminAuth } from "@/lib/firebaseAdmin";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id: addressId } = params;
+    const { id: addressId } = await context.params;
 
     if (!addressId) {
       return NextResponse.json(
@@ -34,9 +37,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id: addressId } = params;
+    const { id: addressId } = await context.params;
 
     if (!addressId) {
       return NextResponse.json(
@@ -134,9 +140,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id: addressId } = params;
+    const { id: addressId } = await context.params;
 
     if (!addressId) {
       return NextResponse.json(
