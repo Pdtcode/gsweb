@@ -16,6 +16,8 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   getIdToken,
 } from "firebase/auth";
 
@@ -45,7 +47,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<User>;
   signUp: (email: string, password: string) => Promise<User>;
   logOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<User>;
+  signInWithGoogle: () => Promise<User | null>;
   syncUser: (firebaseUser: User) => Promise<DbUser | null>;
   getUserAddresses: () => Promise<Address[]>;
   getDefaultAddress: () => Promise<Address | null>;
@@ -62,6 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [dbUser, setDbUser] = useState<DbUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [_addressesCache, setAddressesCache] = useState<Address[]>([]);
+
+  // Helper function to detect mobile devices
+  const isMobileDevice = () => {
+    if (typeof window === "undefined") return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ) || window.innerWidth <= 768;
+  };
 
   // Sync user with database
   const syncUser = async (firebaseUser: User): Promise<DbUser | null> => {
@@ -104,6 +114,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Check for redirect result on mount
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          // Sync Google user with database after redirect
+          await syncUser(result.user);
+        }
+      } catch (error) {
+        console.warn("Redirect result error:", error);
+      }
+    };
+
+    handleRedirectResult();
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 
@@ -143,12 +168,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-
-    // Sync Google user with database
-    await syncUser(result.user);
-
-    return result.user;
+    
+    // Add additional scopes if needed
+    provider.addScope('email');
+    provider.addScope('profile');
+    
+    // Use redirect on mobile devices, popup on desktop
+    if (isMobileDevice()) {
+      // On mobile, use redirect to avoid popup blockers and storage issues
+      await signInWithRedirect(auth, provider);
+      // Note: The actual user will be available after redirect via getRedirectResult
+      // The useEffect will handle the redirect result
+      return null; // Return null since we don't have the user immediately
+    } else {
+      // On desktop, use popup
+      try {
+        const result = await signInWithPopup(auth, provider);
+        
+        // Sync Google user with database
+        await syncUser(result.user);
+        
+        return result.user;
+      } catch (error: any) {
+        // If popup fails, fall back to redirect
+        if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+          await signInWithRedirect(auth, provider);
+          return null;
+        }
+        throw error;
+      }
+    }
   };
 
   // Get user addresses

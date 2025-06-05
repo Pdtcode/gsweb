@@ -41,12 +41,19 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       setError("");
-      await signInWithGoogle();
-      router.push("/"); // Redirect to home page after successful login
+      const result = await signInWithGoogle();
+      
+      // If result is null, it means we're using redirect (mobile)
+      // The redirect will handle the navigation automatically
+      if (result) {
+        // Only redirect manually if we got a user result (desktop popup)
+        router.push("/");
+      }
+      // On mobile, the page will redirect automatically, so we don't set loading to false
+      // as the component will unmount
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError("Failed to sign in with Google.");
-    } finally {
       setIsLoading(false);
     }
   };
