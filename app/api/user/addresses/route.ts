@@ -119,8 +119,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user has any existing addresses
+    const existingAddressCount = await prisma.address.count({
+      where: { userId: user.id },
+    });
+
+    // If this is the first address or is explicitly set as default
+    const shouldBeDefault = isDefault || existingAddressCount === 0;
+
     // If this address is default, update other addresses to not be default
-    if (isDefault) {
+    if (shouldBeDefault) {
       await prisma.address.updateMany({
         where: {
           userId: user.id,
@@ -141,7 +149,7 @@ export async function POST(request: NextRequest) {
         state,
         postalCode,
         country,
-        isDefault: !!isDefault,
+        isDefault: shouldBeDefault,
       },
     });
 

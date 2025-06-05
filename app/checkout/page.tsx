@@ -41,6 +41,49 @@ export default function CheckoutPage() {
     country: "US",
   });
 
+  const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+
+  // Load user's default address if logged in
+  useEffect(() => {
+    const loadDefaultAddress = async () => {
+      if (!user) return;
+
+      setIsLoadingAddress(true);
+      try {
+        const token = await getIdToken(user);
+        const response = await fetch("/api/user/addresses", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const addresses = await response.json();
+          const defaultAddress = addresses.find((addr: any) => addr.isDefault);
+          
+          if (defaultAddress) {
+            setShippingInfo(prev => ({
+              ...prev,
+              address: defaultAddress.street,
+              city: defaultAddress.city,
+              state: defaultAddress.state,
+              zipCode: defaultAddress.postalCode,
+              country: defaultAddress.country === "United States" ? "US" : 
+                       defaultAddress.country === "Canada" ? "CA" :
+                       defaultAddress.country === "Mexico" ? "MX" : "US",
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error loading default address:", error);
+      } finally {
+        setIsLoadingAddress(false);
+      }
+    };
+
+    loadDefaultAddress();
+  }, [user]);
+
   // Handle Stripe redirect success or cancel query params
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -200,7 +243,21 @@ export default function CheckoutPage() {
           <div className="space-y-8">
             {/* Shipping Information */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Shipping Information</h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Shipping Information</h2>
+                {user && (
+                  <Link
+                    href="/account/addresses"
+                    className="text-sm text-indigo-600 hover:text-indigo-800"
+                  >
+                    Manage Addresses
+                  </Link>
+                )}
+              </div>
+              
+              {isLoadingAddress && (
+                <div className="text-sm text-gray-500">Loading your default address...</div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

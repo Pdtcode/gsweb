@@ -116,12 +116,13 @@ export async function POST(request: Request) {
         throw new Error("Could not identify user for this order");
       }
 
-      // Create shipping address if provided
+      // Find existing address or create new one if it doesn't exist
       let shippingAddressId = null;
 
       if (shippingAddressData) {
-        const address = await prisma.address.create({
-          data: {
+        // Check if an identical address already exists for this user
+        let existingAddress = await prisma.address.findFirst({
+          where: {
             userId: user.id,
             street: shippingAddressData.line1,
             city: shippingAddressData.city,
@@ -131,7 +132,23 @@ export async function POST(request: Request) {
           },
         });
 
-        shippingAddressId = address.id;
+        if (existingAddress) {
+          shippingAddressId = existingAddress.id;
+        } else {
+          // Only create a new address if one doesn't already exist
+          const newAddress = await prisma.address.create({
+            data: {
+              userId: user.id,
+              street: shippingAddressData.line1,
+              city: shippingAddressData.city,
+              state: shippingAddressData.state,
+              postalCode: shippingAddressData.postal_code,
+              country: shippingAddressData.country,
+            },
+          });
+
+          shippingAddressId = newAddress.id;
+        }
       }
 
       // Create the order
