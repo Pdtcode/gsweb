@@ -123,14 +123,14 @@ export default defineConfig([globalIgnores([
 
         "react/self-closing-comp": "off",
 
-        "react/jsx-sort-props": ["warn", {
+        "react/jsx-sort-props": ["off", {
             callbacksLast: true,
             shorthandFirst: true,
             noSortAlphabetically: false,
             reservedFirst: true,
         }],
 
-        "padding-line-between-statements": ["warn", {
+        "padding-line-between-statements": ["off", {
             blankLine: "always",
             prev: "*",
             next: "return",
