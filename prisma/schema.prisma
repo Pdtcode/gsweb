@@ -1,12 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../lib/generated/prisma"
   previewFeatures = ["postgresqlExtensions"]
 }
 
@@ -16,98 +10,100 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String?
-  firebaseUid   String?   @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  orders        Order[]
-  addresses     Address[]
-}
-
-model Product {
-  id            String    @id @default(uuid())
-  name          String
-  description   String?
-  price         Decimal   @db.Decimal(10, 2)
-  images        String[]
-  slug          String    @unique
-  category      String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  inStock       Boolean   @default(true)
-  drop          Drop?     @relation(fields: [dropId], references: [id])
-  dropId        String?
-  orderItems    OrderItem[]
-  variants      ProductVariant[]
-}
-
-model ProductVariant {
-  id            String    @id @default(uuid())
-  productId     String
-  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size          String
-  color         String?
-  sku           String    @unique
-  stock         Int       @default(0)
-  orderItems    OrderItem[]
+model Address {
+  id         String   @id
+  userId     String
+  street     String
+  city       String
+  state      String
+  postalCode String
+  country    String   @default("United States")
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Order      Order[]
 }
 
 model Drop {
-  id            String    @id @default(uuid())
-  name          String
-  description   String?
-  startDate     DateTime
-  endDate       DateTime?
-  isActive      Boolean   @default(false)
-  password      String?
-  products      Product[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String    @id
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean   @default(false)
+  password    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  Product     Product[]
 }
 
 model Order {
-  id            String    @id @default(uuid())
-  orderNumber   String    @unique
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
-  items         OrderItem[]
-  status        OrderStatus @default(PENDING)
-  total         Decimal   @db.Decimal(10, 2)
-  shippingAddressId String?
-  shippingAddress Address? @relation(fields: [shippingAddressId], references: [id])
+  id                    String      @id
+  orderNumber           String      @unique
+  userId                String
+  status                OrderStatus @default(PENDING)
+  total                 Decimal     @db.Decimal(10, 2)
+  shippingAddressId     String?
   stripePaymentIntentId String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime
+  Address               Address?    @relation(fields: [shippingAddressId], references: [id])
+  User                  User        @relation(fields: [userId], references: [id])
+  OrderItem             OrderItem[]
 }
 
 model OrderItem {
-  id            String    @id @default(uuid())
-  orderId       String
-  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId     String
-  product       Product   @relation(fields: [productId], references: [id])
-  variantId     String?
-  variant       ProductVariant? @relation(fields: [variantId], references: [id])
-  quantity      Int
-  price         Decimal   @db.Decimal(10, 2)
+  id             String          @id
+  orderId        String
+  productId      String
+  variantId      String?
+  quantity       Int
+  price          Decimal         @db.Decimal(10, 2)
+  Order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  Product        Product         @relation(fields: [productId], references: [id])
+  ProductVariant ProductVariant? @relation(fields: [variantId], references: [id])
 }
 
-model Address {
-  id            String    @id @default(uuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  street        String
-  city          String
-  state         String
-  postalCode    String
-  country       String    @default("United States")
-  isDefault     Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  orders        Order[]
+model Product {
+  id             String           @id
+  name           String
+  description    String?
+  price          Decimal          @db.Decimal(10, 2)
+  images         String[]
+  slug           String           @unique
+  category       String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  inStock        Boolean          @default(true)
+  dropId         String?
+  OrderItem      OrderItem[]
+  Drop           Drop?            @relation(fields: [dropId], references: [id])
+  ProductVariant ProductVariant[]
+}
+
+model ProductVariant {
+  id        String      @id
+  productId String
+  size      String
+  color     String?
+  sku       String      @unique
+  stock     Int         @default(0)
+  OrderItem OrderItem[]
+  Product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id              String    @id
+  email           String    @unique
+  name            String?
+  phoneNumber     String?
+  instagramHandle String?
+  firebaseUid     String?   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  Address         Address[]
+  Order           Order[]
 }
 
 enum OrderStatus {

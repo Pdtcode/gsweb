@@ -98,6 +98,48 @@ export default function DropLayout({
     setIsVideoPreloaded(true);
   };
 
+  // Show fallback image when no active drop
+  if (!hasActiveDrop && !loading) {
+    return (
+      <div className="relative w-full min-h-screen overflow-hidden">
+        {/* Fallback background image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/drop-fallback-image.jpg')" }}
+        />
+
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/40" />
+
+        <section className="relative z-10 flex flex-col items-center justify-center gap-4 py-8 md:py-10 min-h-screen">
+          <div className="bg-black/60 backdrop-blur-sm p-8 mx-5 rounded-lg border border-gray-700 text-center max-w-lg animate-fadeIn">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              No Active Drop Event
+            </h2>
+            <p className="text-lg text-white/80 mb-6">
+              Follow our Instagram to know when the next drop is coming!
+            </p>
+
+            {/* Instagram Link */}
+            <Link
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-tr from-purple-600 to-pink-500 hover:from-pink-500 hover:to-purple-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+              href="https://www.instagram.com/gsdesignresearch/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <ThemeInstagram size={24} />
+              <span>@gsdesignresearch</span>
+            </Link>
+
+            <p className="text-white/60 text-sm mt-6">
+              Check back soon for our next exclusive drop!
+            </p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Preload the video in the background */}
@@ -118,33 +160,6 @@ export default function DropLayout({
         videoAsset={dropSettings?.backgroundVideo || null}
       >
         <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10 min-h-screen">
-          {/* No active drop message */}
-          {!hasActiveDrop && !loading && (
-            <div className="bg-black/60 backdrop-blur-sm p-8 rounded-lg border border-gray-700 text-center max-w-lg animate-fadeIn">
-              <h2 className="text-2xl font-bold text-white mb-4">
-                No Active Drop Event
-              </h2>
-              <p className="text-lg text-white/80 mb-6">
-                Follow our Instagram to know when the next drop is coming!
-              </p>
-
-              {/* Instagram Link */}
-              <Link
-                className="inline-flex items-center justify-center gap-2 bg-gradient-to-tr from-purple-600 to-pink-500 hover:from-pink-500 hover:to-purple-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-                href="https://www.instagram.com/grail__seekers/"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <ThemeInstagram size={24} />
-                <span>@grail__seekers</span>
-              </Link>
-
-              <p className="text-white/60 text-sm mt-6">
-                Check back soon for our next exclusive drop!
-              </p>
-            </div>
-          )}
-
           {/* Loading indicator */}
           {loading && (
             <div className="flex items-center justify-center min-h-[50vh]">

@@ -1,7 +1,8 @@
-/* eslint-disable no-console */
+ 
 "use server";
 
 import prisma from "@/lib/prismaClient";
+import { DualSyncService } from "@/lib/dualSyncService";
 
 /**
  * Get all orders for a specific user
@@ -73,7 +74,7 @@ export async function getOrderById(orderId: string) {
 }
 
 /**
- * Create a new order in the database
+ * Create a new order in both databases (Neon and Sanity)
  */
 export async function createOrder(orderData: {
   userId: string;
@@ -89,36 +90,8 @@ export async function createOrder(orderData: {
   status?: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 }) {
   try {
-    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    
-    const order = await prisma.order.create({
-      data: {
-        orderNumber,
-        userId: orderData.userId,
-        total: orderData.total,
-        status: orderData.status || "PENDING",
-        stripePaymentIntentId: orderData.stripePaymentIntentId,
-        shippingAddressId: orderData.shippingAddressId,
-        items: {
-          create: orderData.items.map(item => ({
-            productId: item.productId,
-            variantId: item.variantId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        },
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
-            variant: true,
-          },
-        },
-        shippingAddress: true,
-      },
-    });
-
+    // Use dual-sync service to create order in both databases
+    const order = await DualSyncService.createOrder(orderData);
     return order;
   } catch (error) {
     console.error("Error creating order:", error);
@@ -127,27 +100,15 @@ export async function createOrder(orderData: {
 }
 
 /**
- * Update order status
+ * Update order status in both databases (Neon and Sanity)
  */
 export async function updateOrderStatus(
   orderId: string,
   status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED"
 ) {
   try {
-    const order = await prisma.order.update({
-      where: { id: orderId },
-      data: { status },
-      include: {
-        items: {
-          include: {
-            product: true,
-            variant: true,
-          },
-        },
-        shippingAddress: true,
-      },
-    });
-
+    // Use dual-sync service to update order status in both databases
+    const order = await DualSyncService.updateOrderStatus(orderId, status);
     return order;
   } catch (error) {
     console.error("Error updating order status:", error);
@@ -176,6 +137,19 @@ export async function getOrderByPaymentIntentId(paymentIntentId: string) {
     return order;
   } catch (error) {
     console.error("Error fetching order by payment intent ID:", error);
+    throw error;
+  }
+}
+
+/**
+ * Manually sync an existing order to Sanity (for fixing sync issues)
+ */
+export async function syncOrderToSanity(orderId: string) {
+  try {
+    const order = await DualSyncService.syncExistingOrderToSanity(orderId);
+    return order;
+  } catch (error) {
+    console.error("Error syncing order to Sanity:", error);
     throw error;
   }
 }

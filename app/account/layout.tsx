@@ -59,12 +59,6 @@ export default function AccountLayout({
             >
               My Orders
             </Link>
-            <Link
-              className="block px-3 py-2 rounded-md text-sm font-medium  hover:bg-gray-100 hover:text-gray-900"
-              href="/account/notifications"
-            >
-              Notifications
-            </Link>
           </nav>
         </aside>
 
