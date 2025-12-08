@@ -170,26 +170,26 @@ export async function POST(request: Request) {
 
           product = await prisma.product.findFirst({
             where: { slug: item.id },
-            include: { variants: true },
+            include: { ProductVariant: true },
           });
 
           if (!product) {
             product = await prisma.product.findFirst({
               where: { id: item.id },
-              include: { variants: true },
+              include: { ProductVariant: true },
             });
 
             if (!product && item.originalId) {
               product = await prisma.product.findFirst({
                 where: { id: item.originalId },
-                include: { variants: true },
+                include: { ProductVariant: true },
               });
             }
 
             if (!product && item.name) {
               product = await prisma.product.findFirst({
                 where: { name: item.name },
-                include: { variants: true },
+                include: { ProductVariant: true },
               });
             }
           }
@@ -197,7 +197,6 @@ export async function POST(request: Request) {
           if (!product) {
             product = await prisma.product.create({
               data: {
-                id: item.originalId || item.id || `temp-${Date.now()}`,
                 name: item.name || `Product from order ${order.id}`,
                 description: item.description || "Added during checkout",
                 price: item.price,
@@ -205,14 +204,14 @@ export async function POST(request: Request) {
                 slug: item.id || `temp-product-${Date.now()}`,
                 inStock: true,
               },
-              include: { variants: true },
+              include: { ProductVariant: true },
             });
           }
 
           let variantId = null;
 
           if (item.variantId && product) {
-            const variant = product.variants.find(
+            const variant = product.ProductVariant.find(
               (v) => v.id === item.variantId,
             );
 

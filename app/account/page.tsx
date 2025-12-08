@@ -249,18 +249,18 @@ export default function AccountPage() {
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <span className="block text-sm font-medium text-gray-700">
                 Phone Number
-              </label>
+              </span>
               <p className="mt-1 text-sm text-gray-900">
                 {userContactInfo?.phoneNumber || "Not provided"}
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <span className="block text-sm font-medium text-gray-700">
                 Instagram Handle
-              </label>
+              </span>
               <p className="mt-1 text-sm text-gray-900">
                 {userContactInfo?.instagramHandle
                   ? `@${userContactInfo.instagramHandle}`

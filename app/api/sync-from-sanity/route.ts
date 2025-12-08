@@ -75,7 +75,7 @@ export async function POST() {
         // Check if order exists in database
         const existingOrder = await prisma.order.findUnique({
           where: { id: orderId },
-          include: { items: true }
+          include: { OrderItem: true }
         });
 
         // Validate and prepare order data

@@ -10552,7 +10552,7 @@ export namespace Prisma {
   }
 
   export type AddressCreateInput = {
-    id: string
+    id?: string
     street: string
     city: string
     state: string
@@ -10560,13 +10560,13 @@ export namespace Prisma {
     country?: string
     isDefault?: boolean
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     User: UserCreateNestedOneWithoutAddressInput
     Order?: OrderCreateNestedManyWithoutAddressInput
   }
 
   export type AddressUncheckedCreateInput = {
-    id: string
+    id?: string
     userId: string
     street: string
     city: string
@@ -10575,7 +10575,7 @@ export namespace Prisma {
     country?: string
     isDefault?: boolean
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Order?: OrderUncheckedCreateNestedManyWithoutAddressInput
   }
 
@@ -10608,7 +10608,7 @@ export namespace Prisma {
   }
 
   export type AddressCreateManyInput = {
-    id: string
+    id?: string
     userId: string
     street: string
     city: string
@@ -10617,7 +10617,7 @@ export namespace Prisma {
     country?: string
     isDefault?: boolean
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type AddressUpdateManyMutationInput = {
@@ -10646,7 +10646,7 @@ export namespace Prisma {
   }
 
   export type DropCreateInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     startDate: Date | string
@@ -10654,12 +10654,12 @@ export namespace Prisma {
     isActive?: boolean
     password?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Product?: ProductCreateNestedManyWithoutDropInput
   }
 
   export type DropUncheckedCreateInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     startDate: Date | string
@@ -10667,7 +10667,7 @@ export namespace Prisma {
     isActive?: boolean
     password?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Product?: ProductUncheckedCreateNestedManyWithoutDropInput
   }
 
@@ -10698,7 +10698,7 @@ export namespace Prisma {
   }
 
   export type DropCreateManyInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     startDate: Date | string
@@ -10706,7 +10706,7 @@ export namespace Prisma {
     isActive?: boolean
     password?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type DropUpdateManyMutationInput = {
@@ -10734,20 +10734,20 @@ export namespace Prisma {
   }
 
   export type OrderCreateInput = {
-    id: string
+    id?: string
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Address?: AddressCreateNestedOneWithoutOrderInput
     User: UserCreateNestedOneWithoutOrderInput
     OrderItem?: OrderItemCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateInput = {
-    id: string
+    id?: string
     orderNumber: string
     userId: string
     status?: $Enums.OrderStatus
@@ -10755,7 +10755,7 @@ export namespace Prisma {
     shippingAddressId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
   }
 
@@ -10786,7 +10786,7 @@ export namespace Prisma {
   }
 
   export type OrderCreateManyInput = {
-    id: string
+    id?: string
     orderNumber: string
     userId: string
     status?: $Enums.OrderStatus
@@ -10794,7 +10794,7 @@ export namespace Prisma {
     shippingAddressId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type OrderUpdateManyMutationInput = {
@@ -10820,7 +10820,7 @@ export namespace Prisma {
   }
 
   export type OrderItemCreateInput = {
-    id: string
+    id?: string
     quantity: number
     price: Decimal | DecimalJsLike | number | string
     Order: OrderCreateNestedOneWithoutOrderItemInput
@@ -10829,7 +10829,7 @@ export namespace Prisma {
   }
 
   export type OrderItemUncheckedCreateInput = {
-    id: string
+    id?: string
     orderId: string
     productId: string
     variantId?: string | null
@@ -10856,7 +10856,7 @@ export namespace Prisma {
   }
 
   export type OrderItemCreateManyInput = {
-    id: string
+    id?: string
     orderId: string
     productId: string
     variantId?: string | null
@@ -10880,7 +10880,7 @@ export namespace Prisma {
   }
 
   export type ProductCreateInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -10888,7 +10888,7 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     OrderItem?: OrderItemCreateNestedManyWithoutProductInput
     Drop?: DropCreateNestedOneWithoutProductInput
@@ -10896,7 +10896,7 @@ export namespace Prisma {
   }
 
   export type ProductUncheckedCreateInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -10904,7 +10904,7 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     dropId?: string | null
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutProductInput
@@ -10944,7 +10944,7 @@ export namespace Prisma {
   }
 
   export type ProductCreateManyInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -10952,7 +10952,7 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     dropId?: string | null
   }
@@ -10985,7 +10985,7 @@ export namespace Prisma {
   }
 
   export type ProductVariantCreateInput = {
-    id: string
+    id?: string
     size: string
     color?: string | null
     sku: string
@@ -10995,7 +10995,7 @@ export namespace Prisma {
   }
 
   export type ProductVariantUncheckedCreateInput = {
-    id: string
+    id?: string
     productId: string
     size: string
     color?: string | null
@@ -11025,7 +11025,7 @@ export namespace Prisma {
   }
 
   export type ProductVariantCreateManyInput = {
-    id: string
+    id?: string
     productId: string
     size: string
     color?: string | null
@@ -11051,27 +11051,27 @@ export namespace Prisma {
   }
 
   export type UserCreateInput = {
-    id: string
+    id?: string
     email: string
     name?: string | null
     phoneNumber?: string | null
     instagramHandle?: string | null
     firebaseUid?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Address?: AddressCreateNestedManyWithoutUserInput
     Order?: OrderCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
-    id: string
+    id?: string
     email: string
     name?: string | null
     phoneNumber?: string | null
     instagramHandle?: string | null
     firebaseUid?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Address?: AddressUncheckedCreateNestedManyWithoutUserInput
     Order?: OrderUncheckedCreateNestedManyWithoutUserInput
   }
@@ -11103,14 +11103,14 @@ export namespace Prisma {
   }
 
   export type UserCreateManyInput = {
-    id: string
+    id?: string
     email: string
     name?: string | null
     phoneNumber?: string | null
     instagramHandle?: string | null
     firebaseUid?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type UserUpdateManyMutationInput = {
@@ -12422,26 +12422,26 @@ export namespace Prisma {
   }
 
   export type UserCreateWithoutAddressInput = {
-    id: string
+    id?: string
     email: string
     name?: string | null
     phoneNumber?: string | null
     instagramHandle?: string | null
     firebaseUid?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Order?: OrderCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAddressInput = {
-    id: string
+    id?: string
     email: string
     name?: string | null
     phoneNumber?: string | null
     instagramHandle?: string | null
     firebaseUid?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Order?: OrderUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -12451,26 +12451,26 @@ export namespace Prisma {
   }
 
   export type OrderCreateWithoutAddressInput = {
-    id: string
+    id?: string
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     User: UserCreateNestedOneWithoutOrderInput
     OrderItem?: OrderItemCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutAddressInput = {
-    id: string
+    id?: string
     orderNumber: string
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
   }
 
@@ -12551,7 +12551,7 @@ export namespace Prisma {
   }
 
   export type ProductCreateWithoutDropInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -12559,14 +12559,14 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     OrderItem?: OrderItemCreateNestedManyWithoutProductInput
     ProductVariant?: ProductVariantCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutDropInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -12574,7 +12574,7 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     ProductVariant?: ProductVariantUncheckedCreateNestedManyWithoutProductInput
@@ -12624,7 +12624,7 @@ export namespace Prisma {
   }
 
   export type AddressCreateWithoutOrderInput = {
-    id: string
+    id?: string
     street: string
     city: string
     state: string
@@ -12632,12 +12632,12 @@ export namespace Prisma {
     country?: string
     isDefault?: boolean
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     User: UserCreateNestedOneWithoutAddressInput
   }
 
   export type AddressUncheckedCreateWithoutOrderInput = {
-    id: string
+    id?: string
     userId: string
     street: string
     city: string
@@ -12646,7 +12646,7 @@ export namespace Prisma {
     country?: string
     isDefault?: boolean
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type AddressCreateOrConnectWithoutOrderInput = {
@@ -12655,26 +12655,26 @@ export namespace Prisma {
   }
 
   export type UserCreateWithoutOrderInput = {
-    id: string
+    id?: string
     email: string
     name?: string | null
     phoneNumber?: string | null
     instagramHandle?: string | null
     firebaseUid?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Address?: AddressCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOrderInput = {
-    id: string
+    id?: string
     email: string
     name?: string | null
     phoneNumber?: string | null
     instagramHandle?: string | null
     firebaseUid?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Address?: AddressUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -12684,7 +12684,7 @@ export namespace Prisma {
   }
 
   export type OrderItemCreateWithoutOrderInput = {
-    id: string
+    id?: string
     quantity: number
     price: Decimal | DecimalJsLike | number | string
     Product: ProductCreateNestedOneWithoutOrderItemInput
@@ -12692,7 +12692,7 @@ export namespace Prisma {
   }
 
   export type OrderItemUncheckedCreateWithoutOrderInput = {
-    id: string
+    id?: string
     productId: string
     variantId?: string | null
     quantity: number
@@ -12810,19 +12810,19 @@ export namespace Prisma {
   }
 
   export type OrderCreateWithoutOrderItemInput = {
-    id: string
+    id?: string
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Address?: AddressCreateNestedOneWithoutOrderInput
     User: UserCreateNestedOneWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutOrderItemInput = {
-    id: string
+    id?: string
     orderNumber: string
     userId: string
     status?: $Enums.OrderStatus
@@ -12830,7 +12830,7 @@ export namespace Prisma {
     shippingAddressId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type OrderCreateOrConnectWithoutOrderItemInput = {
@@ -12839,7 +12839,7 @@ export namespace Prisma {
   }
 
   export type ProductCreateWithoutOrderItemInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -12847,14 +12847,14 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     Drop?: DropCreateNestedOneWithoutProductInput
     ProductVariant?: ProductVariantCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutOrderItemInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -12862,7 +12862,7 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     dropId?: string | null
     ProductVariant?: ProductVariantUncheckedCreateNestedManyWithoutProductInput
@@ -12874,7 +12874,7 @@ export namespace Prisma {
   }
 
   export type ProductVariantCreateWithoutOrderItemInput = {
-    id: string
+    id?: string
     size: string
     color?: string | null
     sku: string
@@ -12883,7 +12883,7 @@ export namespace Prisma {
   }
 
   export type ProductVariantUncheckedCreateWithoutOrderItemInput = {
-    id: string
+    id?: string
     productId: string
     size: string
     color?: string | null
@@ -13002,7 +13002,7 @@ export namespace Prisma {
   }
 
   export type OrderItemCreateWithoutProductInput = {
-    id: string
+    id?: string
     quantity: number
     price: Decimal | DecimalJsLike | number | string
     Order: OrderCreateNestedOneWithoutOrderItemInput
@@ -13010,7 +13010,7 @@ export namespace Prisma {
   }
 
   export type OrderItemUncheckedCreateWithoutProductInput = {
-    id: string
+    id?: string
     orderId: string
     variantId?: string | null
     quantity: number
@@ -13028,7 +13028,7 @@ export namespace Prisma {
   }
 
   export type DropCreateWithoutProductInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     startDate: Date | string
@@ -13036,11 +13036,11 @@ export namespace Prisma {
     isActive?: boolean
     password?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type DropUncheckedCreateWithoutProductInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     startDate: Date | string
@@ -13048,7 +13048,7 @@ export namespace Prisma {
     isActive?: boolean
     password?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type DropCreateOrConnectWithoutProductInput = {
@@ -13057,7 +13057,7 @@ export namespace Prisma {
   }
 
   export type ProductVariantCreateWithoutProductInput = {
-    id: string
+    id?: string
     size: string
     color?: string | null
     sku: string
@@ -13066,7 +13066,7 @@ export namespace Prisma {
   }
 
   export type ProductVariantUncheckedCreateWithoutProductInput = {
-    id: string
+    id?: string
     size: string
     color?: string | null
     sku: string
@@ -13164,7 +13164,7 @@ export namespace Prisma {
   }
 
   export type OrderItemCreateWithoutProductVariantInput = {
-    id: string
+    id?: string
     quantity: number
     price: Decimal | DecimalJsLike | number | string
     Order: OrderCreateNestedOneWithoutOrderItemInput
@@ -13172,7 +13172,7 @@ export namespace Prisma {
   }
 
   export type OrderItemUncheckedCreateWithoutProductVariantInput = {
-    id: string
+    id?: string
     orderId: string
     productId: string
     quantity: number
@@ -13190,7 +13190,7 @@ export namespace Prisma {
   }
 
   export type ProductCreateWithoutProductVariantInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -13198,14 +13198,14 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     OrderItem?: OrderItemCreateNestedManyWithoutProductInput
     Drop?: DropCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutProductVariantInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -13213,7 +13213,7 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
     dropId?: string | null
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutProductInput
@@ -13282,7 +13282,7 @@ export namespace Prisma {
   }
 
   export type AddressCreateWithoutUserInput = {
-    id: string
+    id?: string
     street: string
     city: string
     state: string
@@ -13290,12 +13290,12 @@ export namespace Prisma {
     country?: string
     isDefault?: boolean
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Order?: OrderCreateNestedManyWithoutAddressInput
   }
 
   export type AddressUncheckedCreateWithoutUserInput = {
-    id: string
+    id?: string
     street: string
     city: string
     state: string
@@ -13303,7 +13303,7 @@ export namespace Prisma {
     country?: string
     isDefault?: boolean
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Order?: OrderUncheckedCreateNestedManyWithoutAddressInput
   }
 
@@ -13318,26 +13318,26 @@ export namespace Prisma {
   }
 
   export type OrderCreateWithoutUserInput = {
-    id: string
+    id?: string
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     Address?: AddressCreateNestedOneWithoutOrderInput
     OrderItem?: OrderItemCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutUserInput = {
-    id: string
+    id?: string
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
     shippingAddressId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
   }
 
@@ -13400,14 +13400,14 @@ export namespace Prisma {
   }
 
   export type OrderCreateManyAddressInput = {
-    id: string
+    id?: string
     orderNumber: string
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type OrderUpdateWithoutAddressInput = {
@@ -13446,7 +13446,7 @@ export namespace Prisma {
   }
 
   export type ProductCreateManyDropInput = {
-    id: string
+    id?: string
     name: string
     description?: string | null
     price: Decimal | DecimalJsLike | number | string
@@ -13454,7 +13454,7 @@ export namespace Prisma {
     slug: string
     category?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
     inStock?: boolean
   }
 
@@ -13502,7 +13502,7 @@ export namespace Prisma {
   }
 
   export type OrderItemCreateManyOrderInput = {
-    id: string
+    id?: string
     productId: string
     variantId?: string | null
     quantity: number
@@ -13534,7 +13534,7 @@ export namespace Prisma {
   }
 
   export type OrderItemCreateManyProductInput = {
-    id: string
+    id?: string
     orderId: string
     variantId?: string | null
     quantity: number
@@ -13542,7 +13542,7 @@ export namespace Prisma {
   }
 
   export type ProductVariantCreateManyProductInput = {
-    id: string
+    id?: string
     size: string
     color?: string | null
     sku: string
@@ -13600,7 +13600,7 @@ export namespace Prisma {
   }
 
   export type OrderItemCreateManyProductVariantInput = {
-    id: string
+    id?: string
     orderId: string
     productId: string
     quantity: number
@@ -13632,7 +13632,7 @@ export namespace Prisma {
   }
 
   export type AddressCreateManyUserInput = {
-    id: string
+    id?: string
     street: string
     city: string
     state: string
@@ -13640,18 +13640,18 @@ export namespace Prisma {
     country?: string
     isDefault?: boolean
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type OrderCreateManyUserInput = {
-    id: string
+    id?: string
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
     shippingAddressId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
-    updatedAt: Date | string
+    updatedAt?: Date | string
   }
 
   export type AddressUpdateWithoutUserInput = {

@@ -43,22 +43,22 @@ export async function POST() {
     // Fetch orders from Neon DB
     const orders = await prisma.order.findMany({
       include: {
-        user: {
+        User: {
           select: {
             email: true,
             name: true,
           },
         },
-        items: {
+        OrderItem: {
           include: {
-            product: {
+            Product: {
               select: {
                 name: true,
               },
             },
           },
         },
-        shippingAddress: true,
+        Address: true,
       },
       orderBy: {
         updatedAt: "desc",
@@ -75,16 +75,16 @@ export async function POST() {
           _id: `order-${order.id}`,
           orderNumber: order.orderNumber,
           userId: order.userId,
-          customerEmail: order.user.email,
-          customerName: order.user.name || "",
+          customerEmail: order.User.email,
+          customerName: order.User.name || "",
           total: parseFloat(order.total.toString()),
           status: order.status,
-          items: order.items.map(
+          OrderItem: order.OrderItem.map(
             (item: {
               id: any;
               productId: any;
               variantId: any;
-              product: { name: any };
+              Product: { name: any };
               quantity: any;
               price: { toString: () => string };
             }) => ({
@@ -92,19 +92,19 @@ export async function POST() {
               itemId: item.id,
               productId: item.productId,
               variantId: item.variantId,
-              name: item.product.name,
+              name: item.Product.name,
               quantity: item.quantity,
               price: parseFloat(item.price.toString()),
             }),
           ),
-          shippingAddress: order.shippingAddress
+          Address: order.Address
             ? {
-                name: order.user.name || "",
-                street: order.shippingAddress.street,
-                city: order.shippingAddress.city,
-                state: order.shippingAddress.state,
-                postalCode: order.shippingAddress.postalCode,
-                country: order.shippingAddress.country,
+                name: order.User.name || "",
+                street: order.Address.street,
+                city: order.Address.city,
+                state: order.Address.state,
+                postalCode: order.Address.postalCode,
+                country: order.Address.country,
               }
             : undefined,
           stripePaymentIntentId: order.stripePaymentIntentId,

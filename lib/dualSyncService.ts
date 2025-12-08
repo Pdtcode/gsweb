@@ -32,21 +32,21 @@ interface OrderWithRelations {
   stripePaymentIntentId: string | null;
   createdAt: Date;
   updatedAt: Date;
-  user: {
+  User: {
     email: string;
     name: string | null;
   };
-  items: Array<{
+  OrderItem: Array<{
     id: string;
     productId: string;
     variantId: string | null;
     quantity: number;
     price: any;
-    product: {
+    Product: {
       name: string;
     };
   }>;
-  shippingAddress: {
+  Address: {
     street: string;
     city: string;
     state: string;
@@ -74,7 +74,7 @@ export class DualSyncService {
           status: orderData.status || "PENDING",
           stripePaymentIntentId: orderData.stripePaymentIntentId,
           shippingAddressId: orderData.shippingAddressId,
-          items: {
+          OrderItem: {
             create: orderData.items.map(item => ({
               productId: item.productId,
               variantId: item.variantId,
@@ -84,22 +84,22 @@ export class DualSyncService {
           },
         },
         include: {
-          user: {
+          User: {
             select: {
               email: true,
               name: true,
             },
           },
-          items: {
+          OrderItem: {
             include: {
-              product: {
+              Product: {
                 select: {
                   name: true,
                 },
               },
             },
           },
-          shippingAddress: true,
+          Address: true,
         },
       });
 
@@ -132,22 +132,22 @@ export class DualSyncService {
         where: { id: orderId },
         data: { status },
         include: {
-          user: {
+          User: {
             select: {
               email: true,
               name: true,
             },
           },
-          items: {
+          OrderItem: {
             include: {
-              product: {
+              Product: {
                 select: {
                   name: true,
                 },
               },
             },
           },
-          shippingAddress: true,
+          Address: true,
         },
       });
 
@@ -171,27 +171,27 @@ export class DualSyncService {
         _id: `order-${order.id}`,
         orderNumber: order.orderNumber,
         userId: order.userId,
-        customerEmail: order.user.email,
-        customerName: order.user.name || "",
+        customerEmail: order.User.email,
+        customerName: order.User.name || "",
         total: parseFloat(order.total.toString()),
         status: order.status,
-        items: order.items.map((item) => ({
+        items: order.OrderItem.map((item) => ({
           _key: `item-${item.id}`,
           itemId: item.id,
           productId: item.productId,
           variantId: item.variantId,
-          name: item.product.name,
+          name: item.Product.name,
           quantity: item.quantity,
           price: parseFloat(item.price.toString()),
         })),
-        shippingAddress: order.shippingAddress
+        shippingAddress: order.Address
           ? {
-              name: order.user.name || "",
-              street: order.shippingAddress.street,
-              city: order.shippingAddress.city,
-              state: order.shippingAddress.state,
-              postalCode: order.shippingAddress.postalCode,
-              country: order.shippingAddress.country,
+              name: order.User.name || "",
+              street: order.Address.street,
+              city: order.Address.city,
+              state: order.Address.state,
+              postalCode: order.Address.postalCode,
+              country: order.Address.country,
             }
           : undefined,
         stripePaymentIntentId: order.stripePaymentIntentId,
@@ -217,22 +217,22 @@ export class DualSyncService {
       const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
-          user: {
+          User: {
             select: {
               email: true,
               name: true,
             },
           },
-          items: {
+          OrderItem: {
             include: {
-              product: {
+              Product: {
                 select: {
                   name: true,
                 },
               },
             },
           },
-          shippingAddress: true,
+          Address: true,
         },
       });
 

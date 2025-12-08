@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Address {
-  id         String   @id
+  id         String   @id @default(uuid())
   userId     String
   street     String
   city       String
@@ -20,13 +20,13 @@ model Address {
   country    String   @default("United States")
   isDefault  Boolean  @default(false)
   createdAt  DateTime @default(now())
-  updatedAt  DateTime
+  updatedAt  DateTime @updatedAt
   User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   Order      Order[]
 }
 
 model Drop {
-  id          String    @id
+  id          String    @id @default(uuid())
   name        String
   description String?
   startDate   DateTime
@@ -34,12 +34,12 @@ model Drop {
   isActive    Boolean   @default(false)
   password    String?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime  @updatedAt
   Product     Product[]
 }
 
 model Order {
-  id                    String      @id
+  id                    String      @id @default(uuid())
   orderNumber           String      @unique
   userId                String
   status                OrderStatus @default(PENDING)
@@ -47,14 +47,14 @@ model Order {
   shippingAddressId     String?
   stripePaymentIntentId String?
   createdAt             DateTime    @default(now())
-  updatedAt             DateTime
+  updatedAt             DateTime    @updatedAt
   Address               Address?    @relation(fields: [shippingAddressId], references: [id])
   User                  User        @relation(fields: [userId], references: [id])
   OrderItem             OrderItem[]
 }
 
 model OrderItem {
-  id             String          @id
+  id             String          @id @default(uuid())
   orderId        String
   productId      String
   variantId      String?
@@ -66,7 +66,7 @@ model OrderItem {
 }
 
 model Product {
-  id             String           @id
+  id             String           @id @default(uuid())
   name           String
   description    String?
   price          Decimal          @db.Decimal(10, 2)
@@ -74,7 +74,7 @@ model Product {
   slug           String           @unique
   category       String?
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime         @updatedAt
   inStock        Boolean          @default(true)
   dropId         String?
   OrderItem      OrderItem[]
@@ -83,7 +83,7 @@ model Product {
 }
 
 model ProductVariant {
-  id        String      @id
+  id        String      @id @default(uuid())
   productId String
   size      String
   color     String?
@@ -94,14 +94,14 @@ model ProductVariant {
 }
 
 model User {
-  id              String    @id
+  id              String    @id @default(uuid())
   email           String    @unique
   name            String?
   phoneNumber     String?
   instagramHandle String?
   firebaseUid     String?   @unique
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime  @updatedAt
   Address         Address[]
   Order           Order[]
 }

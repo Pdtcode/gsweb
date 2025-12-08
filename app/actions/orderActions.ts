@@ -20,13 +20,13 @@ export async function getUserOrders(userId: string) {
         userId: userId, // This guarantees only the current user's orders
       },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            product: true,
-            variant: true,
+            Product: true,
+            ProductVariant: true,
           },
         },
-        shippingAddress: true,
+        Address: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -52,13 +52,13 @@ export async function getOrderById(orderId: string) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            product: true,
-            variant: true,
+            Product: true,
+            ProductVariant: true,
           },
         },
-        shippingAddress: true,
+        Address: true,
       },
     });
 
@@ -124,13 +124,13 @@ export async function getOrderByPaymentIntentId(paymentIntentId: string) {
     const order = await prisma.order.findFirst({
       where: { stripePaymentIntentId: paymentIntentId },
       include: {
-        items: {
+        OrderItem: {
           include: {
-            product: true,
-            variant: true,
+            Product: true,
+            ProductVariant: true,
           },
         },
-        shippingAddress: true,
+        Address: true,
       },
     });
 
