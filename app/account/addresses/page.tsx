@@ -226,7 +226,7 @@ export default function AddressesPage() {
         <h2 className="text-xl font-semibold">Shipping Addresses</h2>
         {!isAdding && !isEditing && (
           <button
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:focus:ring-white"
             onClick={startAdding}
           >
             Add New Address
@@ -372,13 +372,13 @@ export default function AddressesPage() {
 
           <div className="flex gap-4">
             <button
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:focus:ring-white"
               type="submit"
             >
               {isEditing ? "Update Address" : "Save Address"}
             </button>
             <button
-              className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-black bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:border-gray-600 dark:text-white dark:bg-black dark:hover:bg-gray-800 dark:focus:ring-white"
               type="button"
               onClick={cancelForm}
             >
@@ -412,20 +412,20 @@ export default function AddressesPage() {
                 </div>
                 <div className="flex gap-2 mt-4">
                   <button
-                    className="text-sm text-indigo-600 hover:text-indigo-800"
+                    className="text-sm text-black hover:text-gray-800 dark:text-white dark:hover:text-gray-200"
                     onClick={() => startEditing(address)}
                   >
                     Edit
                   </button>
                   <button
-                    className="text-sm text-red-600 hover:text-red-800"
+                    className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                     onClick={() => handleDeleteAddress(address.id)}
                   >
                     Delete
                   </button>
                   {!address.isDefault && (
                     <button
-                      className="text-sm text-gray-600 hover:text-gray-800"
+                      className="text-sm text-black hover:text-gray-800 dark:text-white dark:hover:text-gray-200"
                       onClick={() => handleSetDefault(address.id)}
                     >
                       Set as Default

@@ -18,7 +18,7 @@ export default function Home() {
       {/* Texture Overlay */}
       <TextureOverlay
         blendMode="multiply"
-        className="bg-blend-overlay"
+        className="bg-blend-overlay z-10"
         opacity={0.3}
         textureUrl="https://i.ibb.co/x8tL47Pd/fabric-texture1.png"
       />
@@ -32,7 +32,7 @@ export default function Home() {
           <Link
             aria-label="Follow us on Instagram"
             className="p-2 rounded-full transition-colors hover:bg-foreground/10 flex items-center justify-center"
-            href="https://www.instagram.com/grail__seekers/"
+            href="https://www.instagram.com/gsdesignresearch/"
             rel="noopener noreferrer"
             target="_blank"
           >

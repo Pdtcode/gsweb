@@ -16,8 +16,12 @@ export default function ThemeInstagram({ size = 24, ...props }: IconSvgProps) {
   }, []);
 
   if (!mounted) {
-    // During SSR and initial client render, return null
-    return null;
+    // During SSR and initial client render, assume light theme to prevent flash
+    return (
+      <span>
+        <InstagramIcon size={size} {...props} />
+      </span>
+    );
   }
 
   const currentTheme = theme === "system" ? resolvedTheme : theme;
@@ -25,8 +29,7 @@ export default function ThemeInstagram({ size = 24, ...props }: IconSvgProps) {
 
   // Custom styles for the icon based on theme
   const svgStyle = {
-    filter: isDarkMode ? "invert(1)" : "none",
-    transition: "filter 0.3s ease",
+    color: isDarkMode ? "white" : "black",
   };
 
   return (

@@ -6,7 +6,7 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 export function AddToCartButtonWrapper({ product }: { product: Product }) {
   return (
     <div className="flex gap-4 w-full">
-      <AddToCartButton className="flex-1" product={product} />
+      <AddToCartButton product={product} />
 
       {product.shopURL && (
         <a

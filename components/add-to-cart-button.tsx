@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@heroui/button";
+import { useTheme } from "next-themes";
 
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/types";
@@ -16,6 +17,7 @@ export const AddToCartButton = ({
   className = "",
 }: AddToCartButtonProps) => {
   const { addToCart } = useCart();
+  const { theme } = useTheme();
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAddToCart = () => {
@@ -33,10 +35,15 @@ export const AddToCartButton = ({
 
   return (
     <Button
-      className={`w-full py-3 ${className}`}
-      color={isDisabled ? "default" : "primary"}
+      className={`px-8 py-3 ${
+        isDisabled
+          ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+          : theme === "dark"
+            ? "bg-white text-black hover:bg-gray-100"
+            : "bg-black text-white hover:bg-gray-800"
+      } transition-colors ${className}`}
       disabled={isDisabled}
-      variant="solid"
+      variant="flat"
       onClick={handleAddToCart}
     >
       {isAdding ? "Added!" : isDisabled ? "Sold Out" : "Add to Cart"}

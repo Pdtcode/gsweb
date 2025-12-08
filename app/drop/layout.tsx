@@ -7,7 +7,7 @@ import VideoBackground from "@/components/video-background";
 import VideoPreloader from "@/components/video-preloader";
 import { client } from "@/sanity/lib/client";
 import { activeDropSettingsQuery } from "@/lib/queries";
-import ThemeInstagram from "@/components/theme-instagram";
+import { InstagramIcon } from "@/components/icons";
 import CircularTextSpinner from "@/components/circular-text-spinner";
 
 // Debug logger function to improve troubleshooting
@@ -127,7 +127,7 @@ export default function DropLayout({
               rel="noopener noreferrer"
               target="_blank"
             >
-              <ThemeInstagram size={24} />
+              <InstagramIcon size={24} className="text-white" />
               <span>@gsdesignresearch</span>
             </Link>
 
