@@ -180,6 +180,9 @@ export default function CheckoutPage() {
             name: item.product.name,
             price: item.product.price,
             quantity: item.quantity,
+            variantId: item.selectedVariant?.sku || null,
+            variantSize: item.selectedVariant?.size || null,
+            variantColor: item.selectedVariant?.color || null,
           })),
           shipping: {
             cost: 0,
@@ -458,9 +461,9 @@ export default function CheckoutPage() {
             <h2 className="text-xl font-semibold">Order Summary</h2>
 
             <div className="space-y-4">
-              {cart.map((item) => (
+              {cart.map((item, index) => (
                 <div
-                  key={item.product._id}
+                  key={`${item.product._id}-${item.selectedVariant?.sku || index}`}
                   className="flex items-center space-x-4 p-4 border border-gray-200 dark:border-gray-800 rounded-lg"
                 >
                   {item.product.mainImage && (
@@ -478,6 +481,13 @@ export default function CheckoutPage() {
                   )}
                   <div className="flex-1">
                     <h3 className="font-medium">{item.product.name}</h3>
+                    {item.selectedVariant && (item.selectedVariant.size || item.selectedVariant.color) && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {item.selectedVariant.size && `Size: ${item.selectedVariant.size}`}
+                        {item.selectedVariant.size && item.selectedVariant.color && " • "}
+                        {item.selectedVariant.color && `Color: ${item.selectedVariant.color}`}
+                      </p>
+                    )}
                     <p className="text-gray-500 dark:text-gray-400">
                       Quantity: {item.quantity}
                     </p>

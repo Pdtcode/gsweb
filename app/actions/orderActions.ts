@@ -153,3 +153,46 @@ export async function syncOrderToSanity(orderId: string) {
     throw error;
   }
 }
+
+/**
+ * Restore stock for all items in an order
+ * Used when payment fails or order is cancelled
+ */
+export async function restoreOrderStock(orderId: string) {
+  try {
+    const order = await getOrderById(orderId);
+
+    if (!order) {
+      throw new Error(`Order ${orderId} not found`);
+    }
+
+    // Restore stock for each order item
+    for (const item of order.OrderItem) {
+      if (item.variantId) {
+        // Get current variant to ensure it exists
+        const variant = await prisma.productVariant.findUnique({
+          where: { id: item.variantId },
+        });
+
+        if (variant) {
+          // Restore the stock by adding back the quantity
+          await prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: {
+              stock: variant.stock + item.quantity
+            },
+          });
+          console.log(`Restored ${item.quantity} units to variant ${item.variantId} (SKU: ${variant.sku})`);
+        } else {
+          console.warn(`Variant ${item.variantId} not found, cannot restore stock`);
+        }
+      }
+    }
+
+    console.log(`Stock restored for order ${order.orderNumber}`);
+    return order;
+  } catch (error) {
+    console.error("Error restoring order stock:", error);
+    throw error;
+  }
+}

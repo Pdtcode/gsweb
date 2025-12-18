@@ -50,6 +50,8 @@ export const featuredProductsQuery = groq`*[_type == "product" && featured == tr
   comparePrice,
   mainImage,
   inStock,
+  totalInventory,
+  sku,
   categories[]->{
     _id,
     title,
@@ -68,6 +70,8 @@ export const allProductsQuery = groq`*[_type == "product" && dropExclusive != tr
   comparePrice,
   mainImage,
   inStock,
+  totalInventory,
+  sku,
   categories[]->{
     _id,
     title,
@@ -90,6 +94,9 @@ export const productBySlugQuery = groq`*[_type == "product" && slug.current == $
   inStock,
   variants,
   shopURL,
+  totalInventory,
+  sku,
+  lowStockAlert,
   categories[]->{
     _id,
     title,
@@ -125,6 +132,8 @@ export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusiv
   comparePrice,
   mainImage,
   inStock,
+  totalInventory,
+  sku,
   categories[]->{
     _id,
     title,
@@ -165,7 +174,9 @@ export const collectionBySlugQuery = groq`*[_type == "collection" && slug.curren
     price,
     comparePrice,
     mainImage,
-    inStock
+    inStock,
+    totalInventory,
+    sku
   }
 }`;
 
@@ -201,7 +212,10 @@ export const activeDropSettingsQuery = groq`*[_type == "dropSettings" && active 
     inStock,
     shopURL,
     variants,
-    dropExclusive
+    dropExclusive,
+    totalInventory,
+    sku,
+    lowStockAlert
   }
 }`;
 
@@ -219,5 +233,8 @@ export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclu
   inStock,
   shopURL,
   variants,
-  dropExclusive
+  dropExclusive,
+  totalInventory,
+  sku,
+  lowStockAlert
 } | order(publishedAt desc)`;

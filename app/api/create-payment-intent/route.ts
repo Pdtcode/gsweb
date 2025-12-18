@@ -21,6 +21,61 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate inventory before processing payment
+    const inventoryValidation = [];
+    let hasStockIssues = false;
+
+    for (const item of items) {
+      if (!item.variantId) {
+        continue; // Skip validation for products without variants
+      }
+
+      const variant = await prisma.productVariant.findUnique({
+        where: { id: item.variantId },
+        include: {
+          Product: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (!variant) {
+        inventoryValidation.push({
+          productName: item.name,
+          variantId: item.variantId,
+          issue: "Product variant not found",
+        });
+        hasStockIssues = true;
+        continue;
+      }
+
+      if (variant.stock < item.quantity) {
+        inventoryValidation.push({
+          productName: variant.Product.name,
+          variantId: item.variantId,
+          variantSize: variant.size,
+          variantColor: variant.color,
+          requestedQuantity: item.quantity,
+          availableStock: variant.stock,
+          issue: `Only ${variant.stock} units available`,
+        });
+        hasStockIssues = true;
+      }
+    }
+
+    // If there are stock issues, return error with details
+    if (hasStockIssues) {
+      return NextResponse.json(
+        {
+          error: "Insufficient stock for one or more items",
+          stockIssues: inventoryValidation,
+        },
+        { status: 400 }
+      );
+    }
+
     // Extract customer info from metadata if available
     const customerName = metadata?.customer_name || "";
     const customerEmail = metadata?.customer_email || "";
@@ -210,17 +265,33 @@ export async function POST(request: Request) {
 
           let variantId = null;
 
-          if (item.variantId && product) {
-            const variant = product.ProductVariant.find(
-              (v) => v.id === item.variantId,
-            );
+          // Try to find variant by size and color, or by ID/SKU
+          if (product) {
+            let variant = null;
+
+            // First try to find by size and color if provided
+            if (item.variantSize || item.variantColor) {
+              variant = product.ProductVariant.find(
+                (v) =>
+                  (item.variantSize ? v.size === item.variantSize : true) &&
+                  (item.variantColor ? v.color === item.variantColor : true)
+              );
+            }
+
+            // Fallback to finding by ID or SKU
+            if (!variant && item.variantId) {
+              variant = product.ProductVariant.find(
+                (v) => v.id === item.variantId || v.sku === item.variantId
+              );
+            }
 
             if (variant) {
               variantId = variant.id;
 
+              // Update stock if variant found
               await prisma.productVariant.update({
                 where: { id: variant.id },
-                data: { stock: variant.stock - item.quantity },
+                data: { stock: Math.max(0, variant.stock - item.quantity) },
               });
             }
           }

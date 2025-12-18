@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { updateOrderStatus, getOrderByPaymentIntentId } from "@/app/actions/orderActions";
+import { updateOrderStatus, getOrderByPaymentIntentId, restoreOrderStock } from "@/app/actions/orderActions";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -62,8 +62,13 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
 async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
   try {
     const order = await getOrderByPaymentIntentId(paymentIntent.id);
-    
+
     if (order) {
+      // First restore the stock before cancelling
+      await restoreOrderStock(order.id);
+      console.log(`Stock restored for order ${order.orderNumber}`);
+
+      // Then update the order status
       await updateOrderStatus(order.id, "CANCELLED");
       console.log(`Order ${order.orderNumber} marked as CANCELLED after payment failure`);
     } else {

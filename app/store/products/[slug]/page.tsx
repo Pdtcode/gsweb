@@ -1,12 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { title } from "@/components/primitives";
 import { client } from "@/sanity/lib/client";
-import { urlForImage } from "@/sanity/lib/image";
 import { productBySlugQuery } from "@/lib/queries";
 import { AddToCartButtonWrapper } from "@/components/product-actions";
+import { ProductImageGallery } from "@/components/product-image-gallery";
 import { Product, Collection } from "@/types";
 
 export const revalidate = 60; // Revalidate this page every 60 seconds
@@ -33,41 +32,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product Image Gallery */}
-        <div className="space-y-4">
-          <div className="relative aspect-square overflow-hidden rounded-lg">
-            {product.mainImage && (
-              <Image
-                fill
-                priority
-                alt={product.name}
-                className="object-cover"
-                src={urlForImage(product.mainImage).url()}
-              />
-            )}
-            {!product.inStock && (
-              <div className="absolute top-2 right-2 bg-black text-white px-3 py-1 text-sm rounded">
-                Sold Out
-              </div>
-            )}
-          </div>
-          {product.images && product.images.length > 0 && (
-            <div className="grid grid-cols-4 gap-2">
-              {product.images.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative aspect-square overflow-hidden rounded-lg cursor-pointer"
-                >
-                  <Image
-                    fill
-                    alt={`${product.name}`}
-                    className="object-cover"
-                    src={urlForImage(image).url()}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductImageGallery
+          productName={product.name}
+          mainImage={product.mainImage}
+          additionalImages={product.images}
+          inStock={product.inStock}
+        />
 
         {/* Product Details */}
         <div className="space-y-6">
@@ -102,28 +72,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           )}
 
-          {/* Variants */}
-          {product.variants && product.variants.length > 0 && (
-            <div className="space-y-4">
-              {product.variants.map((variant, index) => (
-                <div key={index} className="space-y-2">
-                  <h3 className="font-medium">{variant.name}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {variant.options.map((option, optIndex) => (
-                      <button
-                        key={optIndex}
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Cart and buy buttons */}
+          {/* Variant selector and cart buttons */}
           <AddToCartButtonWrapper product={product} />
 
           {/* Collection info */}

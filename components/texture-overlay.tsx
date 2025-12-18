@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
 interface TextureOverlayProps {
@@ -15,7 +16,30 @@ export default function TextureOverlay({
   blendMode = "overlay",
   className = "",
 }: TextureOverlayProps) {
+  const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by rendering consistent content on server and initial client render
+  if (!mounted) {
+    return (
+      <div
+        className={`fixed inset-0 w-screen h-full pointer-events-none ${className}`}
+        style={{
+          backgroundImage: `url('${textureUrl}')`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "1000px 1000px",
+          opacity: opacity,
+          mixBlendMode: blendMode as any,
+          filter: "none",
+        }}
+      />
+    );
+  }
+
   return (
     <>
       {/* Main texture layer */}

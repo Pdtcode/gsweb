@@ -17,13 +17,13 @@ export default function CartPage() {
   }, []);
 
   // Handle quantity change
-  const handleQuantityChange = (productId: string, quantity: number) => {
-    updateQuantity(productId, quantity);
+  const handleQuantityChange = (productId: string, quantity: number, variantKey?: string) => {
+    updateQuantity(productId, quantity, variantKey);
   };
 
   // Handle item removal
-  const handleRemoveItem = (productId: string) => {
-    removeFromCart(productId);
+  const handleRemoveItem = (productId: string, variantKey?: string) => {
+    removeFromCart(productId, variantKey);
   };
 
   // If component hasn't mounted yet, show a loading placeholder
@@ -78,100 +78,113 @@ export default function CartPage() {
             <div className="md:col-span-2 text-center">Total</div>
           </div>
 
-          {cart.map((item) => (
-            <div
-              key={item.product.slug?.current || item.product._id}
-              className="border-t border-gray-200 dark:border-gray-800 p-4 md:grid md:grid-cols-12 md:items-center"
-            >
-              {/* Product */}
-              <div className="md:col-span-6 flex items-center mb-4 md:mb-0">
-                <div className="relative w-20 h-20 rounded-lg overflow-hidden mr-4 flex-shrink-0">
-                  {item.product.mainImage && (
-                    <Image
-                      fill
-                      alt={item.product.name}
-                      className="object-cover"
-                      src={urlForImage(item.product.mainImage).url() || ""}
-                    />
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-medium">
-                    <Link
-                      className="hover:underline"
-                      href={`/store/products/${item.product.slug.current}`}
-                    >
-                      {item.product.name}
-                    </Link>
-                  </h3>
-                  {item.product.categories &&
-                    item.product.categories.length > 0 && (
+          {cart.map((item) => {
+            const productId = item.product.slug?.current || item.product._id;
+            const variantKey = item.selectedVariant
+              ? `${item.selectedVariant.size || ''}-${item.selectedVariant.color || ''}`
+              : 'default';
+            const uniqueKey = `${productId}-${variantKey}`;
+
+            return (
+              <div
+                key={uniqueKey}
+                className="border-t border-gray-200 dark:border-gray-800 p-4 md:grid md:grid-cols-12 md:items-center"
+              >
+                {/* Product */}
+                <div className="md:col-span-6 flex items-center mb-4 md:mb-0">
+                  <div className="relative w-20 h-20 rounded-lg overflow-hidden mr-4 flex-shrink-0">
+                    {item.product.mainImage && (
+                      <Image
+                        fill
+                        alt={item.product.name}
+                        className="object-cover"
+                        src={urlForImage(item.product.mainImage).url() || ""}
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-medium">
+                      <Link
+                        className="hover:underline"
+                        href={`/store/products/${item.product.slug.current}`}
+                      >
+                        {item.product.name}
+                      </Link>
+                    </h3>
+                    {item.selectedVariant && (item.selectedVariant.size || item.selectedVariant.color) && (
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {item.product.categories[0].title}
+                        {item.selectedVariant.size && `Size: ${item.selectedVariant.size}`}
+                        {item.selectedVariant.size && item.selectedVariant.color && " • "}
+                        {item.selectedVariant.color && `Color: ${item.selectedVariant.color}`}
                       </p>
                     )}
-                  <button
-                    className="text-sm text-red-500 hover:underline mt-1"
-                    onClick={() =>
-                      handleRemoveItem(
-                        item.product.slug?.current || item.product._id,
-                      )
-                    }
-                  >
-                    Remove
-                  </button>
+                    {item.product.categories &&
+                      item.product.categories.length > 0 && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {item.product.categories[0].title}
+                        </p>
+                      )}
+                    <button
+                      className="text-sm text-red-500 hover:underline mt-1"
+                      onClick={() => handleRemoveItem(productId, variantKey)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                {/* Price */}
+                <div className="md:col-span-2 text-center mb-2 md:mb-0">
+                  <span className="md:hidden inline-block w-20 font-medium">
+                    Price:
+                  </span>
+                  <span>${item.product.price.toFixed(2)}</span>
+                </div>
+
+                {/* Quantity */}
+                <div className="md:col-span-2 flex justify-center items-center mb-2 md:mb-0">
+                  <span className="md:hidden inline-block w-20 font-medium">
+                    Quantity:
+                  </span>
+                  <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded">
+                    <button
+                      className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() =>
+                        handleQuantityChange(
+                          productId,
+                          item.quantity - 1,
+                          variantKey
+                        )
+                      }
+                    >
+                      -
+                    </button>
+                    <span className="w-10 text-center">{item.quantity}</span>
+                    <button
+                      className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() =>
+                        handleQuantityChange(
+                          productId,
+                          item.quantity + 1,
+                          variantKey
+                        )
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div className="md:col-span-2 text-center font-medium">
+                  <span className="md:hidden inline-block w-20 font-medium">
+                    Total:
+                  </span>
+                  <span>${(item.product.price * item.quantity).toFixed(2)}</span>
                 </div>
               </div>
-
-              {/* Price */}
-              <div className="md:col-span-2 text-center mb-2 md:mb-0">
-                <span className="md:hidden inline-block w-20 font-medium">
-                  Price:
-                </span>
-                <span>${item.product.price.toFixed(2)}</span>
-              </div>
-
-              {/* Quantity */}
-              <div className="md:col-span-2 flex justify-center items-center mb-2 md:mb-0">
-                <span className="md:hidden inline-block w-20 font-medium">
-                  Quantity:
-                </span>
-                <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded">
-                  <button
-                    className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() =>
-                      handleQuantityChange(
-                        item.product.slug?.current || item.product._id,
-                        item.quantity - 1,
-                      )
-                    }
-                  >
-                    -
-                  </button>
-                  <span className="w-10 text-center">{item.quantity}</span>
-                  <button
-                    className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() =>
-                      handleQuantityChange(
-                        item.product.slug?.current || item.product._id,
-                        item.quantity + 1,
-                      )
-                    }
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Total */}
-              <div className="md:col-span-2 text-center font-medium">
-                <span className="md:hidden inline-block w-20 font-medium">
-                  Total:
-                </span>
-                <span>${(item.product.price * item.quantity).toFixed(2)}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex justify-between items-center">

@@ -127,6 +127,39 @@ export class DualSyncService {
     status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED"
   ) {
     try {
+      // Get the current order to check previous status
+      const currentOrder = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          OrderItem: {
+            include: {
+              ProductVariant: true,
+            },
+          },
+        },
+      });
+
+      if (!currentOrder) {
+        throw new Error(`Order ${orderId} not found`);
+      }
+
+      // If changing to CANCELLED and order was not already CANCELLED, restore stock
+      if (status === "CANCELLED" && currentOrder.status !== "CANCELLED") {
+        console.log(`Restoring stock for cancelled order ${currentOrder.orderNumber}`);
+
+        for (const item of currentOrder.OrderItem) {
+          if (item.variantId && item.ProductVariant) {
+            await prisma.productVariant.update({
+              where: { id: item.variantId },
+              data: {
+                stock: item.ProductVariant.stock + item.quantity
+              },
+            });
+            console.log(`Restored ${item.quantity} units to variant ${item.variantId} (SKU: ${item.ProductVariant.sku})`);
+          }
+        }
+      }
+
       // Update in Neon
       const updatedOrder = await prisma.order.update({
         where: { id: orderId },

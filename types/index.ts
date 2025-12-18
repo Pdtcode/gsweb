@@ -64,10 +64,19 @@ export interface Collection {
   collectionType?: "seasonal" | "limited" | "permanent" | "collaboration";
 }
 
+// Inventory Item
+export interface InventoryItem {
+  option: string;
+  sku?: string;
+  quantity: number;
+  lowStockThreshold?: number;
+}
+
 // Product Variant
 export interface ProductVariant {
   name: string;
   options: string[];
+  inventory?: InventoryItem[];
 }
 
 // Product
@@ -89,4 +98,7 @@ export interface Product {
   variants?: ProductVariant[];
   shopURL?: string;
   dropExclusive?: boolean;
+  totalInventory?: number;
+  sku?: string;
+  lowStockAlert?: number;
 }
