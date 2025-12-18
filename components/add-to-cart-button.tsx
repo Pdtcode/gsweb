@@ -50,7 +50,20 @@ export const AddToCartButton = ({
               const sizeLower = selectedVariant.size?.toLowerCase() || "";
               const colorLower = selectedVariant.color?.toLowerCase() || "";
 
-              return optionLower === sizeLower || optionLower === colorLower;
+              // For products with multiple variant dimensions (e.g., Color + Size)
+              // Check if the option contains all selected values
+              if (sizeLower && colorLower) {
+                // Both size and color selected - option must contain both
+                return optionLower.includes(sizeLower) && optionLower.includes(colorLower);
+              } else if (sizeLower) {
+                // Only size selected
+                return optionLower.includes(sizeLower);
+              } else if (colorLower) {
+                // Only color selected
+                return optionLower.includes(colorLower);
+              }
+
+              return false;
             });
 
             if (matchingInventory) {
