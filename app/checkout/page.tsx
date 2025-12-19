@@ -8,6 +8,7 @@ import { getIdToken } from "firebase/auth";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { StripePaymentForm } from "@/components/stripe-payment-form";
+import { PromoCode, DiscountInfo } from "@/components/promo-code";
 import { urlForImage } from "@/sanity/lib/image";
 
 interface ShippingInfo {
@@ -28,6 +29,7 @@ export default function CheckoutPage() {
   const [stripe, setStripe] = useState<any>(null);
   const [elements, setElements] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountInfo | undefined>(undefined);
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: "",
@@ -128,6 +130,37 @@ export default function CheckoutPage() {
     setShippingInfo((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handlePromoApplied = (discount: DiscountInfo) => {
+    setAppliedDiscount(discount);
+  };
+
+  const handlePromoRemoved = () => {
+    setAppliedDiscount(undefined);
+  };
+
+  const calculateDiscount = () => {
+    if (!appliedDiscount) return 0;
+
+    const subtotal = getCartTotal();
+    if (appliedDiscount.discountAmount !== undefined) {
+      return appliedDiscount.discountAmount;
+    }
+
+    if (appliedDiscount.type === "percentage") {
+      return (subtotal * appliedDiscount.value) / 100;
+    } else if (appliedDiscount.type === "fixed") {
+      return appliedDiscount.value;
+    }
+
+    return 0;
+  };
+
+  const getDiscountedTotal = () => {
+    const subtotal = getCartTotal();
+    const discount = calculateDiscount();
+    return Math.max(0, subtotal - discount);
+  };
+
   const handlePayment = async () => {
     if (!stripe || !elements) {
       alert("Stripe is not ready yet. Please wait and try again.");
@@ -187,12 +220,19 @@ export default function CheckoutPage() {
           shipping: {
             cost: 0,
           },
+          discount: appliedDiscount ? {
+            code: appliedDiscount.code,
+            type: appliedDiscount.type,
+            value: appliedDiscount.value,
+            amount: calculateDiscount(),
+          } : undefined,
           metadata: {
             customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
             customer_email: shippingInfo.email,
             customer_phone: shippingInfo.phone,
             shipping_address: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country}`,
             user_id: userId || "",
+            promo_code: appliedDiscount?.code || "",
           },
         }),
       });
@@ -234,7 +274,9 @@ export default function CheckoutPage() {
     }
   };
 
-  const total = getCartTotal();
+  const subtotal = getCartTotal();
+  const discount = calculateDiscount();
+  const total = getDiscountedTotal();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -499,8 +541,31 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
-              <div className="flex justify-between items-center text-lg font-semibold">
+            {/* Promo Code Section */}
+            <div className="border-t border-gray-200 dark:border-gray-800 pt-6">
+              <PromoCode
+                onPromoApplied={handlePromoApplied}
+                onPromoRemoved={handlePromoRemoved}
+                appliedPromo={appliedDiscount}
+                orderTotal={subtotal}
+              />
+            </div>
+
+            {/* Order Totals */}
+            <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span>Subtotal:</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+
+              {appliedDiscount && discount > 0 && (
+                <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                  <span>Discount ({appliedDiscount.code}):</span>
+                  <span>-${discount.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center text-lg font-semibold pt-2 border-t border-gray-200 dark:border-gray-800">
                 <span>Total:</span>
                 <span>${total.toFixed(2)}</span>
               </div>

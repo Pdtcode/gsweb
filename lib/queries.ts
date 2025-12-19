@@ -238,3 +238,54 @@ export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclu
   sku,
   lowStockAlert
 } | order(publishedAt desc)`;
+
+/**
+ * Query to get a promo code by code
+ */
+export const promoCodeByCodeQuery = groq`*[_type == "promoCode" && code == $code && isActive == true][0] {
+  _id,
+  code,
+  title,
+  description,
+  type,
+  value,
+  isActive,
+  validFrom,
+  validUntil,
+  minOrderAmount,
+  maxDiscount,
+  usageLimit,
+  usedCount,
+  customerLimit,
+  applicableProducts[]->{
+    _id,
+    name,
+    slug
+  },
+  applicableCategories[]->{
+    _id,
+    title,
+    slug
+  },
+  notes
+}`;
+
+/**
+ * Query to get all active promo codes
+ */
+export const activePromoCodesQuery = groq`*[_type == "promoCode" && isActive == true] | order(code asc) {
+  _id,
+  code,
+  title,
+  description,
+  type,
+  value,
+  isActive,
+  validFrom,
+  validUntil,
+  minOrderAmount,
+  maxDiscount,
+  usageLimit,
+  usedCount,
+  customerLimit
+}`;
