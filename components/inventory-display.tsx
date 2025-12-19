@@ -11,8 +11,39 @@ interface InventoryDisplayProps {
 }
 
 export function InventoryDisplay({ product, selectedVariant }: InventoryDisplayProps) {
+  // Helper function to check if all required variants are selected
+  const areAllVariantsSelected = () => {
+    if (!product.variants || product.variants.length === 0) {
+      return true; // No variants required, so consider all selected
+    }
+
+    // Get all variant names that need to be selected
+    const requiredVariants = product.variants.map(v => v.name.toLowerCase());
+
+    // Check if we have a selection for each required variant
+    for (const variantName of requiredVariants) {
+      const hasSelection = selectedVariant && (
+        (variantName === 'size' && selectedVariant.size) ||
+        (variantName === 'color' && selectedVariant.color) ||
+        // Handle any other variant names by checking if they exist in a more generic way
+        Object.keys(selectedVariant).some(key => key.toLowerCase() === variantName)
+      );
+
+      if (!hasSelection) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   // Calculate inventory based on whether product has variants
   const getInventoryInfo = () => {
+    // If product has variants but not all are selected, don't show inventory
+    if (product.variants && product.variants.length > 0 && !areAllVariantsSelected()) {
+      return null;
+    }
+
     // If product has variants
     if (product.variants && product.variants.length > 0) {
       // If a variant is selected, find its inventory
@@ -54,23 +85,7 @@ export function InventoryDisplay({ product, selectedVariant }: InventoryDisplayP
         return null; // Variant selected but no inventory data found
       }
 
-      // No variant selected, show total across all variants
-      let totalQuantity = 0;
-      for (const variant of product.variants) {
-        if (variant.inventory) {
-          totalQuantity += variant.inventory.reduce((sum, inv) => sum + inv.quantity, 0);
-        }
-      }
-
-      if (totalQuantity > 0) {
-        return {
-          quantity: totalQuantity,
-          lowStockThreshold: product.lowStockAlert || 5,
-          isTotal: true,
-        };
-      }
-
-      return null;
+      return null; // Should not reach here given the areAllVariantsSelected check above
     }
 
     // Product without variants - use totalInventory
@@ -86,6 +101,20 @@ export function InventoryDisplay({ product, selectedVariant }: InventoryDisplayP
   };
 
   const inventoryInfo = getInventoryInfo();
+
+  // If no inventory info and product has variants, show selection prompt
+  if (!inventoryInfo && product.variants && product.variants.length > 0) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Availability:</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Please select all options to view availability
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   if (!inventoryInfo) {
     return null;
@@ -109,10 +138,7 @@ export function InventoryDisplay({ product, selectedVariant }: InventoryDisplayP
           </span>
         ) : (
           <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-            {inventoryInfo.isTotal
-              ? `${inventoryInfo.quantity} total in stock`
-              : `${inventoryInfo.quantity} in stock`
-            }
+            {inventoryInfo.quantity} in stock
           </span>
         )}
       </div>
@@ -126,12 +152,6 @@ export function InventoryDisplay({ product, selectedVariant }: InventoryDisplayP
         </div>
       )}
 
-      {/* Variant Selection Note */}
-      {product.variants && product.variants.length > 0 && !selectedVariant?.size && !selectedVariant?.color && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-          Select a variant to see specific availability
-        </p>
-      )}
     </div>
   );
 }
