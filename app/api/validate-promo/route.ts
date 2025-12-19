@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { client } from "@/sanity/lib/client";
 import { promoCodeByCodeQuery } from "@/lib/queries";
+import { rateLimiter, getRealIP, createSecureIdentifier, validatePromoCodeFormat } from "@/lib/rate-limit";
 
 interface PromoCode {
   _id: string;
@@ -24,12 +25,56 @@ interface PromoCode {
 
 export async function POST(request: NextRequest) {
   try {
-    const { code, orderTotal } = await request.json();
+    const { code, orderTotal, userId } = await request.json();
 
+    // Get client information for security tracking
+    const ip = getRealIP(request);
+    const userAgent = request.headers.get('user-agent') || undefined;
+    const identifier = createSecureIdentifier(ip, userAgent);
+
+    // Basic validation
     if (!code || typeof code !== "string") {
       return NextResponse.json(
         { error: "Promo code is required" },
         { status: 400 }
+      );
+    }
+
+    // Validate promo code format to prevent injection attempts
+    if (!validatePromoCodeFormat(code)) {
+      // Log suspicious activity but don't reveal specific validation rules
+      console.warn(`Suspicious promo code format from ${ip}: ${code}`);
+      return NextResponse.json(
+        { error: "Invalid promo code format" },
+        { status: 400 }
+      );
+    }
+
+    // Check rate limiting (max 5 attempts per minute per identifier)
+    const rateLimitResult = rateLimiter.isRateLimited(identifier, 5, 60000);
+    if (rateLimitResult.limited) {
+      const resetTime = new Date(rateLimitResult.resetTime || 0).toLocaleTimeString();
+      return NextResponse.json(
+        {
+          error: `Too many attempts. Try again after ${resetTime}`,
+          rateLimited: true,
+          resetTime: rateLimitResult.resetTime
+        },
+        { status: 429 }
+      );
+    }
+
+    // Check brute force protection
+    const bruteForceResult = rateLimiter.checkBruteForce(identifier, false);
+    if (bruteForceResult.blocked) {
+      const blockedUntil = new Date(bruteForceResult.blockedUntil || 0);
+      return NextResponse.json(
+        {
+          error: `Account temporarily blocked due to suspicious activity. Try again after ${blockedUntil.toLocaleString()}`,
+          blocked: true,
+          blockedUntil: bruteForceResult.blockedUntil
+        },
+        { status: 423 }
       );
     }
 
@@ -97,6 +142,42 @@ export async function POST(request: NextRequest) {
     } else if (promo.type === "freeShipping") {
       // Free shipping - in this case, you might want to handle shipping costs
       discountAmount = 0; // or whatever your shipping cost is
+    }
+
+    // Reset brute force counter on successful validation
+    rateLimiter.checkBruteForce(identifier, true);
+
+    // Log successful validation for audit purposes
+    const auditData = {
+      promoCodeId: promo._id,
+      code: promo.code,
+      userId: userId || 'anonymous',
+      userIP: ip,
+      userAgent: userAgent,
+      orderTotal,
+      discountAmount,
+      timestamp: new Date().toISOString(),
+      action: 'validated'
+    };
+
+    // Create promo usage record in Sanity
+    try {
+      await client.create({
+        _type: 'promoUsage',
+        promoCode: { _type: 'reference', _ref: promo._id },
+        userId: userId || `anonymous_${identifier}`,
+        userEmail: null, // Could be provided from checkout form
+        userIP: ip,
+        userAgent: userAgent,
+        orderTotal,
+        discountAmount,
+        status: 'applied',
+        usedAt: new Date().toISOString(),
+        metadata: JSON.stringify({ validationOnly: true })
+      });
+    } catch (auditError) {
+      // Don't fail the validation if audit logging fails
+      console.error('Failed to create promo usage record:', auditError);
     }
 
     return NextResponse.json({

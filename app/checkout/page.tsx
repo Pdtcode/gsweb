@@ -548,6 +548,7 @@ export default function CheckoutPage() {
                 onPromoRemoved={handlePromoRemoved}
                 appliedPromo={appliedDiscount}
                 orderTotal={subtotal}
+                userId={user?.uid}
               />
             </div>
 

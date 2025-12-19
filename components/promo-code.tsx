@@ -7,6 +7,7 @@ interface PromoCodeProps {
   onPromoRemoved: () => void;
   appliedPromo?: DiscountInfo;
   orderTotal: number;
+  userId?: string;
 }
 
 export interface DiscountInfo {
@@ -17,7 +18,7 @@ export interface DiscountInfo {
   discountAmount?: number;
 }
 
-export function PromoCode({ onPromoApplied, onPromoRemoved, appliedPromo, orderTotal }: PromoCodeProps) {
+export function PromoCode({ onPromoApplied, onPromoRemoved, appliedPromo, orderTotal, userId }: PromoCodeProps) {
   const [promoCode, setPromoCode] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState("");
@@ -32,6 +33,7 @@ export function PromoCode({ onPromoApplied, onPromoRemoved, appliedPromo, orderT
         body: JSON.stringify({
           code: code.trim(),
           orderTotal: orderTotal,
+          userId: userId,
         }),
       });
 
@@ -39,8 +41,16 @@ export function PromoCode({ onPromoApplied, onPromoRemoved, appliedPromo, orderT
         const data = await response.json();
         return data.discount;
       } else {
-        const error = await response.json();
-        throw new Error(error.error || "Invalid promo code");
+        const errorData = await response.json();
+
+        // Handle specific security error types
+        if (response.status === 429 && errorData.rateLimited) {
+          throw new Error(errorData.error || "Too many attempts. Please wait before trying again.");
+        } else if (response.status === 423 && errorData.blocked) {
+          throw new Error(errorData.error || "Account temporarily blocked. Please try again later.");
+        } else {
+          throw new Error(errorData.error || "Invalid promo code");
+        }
       }
     } catch (err) {
       throw err;
