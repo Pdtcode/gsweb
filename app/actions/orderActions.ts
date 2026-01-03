@@ -26,7 +26,6 @@ export async function getUserOrders(userId: string) {
             ProductVariant: true,
           },
         },
-        Address: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -58,7 +57,6 @@ export async function getOrderById(orderId: string) {
             ProductVariant: true,
           },
         },
-        Address: true,
       },
     });
 
@@ -85,7 +83,6 @@ export async function createOrder(orderData: {
     price: number;
   }>;
   total: number;
-  shippingAddressId?: string;
   stripePaymentIntentId?: string;
   status?: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 }) {
@@ -130,7 +127,6 @@ export async function getOrderByPaymentIntentId(paymentIntentId: string) {
             ProductVariant: true,
           },
         },
-        Address: true,
       },
     });
 
@@ -150,6 +146,49 @@ export async function syncOrderToSanity(orderId: string) {
     return order;
   } catch (error) {
     console.error("Error syncing order to Sanity:", error);
+    throw error;
+  }
+}
+
+/**
+ * Decrement stock for all items in an order
+ * Used when payment succeeds
+ */
+export async function decrementOrderStock(orderId: string) {
+  try {
+    const order = await getOrderById(orderId);
+
+    if (!order) {
+      throw new Error(`Order ${orderId} not found`);
+    }
+
+    // Decrement stock for each order item
+    for (const item of order.OrderItem) {
+      if (item.variantId) {
+        // Get current variant to ensure it exists
+        const variant = await prisma.productVariant.findUnique({
+          where: { id: item.variantId },
+        });
+
+        if (variant) {
+          // Decrement the stock by the ordered quantity
+          await prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: {
+              stock: Math.max(0, variant.stock - item.quantity)
+            },
+          });
+          console.log(`Decremented ${item.quantity} units from variant ${item.variantId} (SKU: ${variant.sku})`);
+        } else {
+          console.warn(`Variant ${item.variantId} not found, cannot decrement stock`);
+        }
+      }
+    }
+
+    console.log(`Stock decremented for order ${order.orderNumber}`);
+    return order;
+  } catch (error) {
+    console.error("Error decrementing order stock:", error);
     throw error;
   }
 }

@@ -93,11 +93,36 @@ export async function POST(req: NextRequest) {
               });
 
               if (dbVariant) {
-                // Update existing variant
+                // Update existing variant with correct size/color mapping
+                const option = inventoryItem.option;
+                let size, color;
+
+                if (variant.name === "Color") {
+                  // For color variants like "White Medium", "Black Large"
+                  const parts = option.split(" ");
+                  if (parts.length >= 2) {
+                    color = parts[0]; // "White", "Black"
+                    size = parts.slice(1).join(" "); // "Medium", "Large", "X-Large"
+                  } else {
+                    color = option;
+                    size = "One Size";
+                  }
+                } else if (variant.name === "Size") {
+                  // For size variants like "Small", "Medium", "Large"
+                  size = option;
+                  color = "Size"; // Default for size-only variants
+                } else {
+                  // Fallback for other variant types
+                  size = option;
+                  color = variant.name || "Default";
+                }
+
                 await prisma.productVariant.update({
                   where: { id: dbVariant.id },
                   data: {
                     stock: quantity,
+                    size: size,
+                    color: color,
                   },
                 });
 
@@ -109,17 +134,35 @@ export async function POST(req: NextRequest) {
                 });
               } else {
                 // Create new variant
-                // Parse the option to extract size/color
-                // This is a simple heuristic - adjust based on your actual data
+                // Parse the option to extract size/color based on variant type
                 const option = inventoryItem.option;
-                const sizeMatch = option.match(/\b(XS|S|M|L|XL|XXL|XXXL|\d+)\b/i);
-                const size = sizeMatch ? sizeMatch[0] : option;
+                let size, color;
+
+                if (variant.name === "Color") {
+                  // For color variants like "White Medium", "Black Large"
+                  const parts = option.split(" ");
+                  if (parts.length >= 2) {
+                    color = parts[0]; // "White", "Black"
+                    size = parts.slice(1).join(" "); // "Medium", "Large", "X-Large"
+                  } else {
+                    color = option;
+                    size = "One Size";
+                  }
+                } else if (variant.name === "Size") {
+                  // For size variants like "Small", "Medium", "Large"
+                  size = option;
+                  color = "Size"; // Default for size-only variants
+                } else {
+                  // Fallback for other variant types
+                  size = option;
+                  color = variant.name || "Default";
+                }
 
                 await prisma.productVariant.create({
                   data: {
                     productId: dbProduct.id,
                     size: size,
-                    color: variant.name || null,
+                    color: color,
                     sku: sku,
                     stock: quantity,
                   },

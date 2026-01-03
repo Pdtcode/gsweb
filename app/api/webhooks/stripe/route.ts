@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { updateOrderStatus, getOrderByPaymentIntentId, restoreOrderStock } from "@/app/actions/orderActions";
+import { updateOrderStatus, getOrderByPaymentIntentId, restoreOrderStock, decrementOrderStock } from "@/app/actions/orderActions";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -47,8 +47,13 @@ export async function POST(req: NextRequest) {
 async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   try {
     const order = await getOrderByPaymentIntentId(paymentIntent.id);
-    
+
     if (order) {
+      // First decrement the inventory
+      await decrementOrderStock(order.id);
+      console.log(`Inventory decremented for order ${order.orderNumber}`);
+
+      // Then update order status
       await updateOrderStatus(order.id, "PROCESSING");
       console.log(`Order ${order.orderNumber} marked as PROCESSING after successful payment`);
     } else {

@@ -137,29 +137,26 @@ export default function OrdersPage() {
               <div className="p-4">
                 <h3 className="text-sm font-medium  mb-2">Items</h3>
                 <ul className="divide-y divide-gray-200">
-                  {order.items.map((item) => (
+                  {(order as any).OrderItem?.map((item: any) => (
                     <li key={item.id} className="py-3 flex justify-between">
                       <div>
                         <p className="text-sm font-medium">
-                          {item.product.name}
+                          {item.Product.name}
                         </p>
-                        {item.variant &&
-                          (item.variant.size || item.variant.color) && (
+                        {item.ProductVariant &&
+                          (item.ProductVariant.size || item.ProductVariant.color) && (
                             <p className="text-xs text-gray-500">
-                              {item.variant.size &&
-                                `Size: ${item.variant.size}`}
-                              {item.variant.size && item.variant.color && " | "}
-                              {item.variant.color &&
-                                `Color: ${item.variant.color}`}
+                              {item.ProductVariant.size &&
+                                `Size: ${item.ProductVariant.size}`}
+                              {item.ProductVariant.size && item.ProductVariant.color && " | "}
+                              {item.ProductVariant.color &&
+                                `Color: ${item.ProductVariant.color}`}
                             </p>
                           )}
                         <p className="text-sm text-gray-500">
                           Qty: {item.quantity}
                         </p>
                       </div>
-                      <p className="text-sm font-medium">
-                        ${(Number(item.price) * item.quantity).toFixed(2)}
-                      </p>
                     </li>
                   ))}
                 </ul>

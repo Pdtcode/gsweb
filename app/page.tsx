@@ -25,7 +25,7 @@ export default function Home() {
       <section className="relative z-10 flex flex-col items-center justify-center max-h-screen">
         <div className="flex flex-col mt-60 items-center justify-center">
           <div className="flex items-center max-w-xl text-center justify-center">
-            <span className={title()}>SEEK TIL YOU FIND</span>
+            <span className={title()}>SEEK TILL YOU FIND</span>
           </div>
         </div>
         <div className=" fixed bottom-4">

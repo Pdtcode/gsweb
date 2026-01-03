@@ -18,7 +18,6 @@ interface OrderData {
     price: number;
   }>;
   total: number;
-  shippingAddressId?: string;
   stripePaymentIntentId?: string;
   status?: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 }
@@ -46,13 +45,6 @@ interface OrderWithRelations {
       name: string;
     };
   }>;
-  Address: {
-    street: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-  } | null;
 }
 
 export class DualSyncService {
@@ -73,7 +65,6 @@ export class DualSyncService {
           total: orderData.total,
           status: orderData.status || "PENDING",
           stripePaymentIntentId: orderData.stripePaymentIntentId,
-          shippingAddressId: orderData.shippingAddressId,
           OrderItem: {
             create: orderData.items.map(item => ({
               productId: item.productId,
@@ -99,7 +90,6 @@ export class DualSyncService {
               },
             },
           },
-          Address: true,
         },
       });
 
@@ -180,7 +170,6 @@ export class DualSyncService {
               },
             },
           },
-          Address: true,
         },
       });
 
@@ -217,16 +206,7 @@ export class DualSyncService {
           quantity: item.quantity,
           price: parseFloat(item.price.toString()),
         })),
-        shippingAddress: order.Address
-          ? {
-              name: order.User.name || "",
-              street: order.Address.street,
-              city: order.Address.city,
-              state: order.Address.state,
-              postalCode: order.Address.postalCode,
-              country: order.Address.country,
-            }
-          : undefined,
+        shippingAddress: undefined,
         stripePaymentIntentId: order.stripePaymentIntentId,
         createdAt: order.createdAt.toISOString(),
         updatedAt: order.updatedAt.toISOString(),
@@ -265,7 +245,6 @@ export class DualSyncService {
               },
             },
           },
-          Address: true,
         },
       });
 

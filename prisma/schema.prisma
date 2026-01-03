@@ -4,26 +4,15 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
+// Note: IDE warnings about url/directUrl are for Prisma v7+
+// Current project uses v6.9.0 where this configuration is correct
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-model Address {
-  id         String   @id @default(uuid())
-  userId     String
-  street     String
-  city       String
-  state      String
-  postalCode String
-  country    String   @default("United States")
-  isDefault  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Order      Order[]
-}
 
 model Drop {
   id          String    @id @default(uuid())
@@ -44,11 +33,9 @@ model Order {
   userId                String
   status                OrderStatus @default(PENDING)
   total                 Decimal     @db.Decimal(10, 2)
-  shippingAddressId     String?
   stripePaymentIntentId String?
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
-  Address               Address?    @relation(fields: [shippingAddressId], references: [id])
   User                  User        @relation(fields: [userId], references: [id])
   OrderItem             OrderItem[]
 }
@@ -102,7 +89,6 @@ model User {
   firebaseUid     String?   @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  Address         Address[]
   Order           Order[]
 }
 

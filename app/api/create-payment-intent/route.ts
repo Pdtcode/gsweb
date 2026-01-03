@@ -12,36 +12,113 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request: Request) {
   try {
-    const { items, shipping, metadata } = await request.json();
+    console.log("=== Payment Intent Request Started ===");
+    const requestBody = await request.json();
+    console.log("Request body:", JSON.stringify(requestBody, null, 2));
+    const { items, shipping, metadata, discount } = requestBody;
 
     if (!items || !items.length) {
+      console.error("No items provided in request");
       return NextResponse.json(
         { error: "Items are required" },
         { status: 400 },
       );
     }
 
+    console.log("Items validation passed, found", items.length, "items");
+
     // Validate inventory before processing payment
     const inventoryValidation = [];
     let hasStockIssues = false;
 
     for (const item of items) {
+      console.log("Processing item:", item.name, "with variantId:", item.variantId);
+
       if (!item.variantId) {
+        console.log("Skipping item without variantId");
         continue; // Skip validation for products without variants
       }
 
-      const variant = await prisma.productVariant.findUnique({
-        where: { id: item.variantId },
-        include: {
-          Product: {
-            select: {
-              name: true,
+      // Try to find variant by ID first, then by SKU if ID fails
+      let variant = null;
+      try {
+        console.log("Trying to find variant by ID:", item.variantId);
+        variant = await prisma.productVariant.findUnique({
+          where: { id: item.variantId },
+          include: {
+            Product: {
+              select: {
+                name: true,
+              },
             },
           },
-        },
-      });
+        });
+        console.log("Variant found by ID:", variant ? "YES" : "NO");
+      } catch (error) {
+        console.log("ID lookup failed, trying SKU lookup");
+        // If ID lookup fails, try SKU lookup
+        variant = await prisma.productVariant.findUnique({
+          where: { sku: item.variantId },
+          include: {
+            Product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+        console.log("Variant found by SKU:", variant ? "YES" : "NO");
+      }
+
+      // If still not found, try to find by size/color combination
+      if (!variant && item.variantSize && item.variantColor) {
+        console.log("Trying to find variant by size/color:", item.variantSize, item.variantColor);
+        // Try multiple ways to find the product - by ID, slug, or name
+        const allVariants = await prisma.productVariant.findMany({
+          where: {
+            Product: {
+              OR: [
+                { id: item.id },
+                { slug: { contains: "yots2025" } },
+                { name: { contains: "Year of the Snake" } }
+              ]
+            }
+          },
+          include: {
+            Product: {
+              select: {
+                name: true,
+                id: true,
+                slug: true
+              },
+            },
+          },
+        });
+
+        console.log("Available variants for this product:");
+        allVariants.forEach((v, index) => {
+          console.log(`  ${index + 1}. ID: ${v.id}, SKU: ${v.sku}, Size: "${v.size}", Color: "${v.color}", Stock: ${v.stock}`);
+        });
+
+        // Try to match by size and color in the variant's size field
+        variant = allVariants.find(v =>
+          v.size.toLowerCase().includes(item.variantSize.toLowerCase()) &&
+          (v.size.toLowerCase().includes(item.variantColor.toLowerCase()) ||
+           v.color?.toLowerCase().includes(item.variantColor.toLowerCase()))
+        );
+
+        console.log("Variant found by size/color match:", variant ? "YES" : "NO");
+        if (variant) {
+          console.log("Matched variant:", variant.sku, variant.size);
+        } else {
+          console.log("No size/color match found for:", item.variantSize, "+", item.variantColor);
+        }
+      }
 
       if (!variant) {
+        console.log("❌ VARIANT NOT FOUND - Adding to inventory issues");
+        console.log("Searched for variantId:", item.variantId);
+        console.log("Searched for size/color:", item.variantSize, "+", item.variantColor);
         inventoryValidation.push({
           productName: item.name,
           variantId: item.variantId,
@@ -50,6 +127,8 @@ export async function POST(request: Request) {
         hasStockIssues = true;
         continue;
       }
+
+      console.log("✅ VARIANT FOUND:", variant.sku, "- Stock:", variant.stock);
 
       if (variant.stock < item.quantity) {
         inventoryValidation.push({
@@ -67,6 +146,8 @@ export async function POST(request: Request) {
 
     // If there are stock issues, return error with details
     if (hasStockIssues) {
+      console.log("❌ CHECKOUT FAILED - Stock Issues:");
+      console.log(JSON.stringify(inventoryValidation, null, 2));
       return NextResponse.json(
         {
           error: "Insufficient stock for one or more items",
@@ -75,6 +156,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    console.log("✅ All inventory validation passed - proceeding to payment intent creation");
 
     // Extract customer info from metadata if available
     const customerName = metadata?.customer_name || "";
@@ -96,11 +179,15 @@ export async function POST(request: Request) {
           }
         : undefined;
 
-    // Calculate total from items
-    const total = items.reduce(
+    // Calculate subtotal from items
+    const subtotal = items.reduce(
       (sum: number, item: any) => sum + item.price * item.quantity,
       0,
     );
+
+    // Apply discount if provided
+    const discountAmount = discount?.amount || 0;
+    const total = Math.max(0, subtotal - discountAmount);
 
     // Shipping cost (optional, could be zero)
     const shippingCost = shipping?.cost || 0;
@@ -111,6 +198,9 @@ export async function POST(request: Request) {
       currency: "usd",
       metadata: {
         ...metadata,
+        subtotal: subtotal.toString(),
+        discount_amount: discountAmount.toString(),
+        discount_code: discount?.code || "",
         total: total.toString(),
         shipping_cost: shippingCost.toString(),
         item_count: items.length.toString(),
@@ -171,50 +261,16 @@ export async function POST(request: Request) {
         throw new Error("Could not identify user for this order");
       }
 
-      // Find existing address or create new one if it doesn't exist
-      let shippingAddressId = null;
-
-      if (shippingAddressData) {
-        // Check if an identical address already exists for this user
-        let existingAddress = await prisma.address.findFirst({
-          where: {
-            userId: user.id,
-            street: shippingAddressData.line1,
-            city: shippingAddressData.city,
-            state: shippingAddressData.state,
-            postalCode: shippingAddressData.postal_code,
-            country: shippingAddressData.country,
-          },
-        });
-
-        if (existingAddress) {
-          shippingAddressId = existingAddress.id;
-        } else {
-          // Only create a new address if one doesn't already exist
-          const newAddress = await prisma.address.create({
-            data: {
-              userId: user.id,
-              street: shippingAddressData.line1,
-              city: shippingAddressData.city,
-              state: shippingAddressData.state,
-              postalCode: shippingAddressData.postal_code,
-              country: shippingAddressData.country,
-            },
-          });
-
-          shippingAddressId = newAddress.id;
-        }
-      }
+      // Address management removed - users will use browser autofill
 
       // Create the order
       const order = await prisma.order.create({
         data: {
           orderNumber: `ORD-${Date.now()}`,
           userId: user.id,
-          total: total,
+          total: total, // This is already the discounted total
           status: "PROCESSING",
           stripePaymentIntentId: paymentIntent.id,
-          shippingAddressId,
         },
       });
 
@@ -326,6 +382,12 @@ export async function POST(request: Request) {
       total,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Payment intent creation error:", error.message);
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Error stack:", error.stack);
+    }
+    return NextResponse.json({
+      error: error.message || "Internal server error"
+    }, { status: 500 });
   }
 }

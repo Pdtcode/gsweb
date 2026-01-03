@@ -160,20 +160,14 @@ export async function POST(request: NextRequest) {
       action: 'validated'
     };
 
-    // Create promo usage record in Sanity
+    // TODO: Create promo usage record in Sanity when permissions are fixed
+    // Currently disabled due to Sanity API token lacking create permissions
     try {
-      await client.create({
-        _type: 'promoUsage',
-        promoCode: { _type: 'reference', _ref: promo._id },
+      console.log('Promo usage tracking - would log:', {
+        promoCode: promo.code,
         userId: userId || `anonymous_${identifier}`,
-        userEmail: null, // Could be provided from checkout form
         userIP: ip,
-        userAgent: userAgent,
-        orderTotal,
-        discountAmount,
-        status: 'applied',
-        usedAt: new Date().toISOString(),
-        metadata: JSON.stringify({ validationOnly: true })
+        discountAmount
       });
     } catch (auditError) {
       // Don't fail the validation if audit logging fails

@@ -49,12 +49,6 @@ export default function AccountLayout({
             </Link>
             <Link
               className="block px-3 py-2 rounded-md text-sm font-medium  hover:bg-gray-100 hover:text-gray-900"
-              href="/account/addresses"
-            >
-              Shipping Addresses
-            </Link>
-            <Link
-              className="block px-3 py-2 rounded-md text-sm font-medium  hover:bg-gray-100 hover:text-gray-900"
               href="/account/orders"
             >
               My Orders

@@ -30,6 +30,7 @@ export default function CheckoutPage() {
   const [elements, setElements] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<DiscountInfo | undefined>(undefined);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: "",
@@ -43,48 +44,6 @@ export default function CheckoutPage() {
     country: "US",
   });
 
-  const [isLoadingAddress, setIsLoadingAddress] = useState(false);
-
-  // Load user's default address if logged in
-  useEffect(() => {
-    const loadDefaultAddress = async () => {
-      if (!user) return;
-
-      setIsLoadingAddress(true);
-      try {
-        const token = await getIdToken(user);
-        const response = await fetch("/api/user/addresses", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const addresses = await response.json();
-          const defaultAddress = addresses.find((addr: any) => addr.isDefault);
-          
-          if (defaultAddress) {
-            setShippingInfo(prev => ({
-              ...prev,
-              address: defaultAddress.street,
-              city: defaultAddress.city,
-              state: defaultAddress.state,
-              zipCode: defaultAddress.postalCode,
-              country: defaultAddress.country === "United States" ? "US" : 
-                       defaultAddress.country === "Canada" ? "CA" :
-                       defaultAddress.country === "Mexico" ? "MX" : "US",
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Error loading default address:", error);
-      } finally {
-        setIsLoadingAddress(false);
-      }
-    };
-
-    loadDefaultAddress();
-  }, [user]);
 
   // Handle Stripe redirect success or cancel query params
   useEffect(() => {
@@ -163,10 +122,11 @@ export default function CheckoutPage() {
 
   const handlePayment = async () => {
     if (!stripe || !elements) {
-      alert("Stripe is not ready yet. Please wait and try again.");
-
+      setPaymentError("Stripe is not ready yet. Please wait and try again.");
       return;
     }
+
+    setPaymentError(null); // Clear any previous errors
 
     // Validate shipping information
     if (
@@ -179,8 +139,7 @@ export default function CheckoutPage() {
       !shippingInfo.state ||
       !shippingInfo.zipCode
     ) {
-      alert("Please fill in all shipping information fields.");
-
+      setPaymentError("Please fill in all shipping information fields.");
       return;
     }
 
@@ -256,18 +215,16 @@ export default function CheckoutPage() {
       );
 
       if (error) {
-        alert(`Payment failed: ${error.message}`);
+        setPaymentError(`Payment failed: ${error.message}`);
       } else if (paymentIntent?.status === "succeeded") {
-        alert("Payment successful! Your order has been processed.");
+        // Clear cart first
         clearCart();
 
-        // Redirect to orders page if user is authenticated
-        if (user) {
-          window.location.href = "/account/orders";
-        }
+        // Redirect to success page with payment intent ID
+        window.location.href = `/order/success?payment_intent=${paymentIntent.id}`;
       }
     } catch (error) {
-      alert("An error occurred during payment processing.");
+      setPaymentError("An error occurred during payment processing. Please try again.");
       console.error("Payment error:", error);
     } finally {
       setIsProcessing(false);
@@ -290,19 +247,8 @@ export default function CheckoutPage() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Shipping Information</h2>
-                {user && (
-                  <Link
-                    href="/account/addresses"
-                    className="text-sm text-indigo-600 hover:text-indigo-800"
-                  >
-                    Manage Addresses
-                  </Link>
-                )}
               </div>
               
-              {isLoadingAddress && (
-                <div className="text-sm text-gray-500">Loading your default address...</div>
-              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -486,6 +432,12 @@ export default function CheckoutPage() {
 
               <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg">
                 <StripePaymentForm onReady={handleStripeReady} />
+
+                {paymentError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700">{paymentError}</p>
+                  </div>
+                )}
 
                 <button
                   className="w-full mt-6 bg-gray-900 dark:bg-gray-100 text-white dark:text-black px-6 py-3 rounded-lg font-medium transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"

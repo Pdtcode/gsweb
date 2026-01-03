@@ -58,7 +58,6 @@ export async function POST() {
             },
           },
         },
-        Address: true,
       },
       orderBy: {
         updatedAt: "desc",
@@ -97,16 +96,7 @@ export async function POST() {
               price: parseFloat(item.price.toString()),
             }),
           ),
-          Address: order.Address
-            ? {
-                name: order.User.name || "",
-                street: order.Address.street,
-                city: order.Address.city,
-                state: order.Address.state,
-                postalCode: order.Address.postalCode,
-                country: order.Address.country,
-              }
-            : undefined,
+          Address: undefined,
           stripePaymentIntentId: order.stripePaymentIntentId,
           createdAt: order.createdAt.toISOString(),
           updatedAt: order.updatedAt.toISOString(),

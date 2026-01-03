@@ -23,21 +23,11 @@ import {
 
 import { auth } from "@/lib/firebase";
 
-interface Address {
-  id: string;
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  isDefault: boolean;
-}
 
 interface DbUser {
   id: string;
   email: string;
   name: string | null;
-  addresses?: Address[];
 }
 
 interface AuthContextType {
@@ -49,12 +39,6 @@ interface AuthContextType {
   logOut: () => Promise<void>;
   signInWithGoogle: () => Promise<User | null>;
   syncUser: (firebaseUser: User) => Promise<DbUser | null>;
-  getUserAddresses: () => Promise<Address[]>;
-  getDefaultAddress: () => Promise<Address | null>;
-  saveAddress: (address: Omit<Address, "id">) => Promise<Address>;
-  updateAddress: (id: string, address: Partial<Address>) => Promise<Address>;
-  deleteAddress: (id: string) => Promise<boolean>;
-  setDefaultAddress: (id: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [dbUser, setDbUser] = useState<DbUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [_addressesCache, setAddressesCache] = useState<Address[]>([]);
 
   // Helper function to detect mobile devices
   const isMobileDevice = () => {
@@ -200,198 +183,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Get user addresses
-  const getUserAddresses = async (): Promise<Address[]> => {
-    try {
-      if (!user) {
-        return [];
-      }
-
-      const token = await getIdToken(user);
-      const response = await fetch("/api/user/addresses", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch addresses");
-      }
-
-      const addresses = await response.json();
-
-      setAddressesCache(addresses);
-
-      return addresses;
-    } catch (error) {
-      console.warn(
-        "Error fetching addresses:",
-        error instanceof Error ? error.message : String(error),
-      );
-
-      return [];
-    }
-  };
-
-  // Get default address
-  const getDefaultAddress = async (): Promise<Address | null> => {
-    try {
-      const addresses = await getUserAddresses();
-      const defaultAddress = addresses.find((addr) => addr.isDefault);
-
-      return defaultAddress || null;
-    } catch (error) {
-      console.warn(
-        "Error getting default address:",
-        error instanceof Error ? error.message : String(error),
-      );
-
-      return null;
-    }
-  };
-
-  // Save a new address
-  const saveAddress = async (
-    address: Omit<Address, "id">,
-  ): Promise<Address> => {
-    try {
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const token = await getIdToken(user);
-      const response = await fetch("/api/user/addresses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(address),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save address");
-      }
-
-      const newAddress = await response.json();
-
-      // Refresh the addresses cache
-      getUserAddresses();
-
-      return newAddress;
-    } catch (error) {
-      console.warn(
-        "Error saving address:",
-        error instanceof Error ? error.message : String(error),
-      );
-      throw error;
-    }
-  };
-
-  // Update an address
-  const updateAddress = async (
-    id: string,
-    address: Partial<Address>,
-  ): Promise<Address> => {
-    try {
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const token = await getIdToken(user);
-      const response = await fetch(`/api/user/addresses/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(address),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update address");
-      }
-
-      const updatedAddress = await response.json();
-
-      // Refresh the addresses cache
-      getUserAddresses();
-
-      return updatedAddress;
-    } catch (error) {
-      console.warn(
-        "Error updating address:",
-        error instanceof Error ? error.message : String(error),
-      );
-      throw error;
-    }
-  };
-
-  // Delete an address
-  const deleteAddress = async (id: string): Promise<boolean> => {
-    try {
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const token = await getIdToken(user);
-      const response = await fetch(`/api/user/addresses/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete address");
-      }
-
-      // Refresh the addresses cache
-      getUserAddresses();
-
-      return true;
-    } catch (error) {
-      console.warn(
-        "Error deleting address:",
-        error instanceof Error ? error.message : String(error),
-      );
-
-      return false;
-    }
-  };
-
-  // Set default address
-  const setDefaultAddress = async (id: string): Promise<boolean> => {
-    try {
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const token = await getIdToken(user);
-      const response = await fetch(`/api/user/addresses/${id}/default`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to set default address");
-      }
-
-      // Refresh the addresses cache
-      getUserAddresses();
-
-      return true;
-    } catch (error) {
-      console.warn(
-        "Error setting default address:",
-        error instanceof Error ? error.message : String(error),
-      );
-
-      return false;
-    }
-  };
 
   return (
     <AuthContext.Provider
@@ -404,12 +195,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logOut,
         signInWithGoogle,
         syncUser,
-        getUserAddresses,
-        getDefaultAddress,
-        saveAddress,
-        updateAddress,
-        deleteAddress,
-        setDefaultAddress,
       }}
     >
       {children}
