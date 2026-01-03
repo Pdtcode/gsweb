@@ -79,6 +79,13 @@ export interface ProductVariant {
   inventory?: InventoryItem[];
 }
 
+// Available Variant for real-time inventory
+export interface AvailableVariant {
+  color: string;
+  size: string;
+  stock: number;
+}
+
 // Product
 export interface Product {
   _id: string;
@@ -101,4 +108,8 @@ export interface Product {
   totalInventory?: number;
   sku?: string;
   lowStockAlert?: number;
+  // Real-time inventory properties (optional)
+  realTimeTotalInventory?: number;
+  realTimeInStock?: boolean;
+  availableVariants?: AvailableVariant[];
 }

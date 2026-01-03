@@ -4,6 +4,9 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
+// Note: IDE warnings about url/directUrl are for Prisma v7+
+// Current project uses v6.9.0 where this configuration is correct
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")

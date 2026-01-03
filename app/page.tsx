@@ -6,6 +6,7 @@ import TextureOverlay from "@/components/texture-overlay";
 import ThemeInstagram from "@/components/theme-instagram";
 
 export default function Home() {
+
   return (
     <>
       {/* Background Image - Only on homepage */}

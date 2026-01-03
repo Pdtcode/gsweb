@@ -123,7 +123,6 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
                 }))
               })
             }}
-            onAddToCart={refreshInventory} // Refresh after adding to cart
           />
 
           {product.lowStockAlert && displayStock() < 5 && displayStock() > 0 && (
