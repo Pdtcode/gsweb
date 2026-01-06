@@ -7,9 +7,10 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
+import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity } = useCart();
+  const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -186,6 +187,33 @@ export default function CartPage() {
             );
           })}
         </div>
+
+        {/* Cart Totals */}
+        {(() => {
+          const subtotal = getCartTotal();
+          const serviceFeeCalc = calculateServiceFee(subtotal);
+          const serviceFeeDisplay = formatServiceFeeDisplay(serviceFeeCalc);
+          const total = subtotal + serviceFeeCalc.finalServiceFee;
+
+          return (
+            <div className="border-t border-gray-200 dark:border-gray-800 pt-6 mb-6">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span>Subtotal:</span>
+                  <span>${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Service Fee ({getServiceFeePercentage()}%):</span>
+                  <span>{serviceFeeDisplay.finalServiceFeeText}</span>
+                </div>
+                <div className="flex justify-between items-center text-lg font-semibold pt-2 border-t border-gray-200 dark:border-gray-800">
+                  <span>Total:</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="flex justify-between items-center">
           <Link

@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { StripePaymentForm } from "@/components/stripe-payment-form";
 import { PromoCode, DiscountInfo } from "@/components/promo-code";
 import { urlForImage } from "@/sanity/lib/image";
+import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
 
 interface ShippingInfo {
   firstName: string;
@@ -23,6 +24,11 @@ interface ShippingInfo {
   country: string;
 }
 
+interface ServiceFeeDiscount {
+  type: 'percentage' | 'fixed';
+  value: number;
+}
+
 export default function CheckoutPage() {
   const { cart, clearCart, getCartTotal } = useCart();
   const { user } = useAuth();
@@ -30,6 +36,7 @@ export default function CheckoutPage() {
   const [elements, setElements] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<DiscountInfo | undefined>(undefined);
+  const [serviceFeeDiscount, setServiceFeeDiscount] = useState<ServiceFeeDiscount | undefined>(undefined);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
@@ -89,12 +96,14 @@ export default function CheckoutPage() {
     setShippingInfo((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handlePromoApplied = (discount: DiscountInfo) => {
+  const handlePromoApplied = (discount: DiscountInfo, serviceFeeDiscountData?: ServiceFeeDiscount) => {
     setAppliedDiscount(discount);
+    setServiceFeeDiscount(serviceFeeDiscountData);
   };
 
   const handlePromoRemoved = () => {
     setAppliedDiscount(undefined);
+    setServiceFeeDiscount(undefined);
   };
 
   const calculateDiscount = () => {
@@ -114,10 +123,16 @@ export default function CheckoutPage() {
     return 0;
   };
 
+  const getServiceFeeCalculation = () => {
+    const subtotal = getCartTotal();
+    return calculateServiceFee(subtotal, serviceFeeDiscount);
+  };
+
   const getDiscountedTotal = () => {
     const subtotal = getCartTotal();
     const discount = calculateDiscount();
-    return Math.max(0, subtotal - discount);
+    const serviceFeeCalc = getServiceFeeCalculation();
+    return Math.max(0, (subtotal - discount) + serviceFeeCalc.finalServiceFee);
   };
 
   const handlePayment = async () => {
@@ -185,6 +200,14 @@ export default function CheckoutPage() {
             value: appliedDiscount.value,
             amount: calculateDiscount(),
           } : undefined,
+          serviceFee: {
+            percentage: getServiceFeePercentage(),
+            ...getServiceFeeCalculation(),
+            discountApplied: serviceFeeDiscount ? {
+              type: serviceFeeDiscount.type,
+              value: serviceFeeDiscount.value
+            } : undefined
+          },
           metadata: {
             customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
             customer_email: shippingInfo.email,
@@ -233,6 +256,8 @@ export default function CheckoutPage() {
 
   const subtotal = getCartTotal();
   const discount = calculateDiscount();
+  const serviceFeeCalc = getServiceFeeCalculation();
+  const serviceFeeDisplay = formatServiceFeeDisplay(serviceFeeCalc);
   const total = getDiscountedTotal();
 
   return (
@@ -515,6 +540,25 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-center text-green-600 dark:text-green-400">
                   <span>Discount ({appliedDiscount.code}):</span>
                   <span>-${discount.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center">
+                <span>Service Fee ({getServiceFeePercentage()}%):</span>
+                <span>{serviceFeeDisplay.baseServiceFeeText}</span>
+              </div>
+
+              {serviceFeeCalc.discountApplied && serviceFeeDisplay.serviceFeeDiscountText && (
+                <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                  <span>Service Fee Discount ({appliedDiscount?.code}):</span>
+                  <span>{serviceFeeDisplay.serviceFeeDiscountText}</span>
+                </div>
+              )}
+
+              {serviceFeeCalc.discountApplied && (
+                <div className="flex justify-between items-center">
+                  <span>Final Service Fee:</span>
+                  <span>{serviceFeeDisplay.finalServiceFeeText}</span>
                 </div>
               )}
 

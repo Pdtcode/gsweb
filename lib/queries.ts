@@ -267,6 +267,9 @@ export const promoCodeByCodeQuery = groq`*[_type == "promoCode" && code == $code
     title,
     slug
   },
+  discountsServiceFee,
+  serviceFeeDiscountType,
+  serviceFeeDiscountValue,
   notes
 }`;
 

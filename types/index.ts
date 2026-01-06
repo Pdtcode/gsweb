@@ -84,6 +84,7 @@ export interface AvailableVariant {
   color: string;
   size: string;
   stock: number;
+  sku: string;
 }
 
 // Product

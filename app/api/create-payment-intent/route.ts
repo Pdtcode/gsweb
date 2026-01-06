@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     console.log("=== Payment Intent Request Started ===");
     const requestBody = await request.json();
     console.log("Request body:", JSON.stringify(requestBody, null, 2));
-    const { items, shipping, metadata, discount } = requestBody;
+    const { items, shipping, metadata, discount, serviceFee } = requestBody;
 
     if (!items || !items.length) {
       console.error("No items provided in request");
@@ -187,7 +187,14 @@ export async function POST(request: Request) {
 
     // Apply discount if provided
     const discountAmount = discount?.amount || 0;
-    const total = Math.max(0, subtotal - discountAmount);
+    const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
+
+    // Apply service fee calculations
+    const serviceFeeAmount = serviceFee?.finalServiceFee || 0;
+    const baseServiceFee = serviceFee?.baseServiceFee || 0;
+    const serviceFeeDiscount = serviceFee?.serviceFeeDiscount || 0;
+
+    const total = subtotalAfterDiscount + serviceFeeAmount;
 
     // Shipping cost (optional, could be zero)
     const shippingCost = shipping?.cost || 0;
@@ -201,6 +208,10 @@ export async function POST(request: Request) {
         subtotal: subtotal.toString(),
         discount_amount: discountAmount.toString(),
         discount_code: discount?.code || "",
+        service_fee_base: baseServiceFee.toString(),
+        service_fee_discount: serviceFeeDiscount.toString(),
+        service_fee_final: serviceFeeAmount.toString(),
+        service_fee_percentage: serviceFee?.percentage?.toString() || "5",
         total: total.toString(),
         shipping_cost: shippingCost.toString(),
         item_count: items.length.toString(),
@@ -273,7 +284,7 @@ export async function POST(request: Request) {
         data: {
           orderNumber: `ORD-${Date.now()}`,
           userId: user.id,
-          total: total, // This is already the discounted total
+          total: total, // This includes subtotal + service fee - discounts
           status: "PROCESSING",
           stripePaymentIntentId: paymentIntent.id,
         },

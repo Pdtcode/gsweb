@@ -2,8 +2,13 @@
 
 import { useState } from "react";
 
+interface ServiceFeeDiscount {
+  type: 'percentage' | 'fixed';
+  value: number;
+}
+
 interface PromoCodeProps {
-  onPromoApplied: (discount: DiscountInfo) => void;
+  onPromoApplied: (discount: DiscountInfo, serviceFeeDiscount?: ServiceFeeDiscount) => void;
   onPromoRemoved: () => void;
   appliedPromo?: DiscountInfo;
   orderTotal: number;
@@ -23,7 +28,7 @@ export function PromoCode({ onPromoApplied, onPromoRemoved, appliedPromo, orderT
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState("");
 
-  const validatePromoCode = async (code: string): Promise<DiscountInfo | null> => {
+  const validatePromoCode = async (code: string): Promise<{ discount: DiscountInfo; serviceFeeDiscount?: ServiceFeeDiscount } | null> => {
     try {
       const response = await fetch("/api/validate-promo", {
         method: "POST",
@@ -39,7 +44,10 @@ export function PromoCode({ onPromoApplied, onPromoRemoved, appliedPromo, orderT
 
       if (response.ok) {
         const data = await response.json();
-        return data.discount;
+        return {
+          discount: data.discount,
+          serviceFeeDiscount: data.serviceFeeDiscount
+        };
       } else {
         const errorData = await response.json();
 
@@ -67,10 +75,10 @@ export function PromoCode({ onPromoApplied, onPromoRemoved, appliedPromo, orderT
     setError("");
 
     try {
-      const discount = await validatePromoCode(promoCode.trim());
+      const result = await validatePromoCode(promoCode.trim());
 
-      if (discount) {
-        onPromoApplied(discount);
+      if (result) {
+        onPromoApplied(result.discount, result.serviceFeeDiscount);
         setPromoCode("");
       } else {
         setError("Invalid promo code");

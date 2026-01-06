@@ -20,6 +20,9 @@ interface PromoCode {
   customerLimit?: number;
   applicableProducts?: Array<{ _id: string; name: string; slug: string }>;
   applicableCategories?: Array<{ _id: string; title: string; slug: string }>;
+  discountsServiceFee?: boolean;
+  serviceFeeDiscountType?: "percentage" | "fixed";
+  serviceFeeDiscountValue?: number;
   notes?: string;
 }
 
@@ -174,6 +177,15 @@ export async function POST(request: NextRequest) {
       console.error('Failed to create promo usage record:', auditError);
     }
 
+    // Prepare service fee discount info if applicable
+    let serviceFeeDiscount = null;
+    if (promo.discountsServiceFee && promo.serviceFeeDiscountType && promo.serviceFeeDiscountValue !== undefined) {
+      serviceFeeDiscount = {
+        type: promo.serviceFeeDiscountType,
+        value: promo.serviceFeeDiscountValue
+      };
+    }
+
     return NextResponse.json({
       valid: true,
       discount: {
@@ -182,7 +194,8 @@ export async function POST(request: NextRequest) {
         value: promo.value,
         description: promo.description,
         discountAmount: discountAmount,
-      }
+      },
+      serviceFeeDiscount
     });
 
   } catch (error) {
