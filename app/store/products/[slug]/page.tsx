@@ -5,7 +5,7 @@ import { productBySlugQuery } from "@/lib/queries";
 import { RealTimeProduct } from "@/components/real-time-product";
 import { Product } from "@/types";
 
-export const revalidate = 60; // Revalidate this page every 60 seconds
+export const revalidate = 0; // Always fetch fresh data - no caching
 
 interface ProductPageProps {
   params: Promise<{

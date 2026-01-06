@@ -155,40 +155,105 @@ export async function syncOrderToSanity(orderId: string) {
  * Used when payment succeeds
  */
 export async function decrementOrderStock(orderId: string) {
+  console.log("\n=== DECREMENT ORDER STOCK STARTED ===");
+  console.log("Order ID:", orderId);
+
   try {
+    console.log("🔍 Fetching order details...");
     const order = await getOrderById(orderId);
 
     if (!order) {
+      console.error(`❌ Order ${orderId} not found`);
       throw new Error(`Order ${orderId} not found`);
     }
 
+    console.log(`✅ Order found: ${order.orderNumber}`);
+    console.log(`Number of items to process: ${order.OrderItem.length}`);
+
     // Decrement stock for each order item
-    for (const item of order.OrderItem) {
+    for (let i = 0; i < order.OrderItem.length; i++) {
+      const item = order.OrderItem[i];
+      console.log(`\n--- Processing item ${i + 1}/${order.OrderItem.length} ---`);
+      console.log("Item details:", {
+        productId: item.productId,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        productName: item.Product?.name
+      });
+
+      let variant = null;
+
       if (item.variantId) {
-        // Get current variant to ensure it exists
-        const variant = await prisma.productVariant.findUnique({
+        console.log(`🔍 Looking for variant by ID: ${item.variantId}`);
+        // Get variant by ID if specified
+        variant = await prisma.productVariant.findUnique({
           where: { id: item.variantId },
         });
 
         if (variant) {
-          // Decrement the stock by the ordered quantity
-          await prisma.productVariant.update({
-            where: { id: item.variantId },
-            data: {
-              stock: Math.max(0, variant.stock - item.quantity)
-            },
-          });
-          console.log(`Decremented ${item.quantity} units from variant ${item.variantId} (SKU: ${variant.sku})`);
+          console.log(`✅ Variant found by ID - SKU: ${variant.sku}, Current stock: ${variant.stock}`);
         } else {
-          console.warn(`Variant ${item.variantId} not found, cannot decrement stock`);
+          console.log(`⚠️ Variant with ID ${item.variantId} not found`);
         }
+      } else if (item.productId) {
+        console.log(`🔍 No variantId provided, searching for default variant for product: ${item.productId}`);
+
+        // No variantId - find the default variant for this product
+        variant = await prisma.productVariant.findFirst({
+          where: {
+            productId: item.productId,
+            size: "Default"
+          },
+        });
+
+        if (variant) {
+          console.log(`✅ Found default variant - SKU: ${variant.sku}, Current stock: ${variant.stock}`);
+        } else {
+          console.log(`⚠️ No default variant found, trying to find any variant for this product...`);
+          // Fallback: try to find any variant for this product
+          variant = await prisma.productVariant.findFirst({
+            where: { productId: item.productId },
+          });
+
+          if (variant) {
+            console.log(`✅ Found fallback variant - SKU: ${variant.sku}, Current stock: ${variant.stock}`);
+          } else {
+            console.log(`❌ No variants found for product ${item.productId}`);
+          }
+        }
+      }
+
+      if (variant) {
+        const oldStock = variant.stock;
+        const newStock = Math.max(0, variant.stock - item.quantity);
+
+        console.log(`📦 Decrementing stock for variant ${variant.id}:`);
+        console.log(`   SKU: ${variant.sku}`);
+        console.log(`   Old stock: ${oldStock}`);
+        console.log(`   Quantity ordered: ${item.quantity}`);
+        console.log(`   New stock: ${newStock}`);
+
+        // Decrement the stock by the ordered quantity
+        await prisma.productVariant.update({
+          where: { id: variant.id },
+          data: {
+            stock: newStock
+          },
+        });
+        console.log(`✅ Successfully decremented ${item.quantity} units from variant ${variant.id} (SKU: ${variant.sku})`);
+      } else {
+        console.error(`❌ No variant found for product ${item.productId}, cannot decrement stock`);
+        console.error(`   This means inventory will NOT be decremented for this item!`);
       }
     }
 
-    console.log(`Stock decremented for order ${order.orderNumber}`);
+    console.log(`\n✅ Stock decremented for order ${order.orderNumber}`);
+    console.log("=== DECREMENT ORDER STOCK ENDED ===\n");
     return order;
   } catch (error) {
-    console.error("Error decrementing order stock:", error);
+    console.error("❌ ERROR IN DECREMENT ORDER STOCK:", error);
+    console.error("Error details:", error instanceof Error ? error.message : "Unknown error");
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack trace");
     throw error;
   }
 }
@@ -207,24 +272,41 @@ export async function restoreOrderStock(orderId: string) {
 
     // Restore stock for each order item
     for (const item of order.OrderItem) {
+      let variant = null;
+
       if (item.variantId) {
-        // Get current variant to ensure it exists
-        const variant = await prisma.productVariant.findUnique({
+        // Get variant by ID if specified
+        variant = await prisma.productVariant.findUnique({
           where: { id: item.variantId },
         });
+      } else if (item.productId) {
+        // No variantId - find the default variant for this product
+        variant = await prisma.productVariant.findFirst({
+          where: {
+            productId: item.productId,
+            size: "Default"
+          },
+        });
 
-        if (variant) {
-          // Restore the stock by adding back the quantity
-          await prisma.productVariant.update({
-            where: { id: item.variantId },
-            data: {
-              stock: variant.stock + item.quantity
-            },
+        if (!variant) {
+          // Fallback: try to find any variant for this product
+          variant = await prisma.productVariant.findFirst({
+            where: { productId: item.productId },
           });
-          console.log(`Restored ${item.quantity} units to variant ${item.variantId} (SKU: ${variant.sku})`);
-        } else {
-          console.warn(`Variant ${item.variantId} not found, cannot restore stock`);
         }
+      }
+
+      if (variant) {
+        // Restore the stock by adding back the quantity
+        await prisma.productVariant.update({
+          where: { id: variant.id },
+          data: {
+            stock: variant.stock + item.quantity
+          },
+        });
+        console.log(`Restored ${item.quantity} units to variant ${variant.id} (SKU: ${variant.sku})`);
+      } else {
+        console.warn(`No variant found for product ${item.productId}, cannot restore stock`);
       }
     }
 

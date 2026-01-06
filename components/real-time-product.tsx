@@ -31,6 +31,11 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
     }
   };
 
+  // Fetch fresh inventory immediately on mount
+  useEffect(() => {
+    refreshInventory();
+  }, [slug]);
+
   // Auto-refresh inventory every 30 seconds
   useEffect(() => {
     const interval = setInterval(refreshInventory, 30000);
@@ -76,18 +81,6 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
             )}
           </div>
 
-          {/* Real-time stock indicator */}
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${isInStock() ? "bg-green-500" : "bg-red-500"}`} />
-            <span className="text-sm">
-              {isInStock()
-                ? `${displayStock()} items in stock`
-                : "Out of stock"
-              }
-            </span>
-            {isLoading && <span className="text-xs text-gray-500">Updating...</span>}
-          </div>
-
           {product.description && (
             <div className="prose dark:prose-invert">
               <p>{product.description}</p>
@@ -100,42 +93,39 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
               ...product,
               // Use real-time inventory data if available
               ...(product.availableVariants && {
-                variants: product.variants?.map(variant => ({
-                  ...variant,
-                  // Add real-time stock to each variant option
-                  options: variant.options?.map(option => {
-                    const matchingVariant = product.availableVariants?.find(av => {
-                      if (variant.name === "Color") {
-                        const parts = option.split(" ");
-                        if (parts.length >= 2) {
-                          const color = parts[0];
-                          const size = parts.slice(1).join(" ");
-                          return av.color === color && av.size === size;
+                variants: product.variants?.map(variant => {
+                  // Check if product has multiple variant dimensions (Color + Size)
+                  const hasMultipleDimensions = product.variants && product.variants.length > 1;
+
+                  // Don't show stock counts on individual options if product has multiple dimensions
+                  // Stock will only be shown after all variants are selected
+                  if (hasMultipleDimensions) {
+                    return {
+                      ...variant,
+                      options: variant.options
+                    };
+                  }
+
+                  // For products with single variant dimension, show stock counts
+                  return {
+                    ...variant,
+                    options: variant.options?.map(option => {
+                      const matchingVariant = product.availableVariants?.find(av => {
+                        if (variant.name === "Color") {
+                          return av.color?.toLowerCase() === option.toLowerCase();
                         }
-                      }
-                      if (variant.name === "Size") {
-                        return av.size === option && av.color === "Size";
-                      }
-                      return false;
-                    });
-                    return `${option}${matchingVariant ? ` (${matchingVariant.stock} left)` : ""}`;
-                  })
-                }))
+                        if (variant.name === "Size") {
+                          return av.size?.toLowerCase() === option.toLowerCase();
+                        }
+                        return false;
+                      });
+                      return `${option}${matchingVariant ? ` (${matchingVariant.stock} left)` : ""}`;
+                    })
+                  };
+                })
               })
             }}
           />
-
-          {product.lowStockAlert && displayStock() < 5 && displayStock() > 0 && (
-            <div className="bg-orange-100 border-l-4 border-orange-500 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <p className="text-sm text-orange-700">
-                    Low stock alert! Only {displayStock()} items remaining.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <button
             onClick={refreshInventory}

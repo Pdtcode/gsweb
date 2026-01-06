@@ -91,6 +91,16 @@ model User {
   Order           Order[]
 }
 
+model WebhookLog {
+  id              String   @id @default(uuid())
+  paymentIntentId String   @unique
+  eventType       String
+  processedAt     DateTime @default(now())
+  orderId         String?
+
+  @@index([paymentIntentId])
+}
+
 enum OrderStatus {
   PENDING
   PROCESSING

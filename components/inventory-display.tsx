@@ -48,6 +48,36 @@ export function InventoryDisplay({ product, selectedVariant }: InventoryDisplayP
     if (product.variants && product.variants.length > 0) {
       // If a variant is selected, find its inventory
       if (selectedVariant && (selectedVariant.size || selectedVariant.color)) {
+        // First, try to use real-time inventory from Neon (availableVariants)
+        if (product.availableVariants && product.availableVariants.length > 0) {
+          const matchingVariant = product.availableVariants.find((av: any) => {
+            const sizeLower = selectedVariant.size?.toLowerCase() || "";
+            const colorLower = selectedVariant.color?.toLowerCase() || "";
+            const avSizeLower = av.size?.toLowerCase() || "";
+            const avColorLower = av.color?.toLowerCase() || "";
+
+            // Match based on size and color
+            if (sizeLower && colorLower) {
+              return avSizeLower === sizeLower && avColorLower === colorLower;
+            } else if (sizeLower) {
+              return avSizeLower === sizeLower;
+            } else if (colorLower) {
+              return avColorLower === colorLower;
+            }
+
+            return false;
+          });
+
+          if (matchingVariant) {
+            return {
+              quantity: matchingVariant.stock,
+              lowStockThreshold: product.lowStockAlert || 5,
+              sku: matchingVariant.sku,
+            };
+          }
+        }
+
+        // Fallback to Sanity inventory data if availableVariants not present
         for (const variant of product.variants) {
           if (variant.inventory && variant.inventory.length > 0) {
             // Find matching inventory item based on selected options
@@ -102,20 +132,7 @@ export function InventoryDisplay({ product, selectedVariant }: InventoryDisplayP
 
   const inventoryInfo = getInventoryInfo();
 
-  // If no inventory info and product has variants, show selection prompt
-  if (!inventoryInfo && product.variants && product.variants.length > 0) {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Availability:</span>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            Please select all options to view availability
-          </span>
-        </div>
-      </div>
-    );
-  }
-
+  // If no inventory info, don't display anything
   if (!inventoryInfo) {
     return null;
   }
@@ -125,23 +142,14 @@ export function InventoryDisplay({ product, selectedVariant }: InventoryDisplayP
 
   return (
     <div className="space-y-2">
-      {/* Inventory Status */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Availability:</span>
-        {isOutOfStock ? (
-          <span className="text-sm text-red-600 dark:text-red-400 font-medium">
-            Out of Stock
+      {/* Stock count - only show when all variants are selected */}
+      {inventoryInfo.quantity !== undefined && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {inventoryInfo.quantity > 0 ? `${inventoryInfo.quantity} in stock` : 'Out of stock'}
           </span>
-        ) : isLowStock ? (
-          <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">
-            Low Stock - Only {inventoryInfo.quantity} left!
-          </span>
-        ) : (
-          <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-            {inventoryInfo.quantity} in stock
-          </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* SKU */}
       {inventoryInfo.sku && (

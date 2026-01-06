@@ -36,12 +36,65 @@ export const AddToCartButton = ({
     }, 1000);
   };
 
+  // Helper function to check if all required variants are selected
+  const areAllVariantsSelected = () => {
+    if (!product.variants || product.variants.length === 0) {
+      return true; // No variants required
+    }
+
+    const requiredVariants = product.variants.map(v => v.name.toLowerCase());
+
+    for (const variantName of requiredVariants) {
+      const hasSelection = selectedVariant && (
+        (variantName === 'size' && selectedVariant.size) ||
+        (variantName === 'color' && selectedVariant.color)
+      );
+
+      if (!hasSelection) {
+        return false; // Missing a required variant selection
+      }
+    }
+
+    return true;
+  };
+
   // Check actual inventory instead of just the inStock boolean
   const getAvailableQuantity = () => {
     // If product has variants
     if (product.variants && product.variants.length > 0) {
+      // Check if all variants are selected first
+      if (!areAllVariantsSelected()) {
+        return -1; // Return -1 to indicate variants not selected (different from no stock)
+      }
+
       // If a variant is selected, find its inventory
       if (selectedVariant && (selectedVariant.size || selectedVariant.color)) {
+        // First, try to use real-time inventory from Neon (availableVariants)
+        if (product.availableVariants && product.availableVariants.length > 0) {
+          const matchingVariant = product.availableVariants.find((av: any) => {
+            const sizeLower = selectedVariant.size?.toLowerCase() || "";
+            const colorLower = selectedVariant.color?.toLowerCase() || "";
+            const avSizeLower = av.size?.toLowerCase() || "";
+            const avColorLower = av.color?.toLowerCase() || "";
+
+            // Match based on size and color
+            if (sizeLower && colorLower) {
+              return avSizeLower === sizeLower && avColorLower === colorLower;
+            } else if (sizeLower) {
+              return avSizeLower === sizeLower;
+            } else if (colorLower) {
+              return avColorLower === colorLower;
+            }
+
+            return false;
+          });
+
+          if (matchingVariant) {
+            return matchingVariant.stock;
+          }
+        }
+
+        // Fallback to Sanity inventory data if availableVariants not present
         for (const variant of product.variants) {
           if (variant.inventory && variant.inventory.length > 0) {
             // Find matching inventory item based on selected options
@@ -75,6 +128,13 @@ export const AddToCartButton = ({
       }
 
       // No variant selected, check if any variant has stock
+      // Use real-time data first
+      if (product.availableVariants && product.availableVariants.length > 0) {
+        const maxStock = Math.max(...product.availableVariants.map((av: any) => av.stock || 0));
+        return maxStock;
+      }
+
+      // Fallback to Sanity data
       for (const variant of product.variants) {
         if (variant.inventory) {
           for (const inv of variant.inventory) {
@@ -87,7 +147,11 @@ export const AddToCartButton = ({
       return 0;
     }
 
-    // Product without variants - use totalInventory
+    // Product without variants - use real-time total or fallback
+    if (product.realTimeTotalInventory !== undefined) {
+      return product.realTimeTotalInventory;
+    }
+
     if (product.totalInventory !== undefined) {
       return product.totalInventory;
     }
@@ -97,7 +161,15 @@ export const AddToCartButton = ({
   };
 
   const availableQuantity = getAvailableQuantity();
-  const isDisabled = availableQuantity === 0;
+  const variantsNotSelected = availableQuantity === -1;
+  const isDisabled = availableQuantity <= 0;
+
+  const getButtonText = () => {
+    if (isAdding) return "Added!";
+    if (variantsNotSelected) return "Select Options";
+    if (availableQuantity === 0) return "Sold Out";
+    return "Add to Cart";
+  };
 
   return (
     <Button
@@ -112,7 +184,7 @@ export const AddToCartButton = ({
       variant="flat"
       onClick={handleAddToCart}
     >
-      {isAdding ? "Added!" : isDisabled ? "Sold Out" : "Add to Cart"}
+      {getButtonText()}
     </Button>
   );
 };

@@ -83,10 +83,22 @@ export async function GET(
         }))
       };
 
-      return NextResponse.json(enhancedProduct);
+      return NextResponse.json(enhancedProduct, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
     } else {
       // If no PostgreSQL data found, return Sanity data as-is
-      return NextResponse.json(sanityProduct);
+      return NextResponse.json(sanityProduct, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
     }
   } catch (error) {
     console.error("Error fetching product:", error);

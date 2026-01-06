@@ -94,17 +94,17 @@ export class DualSyncService {
       });
 
       // Sync to Sanity (secondary database)
-      await this.syncOrderToSanity(neonOrder);
+      try {
+        await this.syncOrderToSanity(neonOrder);
+        console.log(`✅ Order synced to Sanity: ${neonOrder.orderNumber}`);
+      } catch (syncError) {
+        console.error(`❌ Order ${neonOrder.orderNumber} created in Neon but failed to sync to Sanity:`, syncError);
+        // Continue even if Sanity sync fails - Neon is source of truth
+      }
 
       return neonOrder;
     } catch (error) {
       console.error("Error creating order:", error);
-
-      // If Neon order was created but Sanity sync failed, log for manual review
-      if (neonOrder) {
-        console.error(`Order ${neonOrder.id} created in Neon but failed to sync to Sanity:`, error);
-      }
-
       throw error;
     }
   }
@@ -148,6 +148,15 @@ export class DualSyncService {
             console.log(`Restored ${item.quantity} units to variant ${item.variantId} (SKU: ${item.ProductVariant.sku})`);
           }
         }
+
+        // Sync restored inventory to Sanity
+        try {
+          await this.syncInventoryToSanity(orderId);
+          console.log(`✅ Restored inventory synced to Sanity for order ${currentOrder.orderNumber}`);
+        } catch (syncError) {
+          console.error(`Failed to sync restored inventory to Sanity for order ${currentOrder.orderNumber}:`, syncError);
+          // Continue even if sync fails
+        }
       }
 
       // Update in Neon
@@ -174,7 +183,13 @@ export class DualSyncService {
       });
 
       // Update in Sanity
-      await this.syncOrderToSanity(updatedOrder);
+      try {
+        await this.syncOrderToSanity(updatedOrder);
+        console.log(`✅ Order status synced to Sanity for order ${updatedOrder.orderNumber}`);
+      } catch (syncError) {
+        console.error(`❌ Failed to sync order status to Sanity for order ${updatedOrder.orderNumber}:`, syncError);
+        // Continue even if Sanity sync fails - Neon is source of truth
+      }
 
       return updatedOrder;
     } catch (error) {
@@ -184,42 +199,12 @@ export class DualSyncService {
   }
 
   /**
-   * Syncs a single order to Sanity
+   * Syncs a single order to Sanity (DISABLED)
+   * Neon is the source of truth for orders - no need to sync to Sanity
    */
   private static async syncOrderToSanity(order: OrderWithRelations) {
-    try {
-      const sanityOrder = {
-        _type: "order",
-        _id: `order-${order.id}`,
-        orderNumber: order.orderNumber,
-        userId: order.userId,
-        customerEmail: order.User.email,
-        customerName: order.User.name || "",
-        total: parseFloat(order.total.toString()),
-        status: order.status,
-        items: order.OrderItem.map((item) => ({
-          _key: `item-${item.id}`,
-          itemId: item.id,
-          productId: item.productId,
-          variantId: item.variantId,
-          name: item.Product.name,
-          quantity: item.quantity,
-          price: parseFloat(item.price.toString()),
-        })),
-        shippingAddress: undefined,
-        stripePaymentIntentId: order.stripePaymentIntentId,
-        createdAt: order.createdAt.toISOString(),
-        updatedAt: order.updatedAt.toISOString(),
-      };
-
-      // Use createOrReplace to handle both new orders and updates
-      await sanityClient.createOrReplace(sanityOrder);
-
-      console.log(`Successfully synced order ${order.id} to Sanity`);
-    } catch (error) {
-      console.error(`Failed to sync order ${order.id} to Sanity:`, error);
-      throw error;
-    }
+    console.log(`ℹ️ Order sync to Sanity skipped for ${order.orderNumber} - Neon is source of truth`);
+    return; // Disabled - no sync needed
   }
 
   /**
@@ -258,5 +243,23 @@ export class DualSyncService {
       console.error(`Error syncing existing order ${orderId} to Sanity:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Syncs inventory from Neon to Sanity after a purchase
+   * Updates the inventory quantity in Sanity to match the current stock in Neon
+   */
+  /**
+   * Syncs inventory changes to Sanity (DISABLED)
+   *
+   * This function is intentionally disabled because:
+   * - Neon is the source of truth for inventory
+   * - Sanity is only used as a UI to manage/view inventory
+   * - Inventory flows: Sanity (UI) → Neon (source of truth) via webhook
+   * - No need to sync back from Neon → Sanity
+   */
+  static async syncInventoryToSanity(orderId: string) {
+    console.log(`ℹ️ Inventory sync to Sanity skipped for order ${orderId} - Neon is source of truth`);
+    return; // Disabled - no sync needed
   }
 }

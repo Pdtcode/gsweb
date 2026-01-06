@@ -264,6 +264,11 @@ export async function POST(request: Request) {
       // Address management removed - users will use browser autofill
 
       // Create the order
+      console.log("\n📝 Creating order in database...");
+      console.log("Payment Intent ID:", paymentIntent.id);
+      console.log("User ID:", user.id);
+      console.log("Total:", total);
+
       const order = await prisma.order.create({
         data: {
           orderNumber: `ORD-${Date.now()}`,
@@ -274,8 +279,23 @@ export async function POST(request: Request) {
         },
       });
 
+      console.log(`✅ Order created: ${order.orderNumber} (ID: ${order.id})`);
+
       // Create order items
-      for (const item of items) {
+      console.log(`\n📦 Creating ${items.length} order item(s)...`);
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        console.log(`\n--- Processing item ${i + 1}/${items.length} ---`);
+        console.log("Item:", {
+          id: item.id,
+          name: item.name,
+          variantId: item.variantId,
+          variantSize: item.variantSize,
+          variantColor: item.variantColor,
+          quantity: item.quantity
+        });
+
         try {
           let product = null;
 
@@ -343,14 +363,15 @@ export async function POST(request: Request) {
 
             if (variant) {
               variantId = variant.id;
-
-              // Update stock if variant found
-              await prisma.productVariant.update({
-                where: { id: variant.id },
-                data: { stock: Math.max(0, variant.stock - item.quantity) },
-              });
+              console.log(`✅ Variant matched: ${variant.sku} (ID: ${variant.id})`);
+              // Note: Stock will be decremented by Stripe webhook on payment success
+              // Do NOT decrement here to avoid double decrement
+            } else {
+              console.log(`⚠️ No variant found for this item`);
             }
           }
+
+          console.log(`💾 Creating order item with variantId: ${variantId || 'null'}`);
 
           await prisma.orderItem.create({
             data: {
@@ -361,6 +382,8 @@ export async function POST(request: Request) {
               price: product.price,
             },
           });
+
+          console.log(`✅ Order item created successfully`);
         } catch (error) {
           console.error(
             `Error processing item: ${

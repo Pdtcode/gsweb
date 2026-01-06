@@ -12,9 +12,12 @@ export function VariantSelector({ variants, onVariantChange }: VariantSelectorPr
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
 
   const handleOptionClick = (variantName: string, option: string) => {
+    // Clean the option by removing stock count like "(12 left)"
+    const cleanedOption = option.replace(/\s*\(\d+\s+left\)$/i, '').trim();
+
     const newSelectedOptions = {
       ...selectedOptions,
-      [variantName]: option,
+      [variantName]: cleanedOption,
     };
     setSelectedOptions(newSelectedOptions);
     onVariantChange(newSelectedOptions);
@@ -38,7 +41,9 @@ export function VariantSelector({ variants, onVariantChange }: VariantSelectorPr
           </h3>
           <div className="flex flex-wrap gap-2">
             {variant.options.map((option, optIndex) => {
-              const isSelected = selectedOptions[variant.name] === option;
+              // Clean option for comparison
+              const cleanedOption = option.replace(/\s*\(\d+\s+left\)$/i, '').trim();
+              const isSelected = selectedOptions[variant.name] === cleanedOption;
               return (
                 <button
                   key={optIndex}

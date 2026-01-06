@@ -1,42 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { updateOrderStatus, getOrderByPaymentIntentId, restoreOrderStock, decrementOrderStock } from "@/app/actions/orderActions";
+import { DualSyncService } from "@/lib/dualSyncService";
+import prisma from "@/lib/prismaClient";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
+// This is critical for Stripe webhook signature verification
+// Next.js needs to NOT parse the body so we can get the raw string
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(req: NextRequest) {
+  console.log("=== STRIPE WEBHOOK RECEIVED ===");
+  console.log("Timestamp:", new Date().toISOString());
+
   try {
     const body = await req.text();
     const sig = req.headers.get("stripe-signature")!;
+
+    console.log("Webhook signature present:", !!sig);
+    console.log("Endpoint secret configured:", !!endpointSecret);
 
     let event: Stripe.Event;
 
     try {
       event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+      console.log("✅ Webhook signature verified successfully");
+      console.log("Event type:", event.type);
+      console.log("Event ID:", event.id);
     } catch (err) {
-      console.error("Webhook signature verification failed:", err);
+      console.error("❌ Webhook signature verification failed:", err);
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
     switch (event.type) {
       case "payment_intent.succeeded":
+        console.log("📝 Processing payment_intent.succeeded event");
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        console.log("Payment Intent ID:", paymentIntent.id);
+        console.log("Amount:", paymentIntent.amount, paymentIntent.currency);
         await handlePaymentSuccess(paymentIntent);
         break;
 
       case "payment_intent.payment_failed":
+        console.log("📝 Processing payment_intent.payment_failed event");
         const failedPayment = event.data.object as Stripe.PaymentIntent;
+        console.log("Failed Payment Intent ID:", failedPayment.id);
         await handlePaymentFailure(failedPayment);
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`⚠️ Unhandled event type: ${event.type}`);
     }
 
+    console.log("=== WEBHOOK PROCESSING COMPLETE ===\n");
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Webhook error:", error);
+    console.error("❌ WEBHOOK ERROR:", error);
+    console.error("Error details:", error instanceof Error ? error.message : "Unknown error");
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack trace");
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 }
@@ -45,22 +69,81 @@ export async function POST(req: NextRequest) {
 }
 
 async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
+  console.log("\n=== HANDLE PAYMENT SUCCESS STARTED ===");
+  console.log("Payment Intent ID:", paymentIntent.id);
+
   try {
+    // Check if this payment intent has already been processed (idempotency check)
+    console.log("🔍 Checking for existing webhook log...");
+    const existingLog = await prisma.webhookLog.findUnique({
+      where: { paymentIntentId: paymentIntent.id }
+    });
+
+    if (existingLog) {
+      console.log(`⚠️ Payment intent ${paymentIntent.id} already processed at ${existingLog.processedAt}`);
+      console.log("=== HANDLE PAYMENT SUCCESS ENDED (DUPLICATE) ===\n");
+      return;
+    }
+    console.log("✅ No existing webhook log found - proceeding with processing");
+
+    console.log("🔍 Fetching order by payment intent ID...");
     const order = await getOrderByPaymentIntentId(paymentIntent.id);
 
     if (order) {
-      // First decrement the inventory
+      console.log(`✅ Order found: ${order.orderNumber} (ID: ${order.id})`);
+      console.log("Order items count:", order.OrderItem.length);
+
+      // Log order items details
+      order.OrderItem.forEach((item, index) => {
+        console.log(`  Item ${index + 1}:`, {
+          productId: item.productId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+          productName: item.Product?.name
+        });
+      });
+
+      // First decrement the inventory in Neon
+      console.log("\n📦 Starting inventory decrement...");
       await decrementOrderStock(order.id);
-      console.log(`Inventory decremented for order ${order.orderNumber}`);
+      console.log(`✅ Inventory decremented in Neon for order ${order.orderNumber}`);
+
+      // Sync inventory to Sanity
+      console.log("\n🔄 Starting Sanity sync...");
+      try {
+        await DualSyncService.syncInventoryToSanity(order.id);
+        console.log(`✅ Inventory synced to Sanity for order ${order.orderNumber}`);
+      } catch (syncError) {
+        console.error(`❌ Failed to sync inventory to Sanity for order ${order.orderNumber}:`, syncError);
+        // Continue even if Sanity sync fails - Neon is source of truth
+      }
 
       // Then update order status
+      console.log("\n📝 Updating order status...");
       await updateOrderStatus(order.id, "PROCESSING");
-      console.log(`Order ${order.orderNumber} marked as PROCESSING after successful payment`);
+      console.log(`✅ Order ${order.orderNumber} marked as PROCESSING after successful payment`);
+
+      // Log successful processing to prevent duplicate processing
+      console.log("\n💾 Creating webhook log...");
+      await prisma.webhookLog.create({
+        data: {
+          paymentIntentId: paymentIntent.id,
+          eventType: 'payment_intent.succeeded',
+          orderId: order.id
+        }
+      });
+      console.log(`✅ Webhook processing logged for payment intent ${paymentIntent.id}`);
     } else {
-      console.error(`No order found for payment intent: ${paymentIntent.id}`);
+      console.error(`❌ No order found for payment intent: ${paymentIntent.id}`);
+      console.error("This usually means the order wasn't created properly in the database");
     }
+
+    console.log("=== HANDLE PAYMENT SUCCESS ENDED ===\n");
   } catch (error) {
-    console.error("Error handling payment success:", error);
+    console.error("❌ ERROR IN HANDLE PAYMENT SUCCESS:", error);
+    console.error("Error details:", error instanceof Error ? error.message : "Unknown error");
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack trace");
+    throw error;
   }
 }
 
@@ -71,11 +154,20 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
     if (order) {
       // First restore the stock before cancelling
       await restoreOrderStock(order.id);
-      console.log(`Stock restored for order ${order.orderNumber}`);
+      console.log(`✅ Stock restored in Neon for order ${order.orderNumber}`);
+
+      // Sync restored inventory to Sanity
+      try {
+        await DualSyncService.syncInventoryToSanity(order.id);
+        console.log(`✅ Restored inventory synced to Sanity for order ${order.orderNumber}`);
+      } catch (syncError) {
+        console.error(`Failed to sync restored inventory to Sanity for order ${order.orderNumber}:`, syncError);
+        // Continue even if Sanity sync fails - Neon is source of truth
+      }
 
       // Then update the order status
       await updateOrderStatus(order.id, "CANCELLED");
-      console.log(`Order ${order.orderNumber} marked as CANCELLED after payment failure`);
+      console.log(`✅ Order ${order.orderNumber} marked as CANCELLED after payment failure`);
     } else {
       console.error(`No order found for payment intent: ${paymentIntent.id}`);
     }
