@@ -86,6 +86,10 @@ class GmailClient {
       this.accessToken = data.access_token;
       this.tokenExpiry = Date.now() + (data.expires_in * 1000);
 
+      if (!this.accessToken) {
+        throw new Error('Failed to obtain access token from Google');
+      }
+
       return this.accessToken;
     } catch (error) {
       console.error('Error getting access token:', error);

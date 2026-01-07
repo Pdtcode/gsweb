@@ -19,6 +19,28 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // Exclude Windows protected directories from webpack scanning
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+
+    // Add ignore patterns for Windows system directories
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: [
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/AppData/**',
+        '**/ElevatedDiagnostics/**',
+      ],
+    };
+
+    return config;
+  },
 }
 
 // Define allowed development origins
