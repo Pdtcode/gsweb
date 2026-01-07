@@ -21,14 +21,16 @@ function getFirebasePrivateKey(): string {
   // If the key is base64 encoded (shorter for env vars), decode it
   if (!key.includes('BEGIN PRIVATE KEY')) {
     try {
-      return Buffer.from(key, 'base64').toString('utf8');
+      const decoded = Buffer.from(key, 'base64').toString('utf8');
+      // After decoding, also replace literal \n with actual newlines
+      return decoded.replace(/\\n/g, "\n");
     } catch (error) {
-      console.error('Failed to decode base64 private key');
+      console.error('Failed to decode base64 private key:', error);
       throw error;
     }
   }
 
-  // Otherwise, it's already in the correct format, just replace \n
+  // Otherwise, it's already in the correct format, just replace literal \n with newlines
   return key.replace(/\\n/g, "\n");
 }
 
