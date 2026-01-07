@@ -7,6 +7,31 @@ import {
 } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
+/**
+ * Decode Firebase private key from base64 or use directly
+ * This allows us to store the key as base64 in Netlify to reduce env var size
+ */
+function getFirebasePrivateKey(): string {
+  const key = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+
+  if (!key) {
+    throw new Error('FIREBASE_ADMIN_PRIVATE_KEY environment variable is not set');
+  }
+
+  // If the key is base64 encoded (shorter for env vars), decode it
+  if (!key.includes('BEGIN PRIVATE KEY')) {
+    try {
+      return Buffer.from(key, 'base64').toString('utf8');
+    } catch (error) {
+      console.error('Failed to decode base64 private key');
+      throw error;
+    }
+  }
+
+  // Otherwise, it's already in the correct format, just replace \n
+  return key.replace(/\\n/g, "\n");
+}
+
 // Initialize Firebase Admin SDK
 export function initFirebaseAdmin(): App {
   const apps = getApps();
@@ -18,7 +43,7 @@ export function initFirebaseAdmin(): App {
   const serviceAccount: ServiceAccount = {
     projectId: process.env.FIREBASE_ADMIN_PROJECT_ID!,
     clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL!,
-    privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n")!,
+    privateKey: getFirebasePrivateKey(),
   };
 
   return initializeApp({
