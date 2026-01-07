@@ -5,6 +5,18 @@ import prisma from "@/lib/prismaClient";
  * API endpoint to fetch current inventory from Neon database
  * Used by Sanity Studio to display real-time inventory counts
  */
+
+// Enable CORS for Sanity Studio
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -14,7 +26,7 @@ export async function GET(req: NextRequest) {
     if (!productSlug && !sku) {
       return NextResponse.json(
         { error: "Either 'slug' or 'sku' parameter is required" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -35,7 +47,7 @@ export async function GET(req: NextRequest) {
       if (!variant) {
         return NextResponse.json(
           { error: `Variant with SKU ${sku} not found` },
-          { status: 404 }
+          { status: 404, headers: corsHeaders }
         );
       }
 
@@ -46,7 +58,7 @@ export async function GET(req: NextRequest) {
         color: variant.color,
         productName: variant.Product.name,
         productSlug: variant.Product.slug,
-      });
+      }, { headers: corsHeaders });
     }
 
     if (productSlug) {
@@ -61,7 +73,7 @@ export async function GET(req: NextRequest) {
       if (!product) {
         return NextResponse.json(
           { error: `Product with slug ${productSlug} not found` },
-          { status: 404 }
+          { status: 404, headers: corsHeaders }
         );
       }
 
@@ -80,7 +92,7 @@ export async function GET(req: NextRequest) {
           size: v.size,
           color: v.color,
         })),
-      });
+      }, { headers: corsHeaders });
     }
   } catch (error) {
     console.error("Error fetching Neon inventory:", error);
@@ -89,7 +101,7 @@ export async function GET(req: NextRequest) {
         error: "Failed to fetch inventory",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
