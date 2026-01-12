@@ -9,6 +9,7 @@
     "lint": "eslint --fix"
   },
   "dependencies": {
+    "@google-cloud/secret-manager": "^6.1.1",
     "@heroui/button": "2.2.20",
     "@heroui/code": "2.2.15",
     "@heroui/input": "2.4.20",

@@ -1,3 +1,5 @@
+import { secretManager } from '../secrets/secret-manager';
+
 interface GmailCredentials {
   client_email: string;
   private_key: string;
@@ -19,20 +21,55 @@ interface GmailSendResponse {
 }
 
 class GmailClient {
-  private credentials: GmailCredentials;
+  private credentials: GmailCredentials | null = null;
+  private credentialsPromise: Promise<GmailCredentials> | null = null;
   private accessToken: string | null = null;
   private tokenExpiry: number = 0;
 
   constructor() {
-    this.credentials = {
-      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '',
-      private_key: (process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-      project_id: process.env.GOOGLE_PROJECT_ID || '',
-    };
+    // Credentials will be loaded lazily when needed
+  }
 
-    if (!this.credentials.client_email || !this.credentials.private_key) {
-      throw new Error('Missing Google service account credentials');
+  private async loadCredentials(): Promise<GmailCredentials> {
+    if (this.credentials) {
+      return this.credentials;
     }
+
+    if (this.credentialsPromise) {
+      return this.credentialsPromise;
+    }
+
+    this.credentialsPromise = (async () => {
+      try {
+        // Get client email and project ID from environment variables (small values)
+        const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+        const projectId = process.env.GOOGLE_PROJECT_ID;
+
+        if (!clientEmail || !projectId) {
+          throw new Error('GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PROJECT_ID must be set in environment variables');
+        }
+
+        // Get private key from Secret Manager (large value) with fallback to env var
+        const privateKey = await secretManager.getSecret('google-service-account-private-key', 'GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY');
+
+        this.credentials = {
+          client_email: clientEmail,
+          private_key: privateKey.replace(/\\n/g, '\n'),
+          project_id: projectId,
+        };
+
+        if (!this.credentials.client_email || !this.credentials.private_key) {
+          throw new Error('Missing Google service account credentials');
+        }
+
+        return this.credentials;
+      } catch (error) {
+        this.credentialsPromise = null;
+        throw error;
+      }
+    })();
+
+    return this.credentialsPromise;
   }
 
   private async getAccessToken(): Promise<string> {
@@ -40,6 +77,9 @@ class GmailClient {
     if (this.accessToken && this.tokenExpiry > Date.now() + 300000) {
       return this.accessToken;
     }
+
+    // Ensure credentials are loaded
+    const credentials = await this.loadCredentials();
 
     const now = Math.floor(Date.now() / 1000);
     const expiry = now + 3600; // 1 hour
@@ -50,15 +90,18 @@ class GmailClient {
       typ: 'JWT',
     };
 
+    // Get email from address from env var
+    const emailFromAddress = process.env.EMAIL_FROM_ADDRESS || credentials.client_email;
+
     // Create JWT payload
     const payload = {
-      iss: this.credentials.client_email,
+      iss: credentials.client_email,
       scope: 'https://www.googleapis.com/auth/gmail.send',
       aud: 'https://oauth2.googleapis.com/token',
       exp: expiry,
       iat: now,
       // Add subject for domain delegation (if using custom domain)
-      sub: process.env.EMAIL_FROM_ADDRESS || this.credentials.client_email,
+      sub: emailFromAddress,
     };
 
     try {
@@ -98,6 +141,9 @@ class GmailClient {
   }
 
   private async createJWT(header: any, payload: any): Promise<string> {
+    // Ensure credentials are loaded
+    const credentials = await this.loadCredentials();
+
     // Encode header and payload
     const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64url');
     const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -106,7 +152,7 @@ class GmailClient {
     const data = `${encodedHeader}.${encodedPayload}`;
 
     // Import private key
-    const key = await this.importPrivateKey(this.credentials.private_key);
+    const key = await this.importPrivateKey(credentials.private_key);
 
     // Sign the data
     const signature = await crypto.subtle.sign(
@@ -119,9 +165,13 @@ class GmailClient {
     return `${data}.${encodedSignature}`;
   }
 
-  private async importPrivateKey(privateKeyPem: string): Promise<CryptoKey> {
+  private async importPrivateKey(privateKeyPem?: string): Promise<CryptoKey> {
+    // Get credentials if privateKeyPem is not provided
+    const credentials = privateKeyPem ? { private_key: privateKeyPem } : await this.loadCredentials();
+    const keyToUse = privateKeyPem || credentials.private_key;
+
     // Remove PEM headers and newlines
-    const pemContents = privateKeyPem
+    const pemContents = keyToUse
       .replace(/-----BEGIN PRIVATE KEY-----/, '')
       .replace(/-----END PRIVATE KEY-----/, '')
       .replace(/\s/g, '');

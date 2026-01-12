@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "firebase-admin";
 
 import prisma from "@/lib/prismaClient";
-import { initFirebaseAdmin } from "@/lib/firebaseAdmin";
+import { getFirebaseAdminApp } from "@/lib/firebaseAdmin";
 
-// Initialize Firebase Admin
-initFirebaseAdmin();
+// Firebase Admin will be lazily initialized when getFirebaseAdminApp() is called
 
 export async function POST(request: NextRequest) {
   try {
+    // Ensure Firebase Admin is initialized
+    await getFirebaseAdminApp();
+
     // Get the authorization token from the header
     const authHeader = request.headers.get("authorization");
 
@@ -72,6 +74,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Ensure Firebase Admin is initialized
+    await getFirebaseAdminApp();
+
     // Get the authorization token from the header
     const authHeader = request.headers.get("authorization");
 
