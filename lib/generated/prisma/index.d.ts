@@ -2734,10 +2734,12 @@ export namespace Prisma {
 
   export type OrderAvgAggregateOutputType = {
     total: Decimal | null
+    platformFeeAmount: Decimal | null
   }
 
   export type OrderSumAggregateOutputType = {
     total: Decimal | null
+    platformFeeAmount: Decimal | null
   }
 
   export type OrderMinAggregateOutputType = {
@@ -2746,6 +2748,8 @@ export namespace Prisma {
     userId: string | null
     status: $Enums.OrderStatus | null
     total: Decimal | null
+    platformFeeAmount: Decimal | null
+    connectedAccountId: string | null
     stripePaymentIntentId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2757,6 +2761,8 @@ export namespace Prisma {
     userId: string | null
     status: $Enums.OrderStatus | null
     total: Decimal | null
+    platformFeeAmount: Decimal | null
+    connectedAccountId: string | null
     stripePaymentIntentId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2768,6 +2774,8 @@ export namespace Prisma {
     userId: number
     status: number
     total: number
+    platformFeeAmount: number
+    connectedAccountId: number
     stripePaymentIntentId: number
     createdAt: number
     updatedAt: number
@@ -2777,10 +2785,12 @@ export namespace Prisma {
 
   export type OrderAvgAggregateInputType = {
     total?: true
+    platformFeeAmount?: true
   }
 
   export type OrderSumAggregateInputType = {
     total?: true
+    platformFeeAmount?: true
   }
 
   export type OrderMinAggregateInputType = {
@@ -2789,6 +2799,8 @@ export namespace Prisma {
     userId?: true
     status?: true
     total?: true
+    platformFeeAmount?: true
+    connectedAccountId?: true
     stripePaymentIntentId?: true
     createdAt?: true
     updatedAt?: true
@@ -2800,6 +2812,8 @@ export namespace Prisma {
     userId?: true
     status?: true
     total?: true
+    platformFeeAmount?: true
+    connectedAccountId?: true
     stripePaymentIntentId?: true
     createdAt?: true
     updatedAt?: true
@@ -2811,6 +2825,8 @@ export namespace Prisma {
     userId?: true
     status?: true
     total?: true
+    platformFeeAmount?: true
+    connectedAccountId?: true
     stripePaymentIntentId?: true
     createdAt?: true
     updatedAt?: true
@@ -2909,6 +2925,8 @@ export namespace Prisma {
     userId: string
     status: $Enums.OrderStatus
     total: Decimal
+    platformFeeAmount: Decimal | null
+    connectedAccountId: string | null
     stripePaymentIntentId: string | null
     createdAt: Date
     updatedAt: Date
@@ -2939,6 +2957,8 @@ export namespace Prisma {
     userId?: boolean
     status?: boolean
     total?: boolean
+    platformFeeAmount?: boolean
+    connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2953,6 +2973,8 @@ export namespace Prisma {
     userId?: boolean
     status?: boolean
     total?: boolean
+    platformFeeAmount?: boolean
+    connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2965,6 +2987,8 @@ export namespace Prisma {
     userId?: boolean
     status?: boolean
     total?: boolean
+    platformFeeAmount?: boolean
+    connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2977,12 +3001,14 @@ export namespace Prisma {
     userId?: boolean
     status?: boolean
     total?: boolean
+    platformFeeAmount?: boolean
+    connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "userId" | "status" | "total" | "stripePaymentIntentId" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "userId" | "status" | "total" | "platformFeeAmount" | "connectedAccountId" | "stripePaymentIntentId" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     User?: boolean | UserDefaultArgs<ExtArgs>
     OrderItem?: boolean | Order$OrderItemArgs<ExtArgs>
@@ -3007,6 +3033,8 @@ export namespace Prisma {
       userId: string
       status: $Enums.OrderStatus
       total: Prisma.Decimal
+      platformFeeAmount: Prisma.Decimal | null
+      connectedAccountId: string | null
       stripePaymentIntentId: string | null
       createdAt: Date
       updatedAt: Date
@@ -3440,6 +3468,8 @@ export namespace Prisma {
     readonly userId: FieldRef<"Order", 'String'>
     readonly status: FieldRef<"Order", 'OrderStatus'>
     readonly total: FieldRef<"Order", 'Decimal'>
+    readonly platformFeeAmount: FieldRef<"Order", 'Decimal'>
+    readonly connectedAccountId: FieldRef<"Order", 'String'>
     readonly stripePaymentIntentId: FieldRef<"Order", 'String'>
     readonly createdAt: FieldRef<"Order", 'DateTime'>
     readonly updatedAt: FieldRef<"Order", 'DateTime'>
@@ -9542,6 +9572,8 @@ export namespace Prisma {
     userId: 'userId',
     status: 'status',
     total: 'total',
+    platformFeeAmount: 'platformFeeAmount',
+    connectedAccountId: 'connectedAccountId',
     stripePaymentIntentId: 'stripePaymentIntentId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -9823,6 +9855,8 @@ export namespace Prisma {
     userId?: StringFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     total?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: StringNullableFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
@@ -9836,6 +9870,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    platformFeeAmount?: SortOrderInput | SortOrder
+    connectedAccountId?: SortOrderInput | SortOrder
     stripePaymentIntentId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -9852,6 +9888,8 @@ export namespace Prisma {
     userId?: StringFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     total?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: StringNullableFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
@@ -9865,6 +9903,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    platformFeeAmount?: SortOrderInput | SortOrder
+    connectedAccountId?: SortOrderInput | SortOrder
     stripePaymentIntentId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -9884,6 +9924,8 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Order"> | string
     status?: EnumOrderStatusWithAggregatesFilter<"Order"> | $Enums.OrderStatus
     total?: DecimalWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: DecimalNullableWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: StringNullableWithAggregatesFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableWithAggregatesFilter<"Order"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
@@ -10330,6 +10372,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -10343,6 +10387,8 @@ export namespace Prisma {
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -10354,6 +10400,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10367,6 +10415,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10379,6 +10429,8 @@ export namespace Prisma {
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -10389,6 +10441,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10400,6 +10454,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10971,6 +11027,17 @@ export namespace Prisma {
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
@@ -10992,6 +11059,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    platformFeeAmount?: SortOrder
+    connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10999,6 +11068,7 @@ export namespace Prisma {
 
   export type OrderAvgOrderByAggregateInput = {
     total?: SortOrder
+    platformFeeAmount?: SortOrder
   }
 
   export type OrderMaxOrderByAggregateInput = {
@@ -11007,6 +11077,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    platformFeeAmount?: SortOrder
+    connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11018,6 +11090,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    platformFeeAmount?: SortOrder
+    connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11025,6 +11099,7 @@ export namespace Prisma {
 
   export type OrderSumOrderByAggregateInput = {
     total?: SortOrder
+    platformFeeAmount?: SortOrder
   }
 
   export type EnumOrderStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -11051,6 +11126,22 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -11393,6 +11484,14 @@ export namespace Prisma {
 
   export type DecimalFieldUpdateOperationsInput = {
     set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
     increment?: Decimal | DecimalJsLike | number | string
     decrement?: Decimal | DecimalJsLike | number | string
     multiply?: Decimal | DecimalJsLike | number | string
@@ -11859,6 +11958,17 @@ export namespace Prisma {
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
   export type NestedEnumOrderStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.OrderStatus | EnumOrderStatusFieldRefInput<$PrismaModel>
     in?: $Enums.OrderStatus[] | ListEnumOrderStatusFieldRefInput<$PrismaModel>
@@ -11883,6 +11993,22 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -12104,6 +12230,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -12116,6 +12244,8 @@ export namespace Prisma {
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -12200,6 +12330,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12212,6 +12344,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12572,6 +12706,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -12583,6 +12719,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -12624,6 +12762,8 @@ export namespace Prisma {
     userId?: StringFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     total?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: StringNullableFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
@@ -12820,6 +12960,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -12830,6 +12972,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12841,6 +12985,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12852,6 +12998,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

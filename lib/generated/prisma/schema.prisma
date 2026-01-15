@@ -32,6 +32,8 @@ model Order {
   userId                String
   status                OrderStatus @default(PENDING)
   total                 Decimal     @db.Decimal(10, 2)
+  platformFeeAmount     Decimal?    @db.Decimal(10, 2)
+  connectedAccountId    String?
   stripePaymentIntentId String?
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt

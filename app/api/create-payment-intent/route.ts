@@ -201,8 +201,24 @@ export async function POST(request: Request) {
     // Shipping cost (optional, could be zero)
     const shippingCost = shipping?.cost || 0;
 
-    // Create payment intent without tax calculation
-    const paymentIntent = await stripe.paymentIntents.create({
+    // Calculate platform fee if Stripe Connect is enabled
+    // Platform keeps the service fee, client receives the product cost
+    const connectedAccountId = process.env.STRIPE_CONNECTED_ACCOUNT_ID;
+    let platformFeeAmount = 0;
+
+    if (connectedAccountId && serviceFeeAmount > 0) {
+      // Platform keeps the entire service fee
+      platformFeeAmount = Math.round(serviceFeeAmount * 100); // convert to cents
+      console.log(`💰 Service fee split:
+        Product subtotal (after discount): $${subtotalAfterDiscount.toFixed(2)}
+        Service fee (platform keeps): $${serviceFeeAmount.toFixed(2)}
+        Total charged to customer: $${total.toFixed(2)}
+        Client receives: $${subtotalAfterDiscount.toFixed(2)}
+      `);
+    }
+
+    // Prepare payment intent parameters
+    const paymentIntentParams: any = {
       amount: Math.round(total * 100), // total in cents
       currency: "usd",
       metadata: {
@@ -228,6 +244,9 @@ export async function POST(request: Request) {
           })),
         ),
         user_id: metadata?.user_id || "",
+        // Add platform fee info to metadata (service fee split model)
+        platform_fee_amount: platformFeeAmount > 0 ? (platformFeeAmount / 100).toString() : undefined,
+        connected_account_id: connectedAccountId || undefined,
       },
       description: `Order for ${customerName || "Customer"}`,
       receipt_email: customerEmail,
@@ -240,7 +259,19 @@ export async function POST(request: Request) {
           }
         : undefined,
       capture_method: "automatic",
-    });
+    };
+
+    // Add Stripe Connect parameters if connected account is set up
+    if (connectedAccountId && platformFeeAmount > 0) {
+      console.log(`🔗 Stripe Connect enabled - routing payment to connected account ${connectedAccountId}`);
+      paymentIntentParams.application_fee_amount = platformFeeAmount;
+      paymentIntentParams.transfer_data = {
+        destination: connectedAccountId,
+      };
+    }
+
+    // Create the payment intent
+    const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
 
     // Create order in the database
     try {
@@ -289,6 +320,8 @@ export async function POST(request: Request) {
           total: total, // This includes subtotal + service fee - discounts
           status: "PROCESSING",
           stripePaymentIntentId: paymentIntent.id,
+          platformFeeAmount: platformFeeAmount > 0 ? platformFeeAmount / 100 : null,
+          connectedAccountId: connectedAccountId || null,
         },
       });
 

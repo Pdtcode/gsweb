@@ -1,4 +1,5 @@
 import { OrderConfirmedEvent } from '../events/order-events';
+//import { logo } from '@/public/01 Logo Exports/Logo 2/02 white/GS-02-White.svg'
 
 interface EmailTemplateData {
   orderNumber: string;
@@ -95,7 +96,7 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏆 GrailSeekers</h1>
+            <h1>GS Design Research</h1>
         </div>
 
         <div class="content">
