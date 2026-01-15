@@ -30,6 +30,9 @@ export async function OPTIONS() {
 }
 
 export async function POST() {
+  console.log('=== SYNC FROM SANITY START ===');
+  console.log('Timestamp:', new Date().toISOString());
+
   try {
     const stats: SyncStats = {
       created: 0,
@@ -37,6 +40,14 @@ export async function POST() {
       errors: 0,
       total: 0,
     };
+    const errorDetails: Array<{ orderId: string; error: string; context?: any }> = [];
+
+    // Check Sanity token
+    if (!process.env.SANITY_API_TOKEN) {
+      console.error('SANITY_API_TOKEN is not set!');
+      throw new Error('SANITY_API_TOKEN environment variable is not configured');
+    }
+    console.log('SANITY_API_TOKEN: configured (length:', process.env.SANITY_API_TOKEN.length, ')');
 
     // Fetch all orders from Sanity
     const sanityOrders = await sanityClient.fetch(`
@@ -153,9 +164,21 @@ export async function POST() {
         }
 
       } catch (error) {
-        console.error(`Error syncing order ${sanityOrder._id}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error syncing order ${sanityOrder._id}:`, errorMessage);
+        errorDetails.push({
+          orderId: sanityOrder._id,
+          error: errorMessage,
+          context: { orderNumber: sanityOrder.orderNumber, status: sanityOrder.status }
+        });
         stats.errors++;
       }
+    }
+
+    console.log('=== SYNC FROM SANITY COMPLETE ===');
+    console.log('Stats:', stats);
+    if (errorDetails.length > 0) {
+      console.log('Error details:', errorDetails);
     }
 
     // Update sync state in Sanity
@@ -176,9 +199,10 @@ export async function POST() {
 
     return NextResponse.json(
       {
-        success: true,
+        success: stats.errors === 0,
         stats,
         message: `Sanity to DB sync completed. Created: ${stats.created}, Updated: ${stats.updated}, Errors: ${stats.errors}`,
+        errorDetails: errorDetails.slice(0, 10), // Return first 10 errors for debugging
       },
       {
         headers: {

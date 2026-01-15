@@ -31,6 +31,9 @@ export async function OPTIONS() {
 }
 
 export async function POST() {
+  console.log('=== SYNC ORDERS (DB → SANITY) START ===');
+  console.log('Timestamp:', new Date().toISOString());
+
   try {
     const stats: SyncStats = {
       created: 0,
@@ -39,9 +42,17 @@ export async function POST() {
       errors: 0,
       total: 0,
     };
-    const errorDetails: Array<{ orderNumber: string; error: string }> = [];
+    const errorDetails: Array<{ orderNumber: string; error: string; context?: any }> = [];
+
+    // Check Sanity token
+    if (!process.env.SANITY_API_TOKEN) {
+      console.error('SANITY_API_TOKEN is not set!');
+      throw new Error('SANITY_API_TOKEN environment variable is not configured');
+    }
+    console.log('SANITY_API_TOKEN: configured (length:', process.env.SANITY_API_TOKEN.length, ')');
 
     // Fetch orders from Neon DB
+    console.log('Fetching orders from database...');
     const orders = await prisma.order.findMany({
       include: {
         User: {
@@ -66,6 +77,7 @@ export async function POST() {
     });
 
     stats.total = orders.length;
+    console.log(`Found ${orders.length} orders in database`);
 
     // Sync each order to Sanity
     for (const order of orders) {
@@ -120,9 +132,19 @@ export async function POST() {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error(`Error syncing order ${order.id} (${order.orderNumber}):`, errorMessage);
-        errorDetails.push({ orderNumber: order.orderNumber, error: errorMessage });
+        errorDetails.push({
+          orderNumber: order.orderNumber,
+          error: errorMessage,
+          context: { orderId: order.id, status: order.status, itemCount: order.OrderItem?.length || 0 }
+        });
         stats.errors++;
       }
+    }
+
+    console.log('=== SYNC ORDERS COMPLETE ===');
+    console.log('Stats:', stats);
+    if (errorDetails.length > 0) {
+      console.log('Error details:', errorDetails);
     }
 
     // Update sync state in Sanity
