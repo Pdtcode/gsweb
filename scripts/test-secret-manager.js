@@ -74,15 +74,15 @@ async function testSecretManager() {
     console.log('🎉 SUCCESS! Secret Manager is working correctly!\n');
 
     // Test the other secret too
-    console.log('5. Testing firebase-admin-private-key...');
-    const fbSecretPath = `projects/${projectId}/secrets/firebase-admin-private-key/versions/latest`;
+    console.log('5. Testing firebase-service-account-private-key...');
+    const fbSecretPath = `projects/${projectId}/secrets/firebase-service-account-private-key/versions/latest`;
     try {
       const [fbVersion] = await client.accessSecretVersion({
         name: fbSecretPath,
       });
       const fbSecretValue = fbVersion.payload.data.toString();
       console.log('   ✅ Firebase secret accessed successfully!');
-      console.log('   ✅ Secret length:', fbSecretValue.length, 'characters');
+      console.log('   ✅ Secret length:', fbSecretValue.length, 'characters');console.log('   ✅ Starts with:', secretValue.substring(0, 30) + '...');
       console.log('');
     } catch (fbError) {
       console.log('   ⚠️ Firebase secret not found (optional for email testing)');

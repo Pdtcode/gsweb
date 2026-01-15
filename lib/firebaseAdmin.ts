@@ -30,29 +30,44 @@ function decodePrivateKey(key: string): string {
 }
 
 /**
- * Get Firebase credentials from Secret Manager (for private key) and environment variables
+ * Get Firebase credentials from Secret Manager or environment variables
  */
 async function getFirebaseCredentials(): Promise<ServiceAccount> {
   try {
-    // Get project ID and client email from environment variables (small values)
+    // Try to get the full service account JSON from Secret Manager
+    const serviceAccountJson = await secretManager.getSecret('firebase-service-account-private-key');
+
+    console.log('🔍 Firebase service account JSON fetched from Secret Manager');
+
+    // Parse the JSON
+    const serviceAccount = JSON.parse(serviceAccountJson);
+
+    const credentials = {
+      projectId: serviceAccount.project_id,
+      clientEmail: serviceAccount.client_email,
+      privateKey: decodePrivateKey(serviceAccount.private_key),
+    };
+
+    console.log('✅ Firebase credentials loaded:', credentials.clientEmail);
+
+    return credentials;
+  } catch (error) {
+    console.log('⚠️ Failed to get Firebase credentials from Secret Manager, falling back to env vars:', error);
+
+    // Fallback to environment variables
     const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
 
-    if (!projectId || !clientEmail) {
-      throw new Error('FIREBASE_ADMIN_PROJECT_ID and FIREBASE_ADMIN_CLIENT_EMAIL must be set in environment variables');
+    if (!projectId || !clientEmail || !privateKey) {
+      throw new Error('FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY must be set');
     }
-
-    // Get private key from Secret Manager (large value) with fallback to env var
-    const privateKey = await secretManager.getSecret('firebase-admin-private-key', 'FIREBASE_ADMIN_PRIVATE_KEY');
 
     return {
       projectId,
       clientEmail,
       privateKey: decodePrivateKey(privateKey),
     };
-  } catch (error) {
-    console.error('Error loading Firebase credentials:', error);
-    throw new Error('Failed to load Firebase Admin credentials from Secret Manager or environment variables');
   }
 }
 
