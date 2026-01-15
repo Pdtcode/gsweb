@@ -39,6 +39,7 @@ export async function POST() {
       errors: 0,
       total: 0,
     };
+    const errorDetails: Array<{ orderNumber: string; error: string }> = [];
 
     // Fetch orders from Neon DB
     const orders = await prisma.order.findMany({
@@ -78,7 +79,7 @@ export async function POST() {
           customerName: order.User.name || "",
           total: parseFloat(order.total.toString()),
           status: order.status,
-          OrderItem: order.OrderItem.map(
+          items: order.OrderItem.map(
             (item: {
               id: any;
               productId: any;
@@ -86,18 +87,17 @@ export async function POST() {
               Product: { name: any };
               quantity: any;
               price: { toString: () => string };
-            }) => ({
-              _key: `item-${item.id}`,
+            }, index: number) => ({
+              _key: `item${index}`,
               itemId: item.id,
               productId: item.productId,
-              variantId: item.variantId,
+              variantId: item.variantId || "",
               name: item.Product.name,
               quantity: item.quantity,
               price: parseFloat(item.price.toString()),
             }),
           ),
-          Address: undefined,
-          stripePaymentIntentId: order.stripePaymentIntentId,
+          stripePaymentIntentId: order.stripePaymentIntentId || "",
           createdAt: order.createdAt.toISOString(),
           updatedAt: order.updatedAt.toISOString(),
         };
@@ -118,7 +118,9 @@ export async function POST() {
           stats.created++;
         }
       } catch (error) {
-        console.error(`Error syncing order ${order.id}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error syncing order ${order.id} (${order.orderNumber}):`, errorMessage);
+        errorDetails.push({ orderNumber: order.orderNumber, error: errorMessage });
         stats.errors++;
       }
     }
@@ -141,9 +143,10 @@ export async function POST() {
 
     return NextResponse.json(
       {
-        success: true,
+        success: stats.errors === 0,
         stats,
         message: `Sync completed. Created: ${stats.created}, Updated: ${stats.updated}, Errors: ${stats.errors}`,
+        errorDetails: errorDetails.slice(0, 10), // Return first 10 errors for debugging
       },
       {
         headers: {

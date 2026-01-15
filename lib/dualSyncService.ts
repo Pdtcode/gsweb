@@ -199,12 +199,43 @@ export class DualSyncService {
   }
 
   /**
-   * Syncs a single order to Sanity (DISABLED)
-   * Neon is the source of truth for orders - no need to sync to Sanity
+   * Syncs a single order to Sanity
+   * Creates or updates the order document in Sanity to mirror Neon data
    */
   private static async syncOrderToSanity(order: OrderWithRelations) {
-    console.log(`ℹ️ Order sync to Sanity skipped for ${order.orderNumber} - Neon is source of truth`);
-    return; // Disabled - no sync needed
+    try {
+      // Use order ID as the Sanity document ID for consistent upserts
+      const sanityDocId = `order-${order.id}`;
+
+      const sanityOrder = {
+        _id: sanityDocId,
+        _type: "order",
+        orderNumber: order.orderNumber,
+        userId: order.userId,
+        customerEmail: order.User.email,
+        customerName: order.User.name || "",
+        total: Number(order.total),
+        status: order.status,
+        stripePaymentIntentId: order.stripePaymentIntentId || "",
+        createdAt: order.createdAt.toISOString(),
+        updatedAt: order.updatedAt.toISOString(),
+        items: order.OrderItem.map((item) => ({
+          _key: item.id,
+          itemId: item.id,
+          productId: item.productId,
+          variantId: item.variantId || "",
+          name: item.Product.name,
+          quantity: item.quantity,
+          price: Number(item.price),
+        })),
+      };
+
+      await sanityClient.createOrReplace(sanityOrder);
+      console.log(`✅ Order ${order.orderNumber} synced to Sanity`);
+    } catch (error) {
+      console.error(`❌ Failed to sync order ${order.orderNumber} to Sanity:`, error);
+      throw error;
+    }
   }
 
   /**

@@ -1,5 +1,7 @@
 import { OrderConfirmedEvent } from '../events/order-events';
-//import { logo } from '@/public/01 Logo Exports/Logo 2/02 white/GS-02-White.svg'
+
+// Logo URL for email templates - must be an absolute URL to a hosted image
+const LOGO_URL = 'https://gsdesignresearch.com/01%20Logo%20Exports/Logo%202/02%20white/GS-02-White.png';
 
 interface EmailTemplateData {
   orderNumber: string;
@@ -96,7 +98,7 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
 <body>
     <div class="container">
         <div class="header">
-            <h1>GS Design Research</h1>
+            <img src="${LOGO_URL}" alt="GrailSeekers" style="max-width: 180px; height: auto; margin-bottom: 10px;" />
         </div>
 
         <div class="content">
