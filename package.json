@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix",
+    "test:secret-manager": "node scripts/test-secret-manager.js"
   },
   "dependencies": {
     "@google-cloud/secret-manager": "^6.1.1",

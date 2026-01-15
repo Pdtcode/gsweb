@@ -41,22 +41,22 @@ class GmailClient {
 
     this.credentialsPromise = (async () => {
       try {
-        // Get client email and project ID from environment variables (small values)
-        const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-        const projectId = process.env.GOOGLE_PROJECT_ID;
+        // Try to get the full service account JSON from Secret Manager
+        // This contains client_email, private_key, and project_id
+        const serviceAccountJson = await secretManager.getSecret('gmail-service-account');
 
-        if (!clientEmail || !projectId) {
-          throw new Error('GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PROJECT_ID must be set in environment variables');
-        }
+        console.log('🔍 Gmail service account JSON fetched from Secret Manager');
 
-        // Get private key from Secret Manager (large value) with fallback to env var
-        const privateKey = await secretManager.getSecret('google-service-account-private-key', 'GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY');
+        // Parse the JSON
+        const serviceAccount = JSON.parse(serviceAccountJson);
 
         this.credentials = {
-          client_email: clientEmail,
-          private_key: privateKey.replace(/\\n/g, '\n'),
-          project_id: projectId,
+          client_email: serviceAccount.client_email,
+          private_key: serviceAccount.private_key.replace(/\\n/g, '\n'),
+          project_id: serviceAccount.project_id,
         };
+
+        console.log('✅ Gmail credentials loaded:', this.credentials.client_email);
 
         if (!this.credentials.client_email || !this.credentials.private_key) {
           throw new Error('Missing Google service account credentials');
@@ -64,8 +64,25 @@ class GmailClient {
 
         return this.credentials;
       } catch (error) {
+        console.log('⚠️ Failed to get credentials from Secret Manager, falling back to env vars:', error);
+
+        // Fallback to environment variables
+        const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+        const projectId = process.env.GOOGLE_PROJECT_ID;
+        const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+
+        if (!clientEmail || !projectId || !privateKey) {
+          throw new Error('GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PROJECT_ID, and GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY must be set');
+        }
+
+        this.credentials = {
+          client_email: clientEmail,
+          private_key: privateKey.replace(/\\n/g, '\n'),
+          project_id: projectId,
+        };
+
         this.credentialsPromise = null;
-        throw error;
+        return this.credentials;
       }
     })();
 

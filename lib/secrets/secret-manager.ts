@@ -90,6 +90,7 @@ class SecretManager {
     try {
       // Construct the secret path
       const secretPath = `projects/${this.projectId}/secrets/${secretName}/versions/${version}`;
+      console.log(`🔍 Fetching secret from: ${secretPath}`);
 
       // Access the secret
       const [accessResponse] = await this.client.accessSecretVersion({
@@ -101,6 +102,8 @@ class SecretManager {
       if (!secretValue) {
         throw new Error(`Secret ${secretName} is empty`);
       }
+
+      console.log(`✅ Secret ${secretName} fetched, length: ${secretValue.length}`);
 
       // Cache the secret
       this.cache[cacheKey] = {
