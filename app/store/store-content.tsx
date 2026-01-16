@@ -8,6 +8,58 @@ import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
 import { Category, Collection, Product } from "@/types";
 
+// Giveaway Section Component
+function GiveawaySection() {
+  return (
+    <div className="mb-12 p-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="flex-1">
+          <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm font-medium mb-3">
+            GIVEAWAY
+          </span>
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">
+            Win a Trip to Japan!
+          </h2>
+          <p className="text-white/90 mb-4">
+            We&apos;re giving away free trip to Japan to our community. Here&apos;s how you can enter:
+          </p>
+
+          <div className="space-y-2 mb-4">
+            <h3 className="font-semibold">How to Enter:</h3>
+            <ul className="list-disc list-inside text-white/90 space-y-1">
+              <li>Follow us on Instagram @gsdesignresearch</li>
+              <li>Like and share our latest giveaway post</li>
+              <li>Tag 2 friends in the comments</li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold">Conditions:</h3>
+            <ul className="list-disc list-inside text-white/90 space-y-1 text-sm">
+              <li>Must be 21+ to enter</li>
+              <li>Open to US residents only</li>
+              <li>Spend over $100 on GS Design Research clothing</li>
+              <li>Winner will be announced on January 31st, 2026</li>
+              <li>One entry per person</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="flex-shrink-0">
+          <a
+            href="https://instagram.com/gsdesignresearch"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            Enter Giveaway
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StoreContent({
   products,
   categories,
@@ -68,6 +120,9 @@ export default function StoreContent({
           </div>
         </div>
       )}
+
+      {/* Giveaway Section */}
+      <GiveawaySection />
 
       {/* Categories */}
       <div className="mb-4">
