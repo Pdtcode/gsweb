@@ -1467,10 +1467,12 @@ export namespace Prisma {
 
   export type OrderCountOutputType = {
     OrderItem: number
+    WebhookLog: number
   }
 
   export type OrderCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     OrderItem?: boolean | OrderCountOutputTypeCountOrderItemArgs
+    WebhookLog?: boolean | OrderCountOutputTypeCountWebhookLogArgs
   }
 
   // Custom InputTypes
@@ -1489,6 +1491,13 @@ export namespace Prisma {
    */
   export type OrderCountOutputTypeCountOrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OrderItemWhereInput
+  }
+
+  /**
+   * OrderCountOutputType without action
+   */
+  export type OrderCountOutputTypeCountWebhookLogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WebhookLogWhereInput
   }
 
 
@@ -3036,6 +3045,7 @@ export namespace Prisma {
     updatedAt?: boolean
     User?: boolean | UserDefaultArgs<ExtArgs>
     OrderItem?: boolean | Order$OrderItemArgs<ExtArgs>
+    WebhookLog?: boolean | Order$WebhookLogArgs<ExtArgs>
     _count?: boolean | OrderCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["order"]>
 
@@ -3111,6 +3121,7 @@ export namespace Prisma {
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     User?: boolean | UserDefaultArgs<ExtArgs>
     OrderItem?: boolean | Order$OrderItemArgs<ExtArgs>
+    WebhookLog?: boolean | Order$WebhookLogArgs<ExtArgs>
     _count?: boolean | OrderCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3125,6 +3136,7 @@ export namespace Prisma {
     objects: {
       User: Prisma.$UserPayload<ExtArgs>
       OrderItem: Prisma.$OrderItemPayload<ExtArgs>[]
+      WebhookLog: Prisma.$WebhookLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3542,6 +3554,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     User<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     OrderItem<T extends Order$OrderItemArgs<ExtArgs> = {}>(args?: Subset<T, Order$OrderItemArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    WebhookLog<T extends Order$WebhookLogArgs<ExtArgs> = {}>(args?: Subset<T, Order$WebhookLogArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4007,6 +4020,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * Order.WebhookLog
+   */
+  export type Order$WebhookLogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookLog
+     */
+    select?: WebhookLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookLog
+     */
+    omit?: WebhookLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
+    where?: WebhookLogWhereInput
+    orderBy?: WebhookLogOrderByWithRelationInput | WebhookLogOrderByWithRelationInput[]
+    cursor?: WebhookLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WebhookLogScalarFieldEnum | WebhookLogScalarFieldEnum[]
   }
 
   /**
@@ -8836,6 +8873,7 @@ export namespace Prisma {
     eventType?: boolean
     processedAt?: boolean
     orderId?: boolean
+    Order?: boolean | WebhookLog$OrderArgs<ExtArgs>
   }, ExtArgs["result"]["webhookLog"]>
 
   export type WebhookLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -8844,6 +8882,7 @@ export namespace Prisma {
     eventType?: boolean
     processedAt?: boolean
     orderId?: boolean
+    Order?: boolean | WebhookLog$OrderArgs<ExtArgs>
   }, ExtArgs["result"]["webhookLog"]>
 
   export type WebhookLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -8852,6 +8891,7 @@ export namespace Prisma {
     eventType?: boolean
     processedAt?: boolean
     orderId?: boolean
+    Order?: boolean | WebhookLog$OrderArgs<ExtArgs>
   }, ExtArgs["result"]["webhookLog"]>
 
   export type WebhookLogSelectScalar = {
@@ -8863,10 +8903,21 @@ export namespace Prisma {
   }
 
   export type WebhookLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "paymentIntentId" | "eventType" | "processedAt" | "orderId", ExtArgs["result"]["webhookLog"]>
+  export type WebhookLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Order?: boolean | WebhookLog$OrderArgs<ExtArgs>
+  }
+  export type WebhookLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Order?: boolean | WebhookLog$OrderArgs<ExtArgs>
+  }
+  export type WebhookLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Order?: boolean | WebhookLog$OrderArgs<ExtArgs>
+  }
 
   export type $WebhookLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "WebhookLog"
-    objects: {}
+    objects: {
+      Order: Prisma.$OrderPayload<ExtArgs> | null
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       paymentIntentId: string
@@ -9267,6 +9318,7 @@ export namespace Prisma {
    */
   export interface Prisma__WebhookLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    Order<T extends WebhookLog$OrderArgs<ExtArgs> = {}>(args?: Subset<T, WebhookLog$OrderArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9318,6 +9370,10 @@ export namespace Prisma {
      */
     omit?: WebhookLogOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
+    /**
      * Filter, which WebhookLog to fetch.
      */
     where: WebhookLogWhereUniqueInput
@@ -9336,6 +9392,10 @@ export namespace Prisma {
      */
     omit?: WebhookLogOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
+    /**
      * Filter, which WebhookLog to fetch.
      */
     where: WebhookLogWhereUniqueInput
@@ -9353,6 +9413,10 @@ export namespace Prisma {
      * Omit specific fields from the WebhookLog
      */
     omit?: WebhookLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
     /**
      * Filter, which WebhookLog to fetch.
      */
@@ -9402,6 +9466,10 @@ export namespace Prisma {
      */
     omit?: WebhookLogOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
+    /**
      * Filter, which WebhookLog to fetch.
      */
     where?: WebhookLogWhereInput
@@ -9450,6 +9518,10 @@ export namespace Prisma {
      */
     omit?: WebhookLogOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
+    /**
      * Filter, which WebhookLogs to fetch.
      */
     where?: WebhookLogWhereInput
@@ -9493,6 +9565,10 @@ export namespace Prisma {
      */
     omit?: WebhookLogOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
+    /**
      * The data needed to create a WebhookLog.
      */
     data: XOR<WebhookLogCreateInput, WebhookLogUncheckedCreateInput>
@@ -9526,6 +9602,10 @@ export namespace Prisma {
      */
     data: WebhookLogCreateManyInput | WebhookLogCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -9540,6 +9620,10 @@ export namespace Prisma {
      * Omit specific fields from the WebhookLog
      */
     omit?: WebhookLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
     /**
      * The data needed to update a WebhookLog.
      */
@@ -9592,6 +9676,10 @@ export namespace Prisma {
      * Limit how many WebhookLogs to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -9606,6 +9694,10 @@ export namespace Prisma {
      * Omit specific fields from the WebhookLog
      */
     omit?: WebhookLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
     /**
      * The filter to search for the WebhookLog to update in case it exists.
      */
@@ -9633,6 +9725,10 @@ export namespace Prisma {
      */
     omit?: WebhookLogOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
+    /**
      * Filter which WebhookLog to delete.
      */
     where: WebhookLogWhereUniqueInput
@@ -9653,6 +9749,25 @@ export namespace Prisma {
   }
 
   /**
+   * WebhookLog.Order
+   */
+  export type WebhookLog$OrderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    where?: OrderWhereInput
+  }
+
+  /**
    * WebhookLog without action
    */
   export type WebhookLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9664,6 +9779,10 @@ export namespace Prisma {
      * Omit specific fields from the WebhookLog
      */
     omit?: WebhookLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookLogInclude<ExtArgs> | null
   }
 
 
@@ -10011,6 +10130,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     User?: XOR<UserScalarRelationFilter, UserWhereInput>
     OrderItem?: OrderItemListRelationFilter
+    WebhookLog?: WebhookLogListRelationFilter
   }
 
   export type OrderOrderByWithRelationInput = {
@@ -10035,6 +10155,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     User?: UserOrderByWithRelationInput
     OrderItem?: OrderItemOrderByRelationAggregateInput
+    WebhookLog?: WebhookLogOrderByRelationAggregateInput
   }
 
   export type OrderWhereUniqueInput = Prisma.AtLeast<{
@@ -10062,6 +10183,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     User?: XOR<UserScalarRelationFilter, UserWhereInput>
     OrderItem?: OrderItemListRelationFilter
+    WebhookLog?: WebhookLogListRelationFilter
   }, "id" | "orderNumber">
 
   export type OrderOrderByWithAggregationInput = {
@@ -10426,6 +10548,7 @@ export namespace Prisma {
     eventType?: StringFilter<"WebhookLog"> | string
     processedAt?: DateTimeFilter<"WebhookLog"> | Date | string
     orderId?: StringNullableFilter<"WebhookLog"> | string | null
+    Order?: XOR<OrderNullableScalarRelationFilter, OrderWhereInput> | null
   }
 
   export type WebhookLogOrderByWithRelationInput = {
@@ -10434,6 +10557,7 @@ export namespace Prisma {
     eventType?: SortOrder
     processedAt?: SortOrder
     orderId?: SortOrderInput | SortOrder
+    Order?: OrderOrderByWithRelationInput
   }
 
   export type WebhookLogWhereUniqueInput = Prisma.AtLeast<{
@@ -10445,6 +10569,7 @@ export namespace Prisma {
     eventType?: StringFilter<"WebhookLog"> | string
     processedAt?: DateTimeFilter<"WebhookLog"> | Date | string
     orderId?: StringNullableFilter<"WebhookLog"> | string | null
+    Order?: XOR<OrderNullableScalarRelationFilter, OrderWhereInput> | null
   }, "id" | "paymentIntentId">
 
   export type WebhookLogOrderByWithAggregationInput = {
@@ -10578,6 +10703,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     User: UserCreateNestedOneWithoutOrderInput
     OrderItem?: OrderItemCreateNestedManyWithoutOrderInput
+    WebhookLog?: WebhookLogCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateInput = {
@@ -10601,6 +10727,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
+    WebhookLog?: WebhookLogUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUpdateInput = {
@@ -10624,6 +10751,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     User?: UserUpdateOneRequiredWithoutOrderNestedInput
     OrderItem?: OrderItemUpdateManyWithoutOrderNestedInput
+    WebhookLog?: WebhookLogUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateInput = {
@@ -10647,6 +10775,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     OrderItem?: OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+    WebhookLog?: WebhookLogUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderCreateManyInput = {
@@ -11038,7 +11167,7 @@ export namespace Prisma {
     paymentIntentId: string
     eventType: string
     processedAt?: Date | string
-    orderId?: string | null
+    Order?: OrderCreateNestedOneWithoutWebhookLogInput
   }
 
   export type WebhookLogUncheckedCreateInput = {
@@ -11054,7 +11183,7 @@ export namespace Prisma {
     paymentIntentId?: StringFieldUpdateOperationsInput | string
     eventType?: StringFieldUpdateOperationsInput | string
     processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    Order?: OrderUpdateOneWithoutWebhookLogNestedInput
   }
 
   export type WebhookLogUncheckedUpdateInput = {
@@ -11078,7 +11207,6 @@ export namespace Prisma {
     paymentIntentId?: StringFieldUpdateOperationsInput | string
     eventType?: StringFieldUpdateOperationsInput | string
     processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    orderId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type WebhookLogUncheckedUpdateManyInput = {
@@ -11309,7 +11437,17 @@ export namespace Prisma {
     none?: OrderItemWhereInput
   }
 
+  export type WebhookLogListRelationFilter = {
+    every?: WebhookLogWhereInput
+    some?: WebhookLogWhereInput
+    none?: WebhookLogWhereInput
+  }
+
   export type OrderItemOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WebhookLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -11662,6 +11800,11 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type OrderNullableScalarRelationFilter = {
+    is?: OrderWhereInput | null
+    isNot?: OrderWhereInput | null
+  }
+
   export type WebhookLogCountOrderByAggregateInput = {
     id?: SortOrder
     paymentIntentId?: SortOrder
@@ -11761,11 +11904,25 @@ export namespace Prisma {
     connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
   }
 
+  export type WebhookLogCreateNestedManyWithoutOrderInput = {
+    create?: XOR<WebhookLogCreateWithoutOrderInput, WebhookLogUncheckedCreateWithoutOrderInput> | WebhookLogCreateWithoutOrderInput[] | WebhookLogUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: WebhookLogCreateOrConnectWithoutOrderInput | WebhookLogCreateOrConnectWithoutOrderInput[]
+    createMany?: WebhookLogCreateManyOrderInputEnvelope
+    connect?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+  }
+
   export type OrderItemUncheckedCreateNestedManyWithoutOrderInput = {
     create?: XOR<OrderItemCreateWithoutOrderInput, OrderItemUncheckedCreateWithoutOrderInput> | OrderItemCreateWithoutOrderInput[] | OrderItemUncheckedCreateWithoutOrderInput[]
     connectOrCreate?: OrderItemCreateOrConnectWithoutOrderInput | OrderItemCreateOrConnectWithoutOrderInput[]
     createMany?: OrderItemCreateManyOrderInputEnvelope
     connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type WebhookLogUncheckedCreateNestedManyWithoutOrderInput = {
+    create?: XOR<WebhookLogCreateWithoutOrderInput, WebhookLogUncheckedCreateWithoutOrderInput> | WebhookLogCreateWithoutOrderInput[] | WebhookLogUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: WebhookLogCreateOrConnectWithoutOrderInput | WebhookLogCreateOrConnectWithoutOrderInput[]
+    createMany?: WebhookLogCreateManyOrderInputEnvelope
+    connect?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
   }
 
   export type EnumOrderStatusFieldUpdateOperationsInput = {
@@ -11810,6 +11967,20 @@ export namespace Prisma {
     deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
   }
 
+  export type WebhookLogUpdateManyWithoutOrderNestedInput = {
+    create?: XOR<WebhookLogCreateWithoutOrderInput, WebhookLogUncheckedCreateWithoutOrderInput> | WebhookLogCreateWithoutOrderInput[] | WebhookLogUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: WebhookLogCreateOrConnectWithoutOrderInput | WebhookLogCreateOrConnectWithoutOrderInput[]
+    upsert?: WebhookLogUpsertWithWhereUniqueWithoutOrderInput | WebhookLogUpsertWithWhereUniqueWithoutOrderInput[]
+    createMany?: WebhookLogCreateManyOrderInputEnvelope
+    set?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+    disconnect?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+    delete?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+    connect?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+    update?: WebhookLogUpdateWithWhereUniqueWithoutOrderInput | WebhookLogUpdateWithWhereUniqueWithoutOrderInput[]
+    updateMany?: WebhookLogUpdateManyWithWhereWithoutOrderInput | WebhookLogUpdateManyWithWhereWithoutOrderInput[]
+    deleteMany?: WebhookLogScalarWhereInput | WebhookLogScalarWhereInput[]
+  }
+
   export type OrderItemUncheckedUpdateManyWithoutOrderNestedInput = {
     create?: XOR<OrderItemCreateWithoutOrderInput, OrderItemUncheckedCreateWithoutOrderInput> | OrderItemCreateWithoutOrderInput[] | OrderItemUncheckedCreateWithoutOrderInput[]
     connectOrCreate?: OrderItemCreateOrConnectWithoutOrderInput | OrderItemCreateOrConnectWithoutOrderInput[]
@@ -11822,6 +11993,20 @@ export namespace Prisma {
     update?: OrderItemUpdateWithWhereUniqueWithoutOrderInput | OrderItemUpdateWithWhereUniqueWithoutOrderInput[]
     updateMany?: OrderItemUpdateManyWithWhereWithoutOrderInput | OrderItemUpdateManyWithWhereWithoutOrderInput[]
     deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type WebhookLogUncheckedUpdateManyWithoutOrderNestedInput = {
+    create?: XOR<WebhookLogCreateWithoutOrderInput, WebhookLogUncheckedCreateWithoutOrderInput> | WebhookLogCreateWithoutOrderInput[] | WebhookLogUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: WebhookLogCreateOrConnectWithoutOrderInput | WebhookLogCreateOrConnectWithoutOrderInput[]
+    upsert?: WebhookLogUpsertWithWhereUniqueWithoutOrderInput | WebhookLogUpsertWithWhereUniqueWithoutOrderInput[]
+    createMany?: WebhookLogCreateManyOrderInputEnvelope
+    set?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+    disconnect?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+    delete?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+    connect?: WebhookLogWhereUniqueInput | WebhookLogWhereUniqueInput[]
+    update?: WebhookLogUpdateWithWhereUniqueWithoutOrderInput | WebhookLogUpdateWithWhereUniqueWithoutOrderInput[]
+    updateMany?: WebhookLogUpdateManyWithWhereWithoutOrderInput | WebhookLogUpdateManyWithWhereWithoutOrderInput[]
+    deleteMany?: WebhookLogScalarWhereInput | WebhookLogScalarWhereInput[]
   }
 
   export type OrderCreateNestedOneWithoutOrderItemInput = {
@@ -12081,6 +12266,22 @@ export namespace Prisma {
     update?: OrderUpdateWithWhereUniqueWithoutUserInput | OrderUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: OrderUpdateManyWithWhereWithoutUserInput | OrderUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: OrderScalarWhereInput | OrderScalarWhereInput[]
+  }
+
+  export type OrderCreateNestedOneWithoutWebhookLogInput = {
+    create?: XOR<OrderCreateWithoutWebhookLogInput, OrderUncheckedCreateWithoutWebhookLogInput>
+    connectOrCreate?: OrderCreateOrConnectWithoutWebhookLogInput
+    connect?: OrderWhereUniqueInput
+  }
+
+  export type OrderUpdateOneWithoutWebhookLogNestedInput = {
+    create?: XOR<OrderCreateWithoutWebhookLogInput, OrderUncheckedCreateWithoutWebhookLogInput>
+    connectOrCreate?: OrderCreateOrConnectWithoutWebhookLogInput
+    upsert?: OrderUpsertWithoutWebhookLogInput
+    disconnect?: OrderWhereInput | boolean
+    delete?: OrderWhereInput | boolean
+    connect?: OrderWhereUniqueInput
+    update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutWebhookLogInput, OrderUpdateWithoutWebhookLogInput>, OrderUncheckedUpdateWithoutWebhookLogInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -12456,6 +12657,30 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type WebhookLogCreateWithoutOrderInput = {
+    id?: string
+    paymentIntentId: string
+    eventType: string
+    processedAt?: Date | string
+  }
+
+  export type WebhookLogUncheckedCreateWithoutOrderInput = {
+    id?: string
+    paymentIntentId: string
+    eventType: string
+    processedAt?: Date | string
+  }
+
+  export type WebhookLogCreateOrConnectWithoutOrderInput = {
+    where: WebhookLogWhereUniqueInput
+    create: XOR<WebhookLogCreateWithoutOrderInput, WebhookLogUncheckedCreateWithoutOrderInput>
+  }
+
+  export type WebhookLogCreateManyOrderInputEnvelope = {
+    data: WebhookLogCreateManyOrderInput | WebhookLogCreateManyOrderInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutOrderInput = {
     update: XOR<UserUpdateWithoutOrderInput, UserUncheckedUpdateWithoutOrderInput>
     create: XOR<UserCreateWithoutOrderInput, UserUncheckedCreateWithoutOrderInput>
@@ -12518,6 +12743,33 @@ export namespace Prisma {
     price?: DecimalFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
   }
 
+  export type WebhookLogUpsertWithWhereUniqueWithoutOrderInput = {
+    where: WebhookLogWhereUniqueInput
+    update: XOR<WebhookLogUpdateWithoutOrderInput, WebhookLogUncheckedUpdateWithoutOrderInput>
+    create: XOR<WebhookLogCreateWithoutOrderInput, WebhookLogUncheckedCreateWithoutOrderInput>
+  }
+
+  export type WebhookLogUpdateWithWhereUniqueWithoutOrderInput = {
+    where: WebhookLogWhereUniqueInput
+    data: XOR<WebhookLogUpdateWithoutOrderInput, WebhookLogUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type WebhookLogUpdateManyWithWhereWithoutOrderInput = {
+    where: WebhookLogScalarWhereInput
+    data: XOR<WebhookLogUpdateManyMutationInput, WebhookLogUncheckedUpdateManyWithoutOrderInput>
+  }
+
+  export type WebhookLogScalarWhereInput = {
+    AND?: WebhookLogScalarWhereInput | WebhookLogScalarWhereInput[]
+    OR?: WebhookLogScalarWhereInput[]
+    NOT?: WebhookLogScalarWhereInput | WebhookLogScalarWhereInput[]
+    id?: StringFilter<"WebhookLog"> | string
+    paymentIntentId?: StringFilter<"WebhookLog"> | string
+    eventType?: StringFilter<"WebhookLog"> | string
+    processedAt?: DateTimeFilter<"WebhookLog"> | Date | string
+    orderId?: StringNullableFilter<"WebhookLog"> | string | null
+  }
+
   export type OrderCreateWithoutOrderItemInput = {
     id?: string
     orderNumber: string
@@ -12538,6 +12790,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     User: UserCreateNestedOneWithoutOrderInput
+    WebhookLog?: WebhookLogCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutOrderItemInput = {
@@ -12560,6 +12813,7 @@ export namespace Prisma {
     shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    WebhookLog?: WebhookLogUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutOrderItemInput = {
@@ -12656,6 +12910,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     User?: UserUpdateOneRequiredWithoutOrderNestedInput
+    WebhookLog?: WebhookLogUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutOrderItemInput = {
@@ -12678,6 +12933,7 @@ export namespace Prisma {
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    WebhookLog?: WebhookLogUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type ProductUpsertWithoutOrderItemInput = {
@@ -13054,6 +13310,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     OrderItem?: OrderItemCreateNestedManyWithoutOrderInput
+    WebhookLog?: WebhookLogCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutUserInput = {
@@ -13076,6 +13333,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
+    WebhookLog?: WebhookLogUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutUserInput = {
@@ -13127,6 +13385,114 @@ export namespace Prisma {
     shippingCountry?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
+  }
+
+  export type OrderCreateWithoutWebhookLogInput = {
+    id?: string
+    orderNumber: string
+    status?: $Enums.OrderStatus
+    total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
+    stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    User: UserCreateNestedOneWithoutOrderInput
+    OrderItem?: OrderItemCreateNestedManyWithoutOrderInput
+  }
+
+  export type OrderUncheckedCreateWithoutWebhookLogInput = {
+    id?: string
+    orderNumber: string
+    userId: string
+    status?: $Enums.OrderStatus
+    total: Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: string | null
+    stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  }
+
+  export type OrderCreateOrConnectWithoutWebhookLogInput = {
+    where: OrderWhereUniqueInput
+    create: XOR<OrderCreateWithoutWebhookLogInput, OrderUncheckedCreateWithoutWebhookLogInput>
+  }
+
+  export type OrderUpsertWithoutWebhookLogInput = {
+    update: XOR<OrderUpdateWithoutWebhookLogInput, OrderUncheckedUpdateWithoutWebhookLogInput>
+    create: XOR<OrderCreateWithoutWebhookLogInput, OrderUncheckedCreateWithoutWebhookLogInput>
+    where?: OrderWhereInput
+  }
+
+  export type OrderUpdateToOneWithWhereWithoutWebhookLogInput = {
+    where?: OrderWhereInput
+    data: XOR<OrderUpdateWithoutWebhookLogInput, OrderUncheckedUpdateWithoutWebhookLogInput>
+  }
+
+  export type OrderUpdateWithoutWebhookLogInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    User?: UserUpdateOneRequiredWithoutOrderNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutOrderNestedInput
+  }
+
+  export type OrderUncheckedUpdateWithoutWebhookLogInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
+    stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type ProductCreateManyDropInput = {
@@ -13194,6 +13560,13 @@ export namespace Prisma {
     price: Decimal | DecimalJsLike | number | string
   }
 
+  export type WebhookLogCreateManyOrderInput = {
+    id?: string
+    paymentIntentId: string
+    eventType: string
+    processedAt?: Date | string
+  }
+
   export type OrderItemUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
     sku?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13219,6 +13592,27 @@ export namespace Prisma {
     sku?: NullableStringFieldUpdateOperationsInput | string | null
     quantity?: IntFieldUpdateOperationsInput | number
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type WebhookLogUpdateWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentIntentId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebhookLogUncheckedUpdateWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentIntentId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebhookLogUncheckedUpdateManyWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentIntentId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OrderItemCreateManyProductInput = {
@@ -13368,6 +13762,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     OrderItem?: OrderItemUpdateManyWithoutOrderNestedInput
+    WebhookLog?: WebhookLogUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutUserInput = {
@@ -13390,6 +13785,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     OrderItem?: OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+    WebhookLog?: WebhookLogUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateManyWithoutUserInput = {

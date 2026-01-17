@@ -46,10 +46,11 @@ model Order {
   shippingState         String?
   shippingZipCode       String?
   shippingCountry       String?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
-  User                  User        @relation(fields: [userId], references: [id])
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  User                  User         @relation(fields: [userId], references: [id])
   OrderItem             OrderItem[]
+  WebhookLog            WebhookLog[]
 }
 
 model OrderItem {
@@ -111,6 +112,7 @@ model WebhookLog {
   eventType       String
   processedAt     DateTime @default(now())
   orderId         String?
+  Order           Order?   @relation(fields: [orderId], references: [id])
 
   @@index([paymentIntentId])
 }

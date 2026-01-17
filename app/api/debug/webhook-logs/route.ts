@@ -8,7 +8,7 @@ export async function GET() {
       orderBy: { processedAt: 'desc' },
       take: 10,
       include: {
-        order: {
+        Order: {
           select: {
             id: true,
             orderNumber: true,
