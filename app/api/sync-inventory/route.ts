@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 import prisma from "@/lib/prismaClient";
 
+// CORS headers for Sanity Studio
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
 const sanityClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
@@ -9,6 +16,14 @@ const sanityClient = createClient({
   apiVersion: "2023-05-03",
   token: process.env.SANITY_API_TOKEN,
 });
+
+// Handle preflight OPTIONS request
+export async function OPTIONS(request: Request) {
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -255,12 +270,14 @@ export async function POST(req: NextRequest) {
       message: "Inventory sync completed",
       results: syncResults,
       totalProcessed: syncResults.length,
+    }, {
+      headers: corsHeaders,
     });
   } catch (error) {
     console.error("Error syncing inventory:", error);
     return NextResponse.json(
       { error: "Failed to sync inventory", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
