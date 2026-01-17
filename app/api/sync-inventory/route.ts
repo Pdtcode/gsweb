@@ -72,6 +72,25 @@ export async function POST(req: NextRequest) {
               ProductVariant: true,
             },
           });
+        } else {
+          // Update existing product with latest data including price
+          dbProduct = await prisma.product.update({
+            where: { id: dbProduct.id },
+            data: {
+              name: sanityProduct.name,
+              description: sanityProduct.description || "",
+              price: sanityProduct.price || 0,
+              images: sanityProduct.mainImage
+                ? [
+                    `https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/${process.env.NEXT_PUBLIC_SANITY_DATASET}/${sanityProduct.mainImage.asset._ref.replace("image-", "").replace("-jpg", ".jpg").replace("-png", ".png")}`,
+                  ]
+                : [],
+              inStock: sanityProduct.inStock ?? true,
+            },
+            include: {
+              ProductVariant: true,
+            },
+          });
         }
 
         // Sync inventory based on whether product has variants

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@heroui/button';
 import { Input } from '@heroui/input';
+import Image from 'next/image';
 
 interface WorkInProgressProps {
   onPasswordCorrect: () => void;
@@ -48,6 +49,18 @@ export default function WorkInProgress({ onPasswordCorrect }: WorkInProgressProp
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md w-full mx-auto p-8">
         <div className="text-center mb-8">
+          {/* Crash Dummy Splash Image */}
+          <div className="mb-6 flex justify-center">
+            <Image
+              src="/Try again crash dummy.jpg"
+              alt="Try Again Crash Dummy"
+              width={200}
+              height={200}
+              className="rounded-lg shadow-lg"
+              priority
+            />
+          </div>
+
           <h1 className="text-4xl font-bold text-foreground mb-4">
             🚧 Work in Progress
           </h1>
