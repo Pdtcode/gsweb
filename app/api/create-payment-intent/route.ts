@@ -313,6 +313,9 @@ export async function POST(request: Request) {
       console.log("User ID:", user.id);
       console.log("Total:", total);
 
+      // Parse shipping address from metadata
+      const shippingParts = shippingAddress.split(",").map((part: string) => part.trim());
+
       const order = await prisma.order.create({
         data: {
           orderNumber: `ORD-${Date.now()}`,
@@ -322,6 +325,15 @@ export async function POST(request: Request) {
           stripePaymentIntentId: paymentIntent.id,
           platformFeeAmount: platformFeeAmount > 0 ? platformFeeAmount / 100 : null,
           connectedAccountId: connectedAccountId || null,
+          shippingFirstName: customerName.split(' ')[0] || null,
+          shippingLastName: customerName.split(' ').slice(1).join(' ') || null,
+          shippingEmail: customerEmail || null,
+          shippingPhone: metadata?.customer_phone || null,
+          shippingAddress: shippingParts[0] || null,
+          shippingCity: shippingParts[1] || null,
+          shippingState: shippingParts[2] || null,
+          shippingZipCode: shippingParts[3] || null,
+          shippingCountry: shippingParts[4] || null,
         },
       });
 

@@ -2751,6 +2751,15 @@ export namespace Prisma {
     platformFeeAmount: Decimal | null
     connectedAccountId: string | null
     stripePaymentIntentId: string | null
+    shippingFirstName: string | null
+    shippingLastName: string | null
+    shippingEmail: string | null
+    shippingPhone: string | null
+    shippingAddress: string | null
+    shippingCity: string | null
+    shippingState: string | null
+    shippingZipCode: string | null
+    shippingCountry: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2764,6 +2773,15 @@ export namespace Prisma {
     platformFeeAmount: Decimal | null
     connectedAccountId: string | null
     stripePaymentIntentId: string | null
+    shippingFirstName: string | null
+    shippingLastName: string | null
+    shippingEmail: string | null
+    shippingPhone: string | null
+    shippingAddress: string | null
+    shippingCity: string | null
+    shippingState: string | null
+    shippingZipCode: string | null
+    shippingCountry: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2777,6 +2795,15 @@ export namespace Prisma {
     platformFeeAmount: number
     connectedAccountId: number
     stripePaymentIntentId: number
+    shippingFirstName: number
+    shippingLastName: number
+    shippingEmail: number
+    shippingPhone: number
+    shippingAddress: number
+    shippingCity: number
+    shippingState: number
+    shippingZipCode: number
+    shippingCountry: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -2802,6 +2829,15 @@ export namespace Prisma {
     platformFeeAmount?: true
     connectedAccountId?: true
     stripePaymentIntentId?: true
+    shippingFirstName?: true
+    shippingLastName?: true
+    shippingEmail?: true
+    shippingPhone?: true
+    shippingAddress?: true
+    shippingCity?: true
+    shippingState?: true
+    shippingZipCode?: true
+    shippingCountry?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2815,6 +2851,15 @@ export namespace Prisma {
     platformFeeAmount?: true
     connectedAccountId?: true
     stripePaymentIntentId?: true
+    shippingFirstName?: true
+    shippingLastName?: true
+    shippingEmail?: true
+    shippingPhone?: true
+    shippingAddress?: true
+    shippingCity?: true
+    shippingState?: true
+    shippingZipCode?: true
+    shippingCountry?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2828,6 +2873,15 @@ export namespace Prisma {
     platformFeeAmount?: true
     connectedAccountId?: true
     stripePaymentIntentId?: true
+    shippingFirstName?: true
+    shippingLastName?: true
+    shippingEmail?: true
+    shippingPhone?: true
+    shippingAddress?: true
+    shippingCity?: true
+    shippingState?: true
+    shippingZipCode?: true
+    shippingCountry?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -2928,6 +2982,15 @@ export namespace Prisma {
     platformFeeAmount: Decimal | null
     connectedAccountId: string | null
     stripePaymentIntentId: string | null
+    shippingFirstName: string | null
+    shippingLastName: string | null
+    shippingEmail: string | null
+    shippingPhone: string | null
+    shippingAddress: string | null
+    shippingCity: string | null
+    shippingState: string | null
+    shippingZipCode: string | null
+    shippingCountry: string | null
     createdAt: Date
     updatedAt: Date
     _count: OrderCountAggregateOutputType | null
@@ -2960,6 +3023,15 @@ export namespace Prisma {
     platformFeeAmount?: boolean
     connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
+    shippingFirstName?: boolean
+    shippingLastName?: boolean
+    shippingEmail?: boolean
+    shippingPhone?: boolean
+    shippingAddress?: boolean
+    shippingCity?: boolean
+    shippingState?: boolean
+    shippingZipCode?: boolean
+    shippingCountry?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     User?: boolean | UserDefaultArgs<ExtArgs>
@@ -2976,6 +3048,15 @@ export namespace Prisma {
     platformFeeAmount?: boolean
     connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
+    shippingFirstName?: boolean
+    shippingLastName?: boolean
+    shippingEmail?: boolean
+    shippingPhone?: boolean
+    shippingAddress?: boolean
+    shippingCity?: boolean
+    shippingState?: boolean
+    shippingZipCode?: boolean
+    shippingCountry?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     User?: boolean | UserDefaultArgs<ExtArgs>
@@ -2990,6 +3071,15 @@ export namespace Prisma {
     platformFeeAmount?: boolean
     connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
+    shippingFirstName?: boolean
+    shippingLastName?: boolean
+    shippingEmail?: boolean
+    shippingPhone?: boolean
+    shippingAddress?: boolean
+    shippingCity?: boolean
+    shippingState?: boolean
+    shippingZipCode?: boolean
+    shippingCountry?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     User?: boolean | UserDefaultArgs<ExtArgs>
@@ -3004,11 +3094,20 @@ export namespace Prisma {
     platformFeeAmount?: boolean
     connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
+    shippingFirstName?: boolean
+    shippingLastName?: boolean
+    shippingEmail?: boolean
+    shippingPhone?: boolean
+    shippingAddress?: boolean
+    shippingCity?: boolean
+    shippingState?: boolean
+    shippingZipCode?: boolean
+    shippingCountry?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "userId" | "status" | "total" | "platformFeeAmount" | "connectedAccountId" | "stripePaymentIntentId" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "userId" | "status" | "total" | "platformFeeAmount" | "connectedAccountId" | "stripePaymentIntentId" | "shippingFirstName" | "shippingLastName" | "shippingEmail" | "shippingPhone" | "shippingAddress" | "shippingCity" | "shippingState" | "shippingZipCode" | "shippingCountry" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     User?: boolean | UserDefaultArgs<ExtArgs>
     OrderItem?: boolean | Order$OrderItemArgs<ExtArgs>
@@ -3036,6 +3135,15 @@ export namespace Prisma {
       platformFeeAmount: Prisma.Decimal | null
       connectedAccountId: string | null
       stripePaymentIntentId: string | null
+      shippingFirstName: string | null
+      shippingLastName: string | null
+      shippingEmail: string | null
+      shippingPhone: string | null
+      shippingAddress: string | null
+      shippingCity: string | null
+      shippingState: string | null
+      shippingZipCode: string | null
+      shippingCountry: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["order"]>
@@ -3471,6 +3579,15 @@ export namespace Prisma {
     readonly platformFeeAmount: FieldRef<"Order", 'Decimal'>
     readonly connectedAccountId: FieldRef<"Order", 'String'>
     readonly stripePaymentIntentId: FieldRef<"Order", 'String'>
+    readonly shippingFirstName: FieldRef<"Order", 'String'>
+    readonly shippingLastName: FieldRef<"Order", 'String'>
+    readonly shippingEmail: FieldRef<"Order", 'String'>
+    readonly shippingPhone: FieldRef<"Order", 'String'>
+    readonly shippingAddress: FieldRef<"Order", 'String'>
+    readonly shippingCity: FieldRef<"Order", 'String'>
+    readonly shippingState: FieldRef<"Order", 'String'>
+    readonly shippingZipCode: FieldRef<"Order", 'String'>
+    readonly shippingCountry: FieldRef<"Order", 'String'>
     readonly createdAt: FieldRef<"Order", 'DateTime'>
     readonly updatedAt: FieldRef<"Order", 'DateTime'>
   }
@@ -9575,6 +9692,15 @@ export namespace Prisma {
     platformFeeAmount: 'platformFeeAmount',
     connectedAccountId: 'connectedAccountId',
     stripePaymentIntentId: 'stripePaymentIntentId',
+    shippingFirstName: 'shippingFirstName',
+    shippingLastName: 'shippingLastName',
+    shippingEmail: 'shippingEmail',
+    shippingPhone: 'shippingPhone',
+    shippingAddress: 'shippingAddress',
+    shippingCity: 'shippingCity',
+    shippingState: 'shippingState',
+    shippingZipCode: 'shippingZipCode',
+    shippingCountry: 'shippingCountry',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -9858,6 +9984,15 @@ export namespace Prisma {
     platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: StringNullableFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableFilter<"Order"> | string | null
+    shippingFirstName?: StringNullableFilter<"Order"> | string | null
+    shippingLastName?: StringNullableFilter<"Order"> | string | null
+    shippingEmail?: StringNullableFilter<"Order"> | string | null
+    shippingPhone?: StringNullableFilter<"Order"> | string | null
+    shippingAddress?: StringNullableFilter<"Order"> | string | null
+    shippingCity?: StringNullableFilter<"Order"> | string | null
+    shippingState?: StringNullableFilter<"Order"> | string | null
+    shippingZipCode?: StringNullableFilter<"Order"> | string | null
+    shippingCountry?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     User?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -9873,6 +10008,15 @@ export namespace Prisma {
     platformFeeAmount?: SortOrderInput | SortOrder
     connectedAccountId?: SortOrderInput | SortOrder
     stripePaymentIntentId?: SortOrderInput | SortOrder
+    shippingFirstName?: SortOrderInput | SortOrder
+    shippingLastName?: SortOrderInput | SortOrder
+    shippingEmail?: SortOrderInput | SortOrder
+    shippingPhone?: SortOrderInput | SortOrder
+    shippingAddress?: SortOrderInput | SortOrder
+    shippingCity?: SortOrderInput | SortOrder
+    shippingState?: SortOrderInput | SortOrder
+    shippingZipCode?: SortOrderInput | SortOrder
+    shippingCountry?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     User?: UserOrderByWithRelationInput
@@ -9891,6 +10035,15 @@ export namespace Prisma {
     platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: StringNullableFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableFilter<"Order"> | string | null
+    shippingFirstName?: StringNullableFilter<"Order"> | string | null
+    shippingLastName?: StringNullableFilter<"Order"> | string | null
+    shippingEmail?: StringNullableFilter<"Order"> | string | null
+    shippingPhone?: StringNullableFilter<"Order"> | string | null
+    shippingAddress?: StringNullableFilter<"Order"> | string | null
+    shippingCity?: StringNullableFilter<"Order"> | string | null
+    shippingState?: StringNullableFilter<"Order"> | string | null
+    shippingZipCode?: StringNullableFilter<"Order"> | string | null
+    shippingCountry?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     User?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -9906,6 +10059,15 @@ export namespace Prisma {
     platformFeeAmount?: SortOrderInput | SortOrder
     connectedAccountId?: SortOrderInput | SortOrder
     stripePaymentIntentId?: SortOrderInput | SortOrder
+    shippingFirstName?: SortOrderInput | SortOrder
+    shippingLastName?: SortOrderInput | SortOrder
+    shippingEmail?: SortOrderInput | SortOrder
+    shippingPhone?: SortOrderInput | SortOrder
+    shippingAddress?: SortOrderInput | SortOrder
+    shippingCity?: SortOrderInput | SortOrder
+    shippingState?: SortOrderInput | SortOrder
+    shippingZipCode?: SortOrderInput | SortOrder
+    shippingCountry?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: OrderCountOrderByAggregateInput
@@ -9927,6 +10089,15 @@ export namespace Prisma {
     platformFeeAmount?: DecimalNullableWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: StringNullableWithAggregatesFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingFirstName?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingLastName?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingEmail?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingPhone?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingAddress?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingCity?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingState?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingZipCode?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingCountry?: StringNullableWithAggregatesFilter<"Order"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
   }
@@ -10375,6 +10546,15 @@ export namespace Prisma {
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     User: UserCreateNestedOneWithoutOrderInput
@@ -10390,6 +10570,15 @@ export namespace Prisma {
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -10403,6 +10592,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     User?: UserUpdateOneRequiredWithoutOrderNestedInput
@@ -10418,6 +10616,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     OrderItem?: OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -10432,6 +10639,15 @@ export namespace Prisma {
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -10444,6 +10660,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10457,6 +10682,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11062,6 +11296,15 @@ export namespace Prisma {
     platformFeeAmount?: SortOrder
     connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
+    shippingFirstName?: SortOrder
+    shippingLastName?: SortOrder
+    shippingEmail?: SortOrder
+    shippingPhone?: SortOrder
+    shippingAddress?: SortOrder
+    shippingCity?: SortOrder
+    shippingState?: SortOrder
+    shippingZipCode?: SortOrder
+    shippingCountry?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11080,6 +11323,15 @@ export namespace Prisma {
     platformFeeAmount?: SortOrder
     connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
+    shippingFirstName?: SortOrder
+    shippingLastName?: SortOrder
+    shippingEmail?: SortOrder
+    shippingPhone?: SortOrder
+    shippingAddress?: SortOrder
+    shippingCity?: SortOrder
+    shippingState?: SortOrder
+    shippingZipCode?: SortOrder
+    shippingCountry?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11093,6 +11345,15 @@ export namespace Prisma {
     platformFeeAmount?: SortOrder
     connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
+    shippingFirstName?: SortOrder
+    shippingLastName?: SortOrder
+    shippingEmail?: SortOrder
+    shippingPhone?: SortOrder
+    shippingAddress?: SortOrder
+    shippingCity?: SortOrder
+    shippingState?: SortOrder
+    shippingZipCode?: SortOrder
+    shippingCountry?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -12233,6 +12494,15 @@ export namespace Prisma {
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     User: UserCreateNestedOneWithoutOrderInput
@@ -12247,6 +12517,15 @@ export namespace Prisma {
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12333,6 +12612,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     User?: UserUpdateOneRequiredWithoutOrderNestedInput
@@ -12347,6 +12635,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12709,6 +13006,15 @@ export namespace Prisma {
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     OrderItem?: OrderItemCreateNestedManyWithoutOrderInput
@@ -12722,6 +13028,15 @@ export namespace Prisma {
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -12765,6 +13080,15 @@ export namespace Prisma {
     platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: StringNullableFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableFilter<"Order"> | string | null
+    shippingFirstName?: StringNullableFilter<"Order"> | string | null
+    shippingLastName?: StringNullableFilter<"Order"> | string | null
+    shippingEmail?: StringNullableFilter<"Order"> | string | null
+    shippingPhone?: StringNullableFilter<"Order"> | string | null
+    shippingAddress?: StringNullableFilter<"Order"> | string | null
+    shippingCity?: StringNullableFilter<"Order"> | string | null
+    shippingState?: StringNullableFilter<"Order"> | string | null
+    shippingZipCode?: StringNullableFilter<"Order"> | string | null
+    shippingCountry?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
   }
@@ -12963,6 +13287,15 @@ export namespace Prisma {
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
+    shippingFirstName?: string | null
+    shippingLastName?: string | null
+    shippingEmail?: string | null
+    shippingPhone?: string | null
+    shippingAddress?: string | null
+    shippingCity?: string | null
+    shippingState?: string | null
+    shippingZipCode?: string | null
+    shippingCountry?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12975,6 +13308,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     OrderItem?: OrderItemUpdateManyWithoutOrderNestedInput
@@ -12988,6 +13330,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     OrderItem?: OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -13001,6 +13352,15 @@ export namespace Prisma {
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingFirstName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingLastName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCity?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingState?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

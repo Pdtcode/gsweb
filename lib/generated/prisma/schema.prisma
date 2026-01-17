@@ -35,6 +35,15 @@ model Order {
   platformFeeAmount     Decimal?    @db.Decimal(10, 2)
   connectedAccountId    String?
   stripePaymentIntentId String?
+  shippingFirstName     String?
+  shippingLastName      String?
+  shippingEmail         String?
+  shippingPhone         String?
+  shippingAddress       String?
+  shippingCity          String?
+  shippingState         String?
+  shippingZipCode       String?
+  shippingCountry       String?
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
   User                  User        @relation(fields: [userId], references: [id])
