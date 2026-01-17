@@ -21,7 +21,11 @@ export async function POST(req: NextRequest) {
     const sig = req.headers.get("stripe-signature")!;
 
     console.log("Webhook signature present:", !!sig);
+    console.log("Signature value:", sig ? sig.substring(0, 50) + "..." : "NONE");
     console.log("Endpoint secret configured:", !!endpointSecret);
+    console.log("Endpoint secret prefix:", endpointSecret ? endpointSecret.substring(0, 10) + "..." : "NONE");
+    console.log("Body length:", body.length);
+    console.log("Body start:", body.substring(0, 100));
 
     let event: Stripe.Event;
 
@@ -32,7 +36,21 @@ export async function POST(req: NextRequest) {
       console.log("Event ID:", event.id);
     } catch (err) {
       console.error("❌ Webhook signature verification failed:", err);
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+      console.error("Error type:", err instanceof Error ? err.constructor.name : typeof err);
+      console.error("Error message:", err instanceof Error ? err.message : String(err));
+
+      // Development bypass - REMOVE IN PRODUCTION
+      if (process.env.NODE_ENV === 'development' && process.env.SKIP_WEBHOOK_SIGNATURE) {
+        console.log("⚠️ DEVELOPMENT MODE: Bypassing webhook signature verification");
+        try {
+          event = JSON.parse(body);
+        } catch (parseErr) {
+          console.error("❌ Failed to parse webhook body as JSON:", parseErr);
+          return NextResponse.json({ error: "Invalid webhook payload" }, { status: 400 });
+        }
+      } else {
+        return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+      }
     }
 
     switch (event.type) {

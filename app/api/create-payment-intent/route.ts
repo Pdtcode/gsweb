@@ -41,24 +41,10 @@ export async function POST(request: Request) {
         continue; // Skip validation for products without variants
       }
 
-      // Try to find variant by ID first, then by SKU if ID fails
+      // Try to find variant by SKU first, then by ID if SKU fails
       let variant = null;
       try {
-        console.log("Trying to find variant by ID:", item.variantId);
-        variant = await prisma.productVariant.findUnique({
-          where: { id: item.variantId },
-          include: {
-            Product: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        });
-        console.log("Variant found by ID:", variant ? "YES" : "NO");
-      } catch (error) {
-        console.log("ID lookup failed, trying SKU lookup");
-        // If ID lookup fails, try SKU lookup
+        console.log("Trying to find variant by SKU:", item.variantId);
         variant = await prisma.productVariant.findUnique({
           where: { sku: item.variantId },
           include: {
@@ -70,6 +56,20 @@ export async function POST(request: Request) {
           },
         });
         console.log("Variant found by SKU:", variant ? "YES" : "NO");
+      } catch (error) {
+        console.log("SKU lookup failed, trying ID lookup");
+        // If SKU lookup fails, try ID lookup
+        variant = await prisma.productVariant.findUnique({
+          where: { id: item.variantId },
+          include: {
+            Product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+        console.log("Variant found by ID:", variant ? "YES" : "NO");
       }
 
       // If still not found, try to find by size/color combination
@@ -434,6 +434,7 @@ export async function POST(request: Request) {
           }
 
           let variantId = null;
+          let variantSku = null;
 
           // Try to find variant by size and color, or by ID/SKU
           if (product) {
@@ -457,21 +458,31 @@ export async function POST(request: Request) {
 
             if (variant) {
               variantId = variant.id;
+              variantSku = variant.sku;
               console.log(`✅ Variant matched: ${variant.sku} (ID: ${variant.id})`);
               // Note: Stock will be decremented by Stripe webhook on payment success
               // Do NOT decrement here to avoid double decrement
             } else {
               console.log(`⚠️ No variant found for this item`);
+              // If we couldn't find variant but have a variantId that looks like a SKU, store it
+              if (item.variantId && !item.variantId.includes('-')) {
+                // Likely an ID, not a SKU
+                variantId = item.variantId;
+              } else if (item.variantId) {
+                // Likely a SKU
+                variantSku = item.variantId;
+              }
             }
           }
 
-          console.log(`💾 Creating order item with variantId: ${variantId || 'null'}`);
+          console.log(`💾 Creating order item with variantId: ${variantId || 'null'}, sku: ${variantSku || 'null'}`);
 
           await prisma.orderItem.create({
             data: {
               orderId: order.id,
               productId: product.id,
               variantId,
+              sku: variantSku,
               quantity: item.quantity,
               price: product.price,
             },

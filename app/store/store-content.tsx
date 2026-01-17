@@ -2,11 +2,36 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
 import { Category, Collection, Product } from "@/types";
+
+// SKU Data Types
+interface ProductSku {
+  productId: string;
+  productName: string;
+  productSlug: string;
+  variants: {
+    id: string;
+    sku: string;
+    size: string;
+    color: string | null;
+    stock: number;
+  }[];
+}
+
+interface SkuLookup {
+  [sku: string]: {
+    productId: string;
+    productName: string;
+    variantId: string;
+    size: string;
+    color: string | null;
+    stock: number;
+  };
+}
 
 // Giveaway Section Component
 function GiveawaySection() {
@@ -72,6 +97,43 @@ export default function StoreContent({
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
+  const [skuData, setSkuData] = useState<{
+    products: ProductSku[];
+    skuLookup: SkuLookup;
+  } | null>(null);
+  const [isLoadingSkus, setIsLoadingSkus] = useState(true);
+
+  // Fetch SKU data from Neon database on component mount
+  useEffect(() => {
+    async function fetchSkus() {
+      try {
+        setIsLoadingSkus(true);
+        const response = await fetch('/api/products/skus');
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch SKUs');
+        }
+
+        const data = await response.json();
+        setSkuData({
+          products: data.products,
+          skuLookup: data.skuLookup,
+        });
+
+        console.log('✅ SKU data loaded:', {
+          totalProducts: data.totalProducts,
+          totalVariants: data.totalVariants,
+          sampleSkus: Object.keys(data.skuLookup).slice(0, 5)
+        });
+      } catch (error) {
+        console.error('❌ Failed to load SKU data:', error);
+      } finally {
+        setIsLoadingSkus(false);
+      }
+    }
+
+    fetchSkus();
+  }, []);
 
   // Filter products based on selected category
   const filteredProducts = selectedCategory
@@ -155,15 +217,37 @@ export default function StoreContent({
 
       {/* Products */}
       <div className="">
-        <h2 className={title({ size: "md", className: "mb-4" }).toString()}>
-          {selectedCategory ? `${selectedCategory.title} Products` : "Products"}
-          {selectedCategory && (
-            <span className="ml-2 text-sm text-gray-500 dark:text-gray-400 font-normal">
-              ({filteredProducts.length}{" "}
-              {filteredProducts.length === 1 ? "product" : "products"})
-            </span>
-          )}
-        </h2>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className={title({ size: "md" }).toString()}>
+            {selectedCategory ? `${selectedCategory.title} Products` : "Products"}
+            {selectedCategory && (
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400 font-normal">
+                ({filteredProducts.length}{" "}
+                {filteredProducts.length === 1 ? "product" : "products"})
+              </span>
+            )}
+          </h2>
+
+          {/* SKU Loading/Status Indicator */}
+          <div className="flex items-center gap-2">
+            {isLoadingSkus ? (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                Loading SKUs...
+              </div>
+            ) : skuData ? (
+              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                SKU data loaded ({Object.keys(skuData.skuLookup).length} variants)
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                SKU data failed to load
+              </div>
+            )}
+          </div>
+        </div>
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 mt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (

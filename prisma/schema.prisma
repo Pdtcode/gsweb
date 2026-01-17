@@ -57,6 +57,7 @@ model OrderItem {
   orderId        String
   productId      String
   variantId      String?
+  sku            String?
   quantity       Int
   price          Decimal         @db.Decimal(10, 2)
   Order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)

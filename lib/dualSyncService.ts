@@ -14,6 +14,7 @@ interface OrderData {
   items: Array<{
     productId: string;
     variantId?: string;
+    sku?: string;
     quantity: number;
     price: number;
   }>;
@@ -69,6 +70,7 @@ export class DualSyncService {
             create: orderData.items.map(item => ({
               productId: item.productId,
               variantId: item.variantId,
+              sku: item.sku,
               quantity: item.quantity,
               price: item.price,
             })),

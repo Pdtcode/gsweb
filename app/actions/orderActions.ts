@@ -79,6 +79,7 @@ export async function createOrder(orderData: {
   items: Array<{
     productId: string;
     variantId?: string;
+    sku?: string;
     quantity: number;
     price: number;
   }>;
@@ -183,7 +184,19 @@ export async function decrementOrderStock(orderId: string) {
 
       let variant = null;
 
-      if (item.variantId) {
+      if (item.sku) {
+        console.log(`🔍 Looking for variant by SKU: ${item.sku}`);
+        // Get variant by SKU if specified (preferred method)
+        variant = await prisma.productVariant.findUnique({
+          where: { sku: item.sku },
+        });
+
+        if (variant) {
+          console.log(`✅ Variant found by SKU - ID: ${variant.id}, Current stock: ${variant.stock}`);
+        } else {
+          console.log(`⚠️ Variant with SKU ${item.sku} not found`);
+        }
+      } else if (item.variantId) {
         console.log(`🔍 Looking for variant by ID: ${item.variantId}`);
         // Get variant by ID if specified
         variant = await prisma.productVariant.findUnique({
@@ -196,9 +209,9 @@ export async function decrementOrderStock(orderId: string) {
           console.log(`⚠️ Variant with ID ${item.variantId} not found`);
         }
       } else if (item.productId) {
-        console.log(`🔍 No variantId provided, searching for default variant for product: ${item.productId}`);
+        console.log(`🔍 No SKU or variantId provided, searching for default variant for product: ${item.productId}`);
 
-        // No variantId - find the default variant for this product
+        // No SKU or variantId - find the default variant for this product
         variant = await prisma.productVariant.findFirst({
           where: {
             productId: item.productId,
@@ -274,13 +287,18 @@ export async function restoreOrderStock(orderId: string) {
     for (const item of order.OrderItem) {
       let variant = null;
 
-      if (item.variantId) {
+      if (item.sku) {
+        // Get variant by SKU if specified (preferred method)
+        variant = await prisma.productVariant.findUnique({
+          where: { sku: item.sku },
+        });
+      } else if (item.variantId) {
         // Get variant by ID if specified
         variant = await prisma.productVariant.findUnique({
           where: { id: item.variantId },
         });
       } else if (item.productId) {
-        // No variantId - find the default variant for this product
+        // No SKU or variantId - find the default variant for this product
         variant = await prisma.productVariant.findFirst({
           where: {
             productId: item.productId,

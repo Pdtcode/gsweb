@@ -5,8 +5,10 @@ import { Product } from "@/types";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { VariantSelector } from "@/components/variant-selector";
 import { InventoryDisplay } from "@/components/inventory-display";
+import { useSkuContext } from "@/lib/contexts/sku-context";
 
 export function AddToCartButtonWrapper({ product }: { product: Product }) {
+  const { getSkuByVariantOptions, skuData } = useSkuContext();
   const [selectedVariant, setSelectedVariant] = useState<{
     size?: string;
     color?: string;
@@ -27,9 +29,57 @@ export function AddToCartButtonWrapper({ product }: { product: Product }) {
       }
     });
 
-    // Generate a simple SKU based on selected options
+    // Use the SKU context to find the actual SKU from the database
     if (variant.size || variant.color) {
-      variant.sku = `${product.slug?.current || product._id}-${variant.size || 'default'}-${variant.color || 'default'}`;
+      const sku = getSkuByVariantOptions(
+        product.slug?.current || '',
+        variant.size,
+        variant.color
+      );
+
+      if (sku) {
+        variant.sku = sku;
+        console.log('✅ Found SKU from database:', sku, 'for', variant);
+      } else {
+        console.log('❌ No SKU found for variant:', variant, 'in product:', product.slug?.current);
+        // Fallback: try to find SKU from Sanity data (existing logic)
+        if (product.variants) {
+          for (const productVariant of product.variants) {
+            if (!productVariant.inventory) continue;
+
+            for (const inventoryItem of productVariant.inventory) {
+              const option = inventoryItem.option;
+              let matches = false;
+
+              if (productVariant.name?.toLowerCase() === "color" && variant.color && variant.size) {
+                const optionLower = option.toLowerCase();
+                const colorLower = variant.color.toLowerCase();
+                const sizeLower = variant.size.toLowerCase();
+                matches = optionLower.includes(colorLower) && optionLower.includes(sizeLower);
+              } else if (productVariant.name?.toLowerCase() === "size" && variant.size) {
+                matches = option.toLowerCase() === variant.size.toLowerCase();
+              } else if (variant.color && variant.size) {
+                const optionLower = option.toLowerCase();
+                const colorLower = variant.color.toLowerCase();
+                const sizeLower = variant.size.toLowerCase();
+                matches = optionLower.includes(colorLower) && optionLower.includes(sizeLower);
+              } else if (variant.color) {
+                matches = option.toLowerCase().includes(variant.color.toLowerCase());
+              } else if (variant.size) {
+                matches = option.toLowerCase().includes(variant.size.toLowerCase());
+              }
+
+              if (matches && inventoryItem.sku) {
+                variant.sku = inventoryItem.sku;
+                console.log('⚠️ Fallback: Found SKU from Sanity:', inventoryItem.sku);
+                break;
+              }
+            }
+
+            if (variant.sku) break;
+          }
+        }
+      }
     }
 
     setSelectedVariant(variant);

@@ -6,6 +6,7 @@ generator client {
 
 // Note: IDE warnings about url/directUrl are for Prisma v7+
 // Current project uses v6.9.0 where this configuration is correct
+// These properties will need to be moved to prisma.config.ts when upgrading to v7
 
 datasource db {
   provider  = "postgresql"
@@ -55,6 +56,7 @@ model OrderItem {
   orderId        String
   productId      String
   variantId      String?
+  sku            String?
   quantity       Int
   price          Decimal         @db.Decimal(10, 2)
   Order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
