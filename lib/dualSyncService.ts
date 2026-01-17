@@ -30,6 +30,15 @@ interface OrderWithRelations {
   total: any;
   status: string;
   stripePaymentIntentId: string | null;
+  shippingFirstName: string | null;
+  shippingLastName: string | null;
+  shippingEmail: string | null;
+  shippingPhone: string | null;
+  shippingAddress: string | null;
+  shippingCity: string | null;
+  shippingState: string | null;
+  shippingZipCode: string | null;
+  shippingCountry: string | null;
   createdAt: Date;
   updatedAt: Date;
   User: {
@@ -219,6 +228,24 @@ export class DualSyncService {
         total: Number(order.total),
         status: order.status,
         stripePaymentIntentId: order.stripePaymentIntentId || "",
+        // Map Neon DB individual shipping fields to Sanity's nested shippingAddress object
+        shippingAddress: {
+          name: `${order.shippingFirstName || ""} ${order.shippingLastName || ""}`.trim(),
+          street: order.shippingAddress || "",
+          city: order.shippingCity || "",
+          state: order.shippingState || "",
+          postalCode: order.shippingZipCode || "",
+          country: order.shippingCountry || "",
+        },
+        // Also include individual fields for backwards compatibility
+        shippingFirstName: order.shippingFirstName || "",
+        shippingLastName: order.shippingLastName || "",
+        shippingEmail: order.shippingEmail || "",
+        shippingPhone: order.shippingPhone || "",
+        shippingCity: order.shippingCity || "",
+        shippingState: order.shippingState || "",
+        shippingZipCode: order.shippingZipCode || "",
+        shippingCountry: order.shippingCountry || "",
         createdAt: order.createdAt.toISOString(),
         updatedAt: order.updatedAt.toISOString(),
         items: order.OrderItem.map((item) => ({
