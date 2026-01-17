@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@heroui/button';
 import { Input } from '@heroui/input';
 import Image from 'next/image';
+import { color } from 'framer-motion';
 
 interface WorkInProgressProps {
   onPasswordCorrect: () => void;
@@ -46,7 +47,7 @@ export default function WorkInProgress({ onPasswordCorrect }: WorkInProgressProp
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="max-w-md w-full mx-auto p-8">
         <div className="text-center mb-8">
           {/* Crash Dummy Splash Image */}
@@ -56,17 +57,14 @@ export default function WorkInProgress({ onPasswordCorrect }: WorkInProgressProp
               alt="Try Again Crash Dummy"
               width={200}
               height={200}
-              className="rounded-lg shadow-lg"
+              className="rounded-lg"
               priority
             />
           </div>
 
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            🚧 Work in Progress
+          <h1 className="text-xl font-bold text-gray-400 mb-4">
+            Please enter the password to continue
           </h1>
-          <p className="text-foreground/70 text-lg">
-            This website is currently under construction. Please enter the password to continue.
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,7 +73,14 @@ export default function WorkInProgress({ onPasswordCorrect }: WorkInProgressProp
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full"
+            className="w-full text-black"
+            classNames={{
+              input: "!bg-white !text-black",
+              inputWrapper: "!bg-white !text-black"
+            }}
+            style={{
+              backgroundColor: 'white'
+            }}
             size="lg"
           />
 
@@ -94,7 +99,7 @@ export default function WorkInProgress({ onPasswordCorrect }: WorkInProgressProp
           </Button>
         </form>
 
-        <div className="text-center mt-8 text-foreground/50 text-sm">
+        <div className="text-center mt-8 text-gray-400 text-sm">
           Contact us for access if you&apos;re an authorized user.
         </div>
       </div>
