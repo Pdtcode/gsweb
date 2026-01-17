@@ -53,9 +53,9 @@ export async function GET(req: NextRequest) {
       analysis: {
         webhookWasProcessed: !!webhookLog,
         orderWasFound: !!order,
-        inventoryDecremented: currentVariantStock !== null ? currentVariantStock < 25 : "unknown",
+        inventoryDecremented: currentVariantStock !== null && currentVariantStock !== undefined ? currentVariantStock < 25 : "unknown",
         expectedStock: 24,
-        actualStock: currentVariantStock
+        actualStock: currentVariantStock ?? null
       }
     });
 
