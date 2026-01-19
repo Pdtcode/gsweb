@@ -166,11 +166,13 @@ const createWriteClient = () => {
     console.error("Failed to parse DIRECT_URL:", e);
   }
 
+  // Use smaller connection pool for write client since it's only for writes
+  // This helps prevent connection exhaustion in serverless
   const client = new PrismaClient({
     log: getPrismaLogLevels() as any,
     datasources: {
       db: {
-        url: directUrl,
+        url: `${directUrl}${directUrl.includes('?') ? '&' : '?'}connection_limit=2`,
       },
     },
   });

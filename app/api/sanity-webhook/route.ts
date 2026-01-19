@@ -188,16 +188,19 @@ async function syncProductsFromSanity() {
             });
 
             if (existingVariant) {
-              // Update existing variant
+              // Update existing variant metadata only
+              // NOTE: Do NOT overwrite stock - Neon is source of truth for inventory
+              // Stock is managed via order decrements and manual restocking only
               await prisma.productVariant.update({
                 where: { id: existingVariant.id },
                 data: {
-                  stock: quantity,
+                  // stock is NOT updated - preserving Neon's stock value
                   sku: sku,
                   size: size,
                   color: color
                 }
               });
+              console.log(`Variant ${sku} updated (stock preserved at ${existingVariant.stock}, Sanity has ${quantity})`);
             } else {
               // Create new variant
               await prisma.productVariant.create({

@@ -49,7 +49,7 @@ export async function POST() {
     }
     console.log('SANITY_API_TOKEN: configured (length:', process.env.SANITY_API_TOKEN.length, ')');
 
-    // Fetch all orders from Sanity
+    // Fetch all orders from Sanity with all shipping fields
     const sanityOrders = await sanityClient.fetch(`
       *[_type == "order"] {
         _id,
@@ -69,6 +69,14 @@ export async function POST() {
           price
         },
         shippingAddress,
+        shippingFirstName,
+        shippingLastName,
+        shippingEmail,
+        shippingPhone,
+        shippingCity,
+        shippingState,
+        shippingZipCode,
+        shippingCountry,
         stripePaymentIntentId,
         createdAt,
         updatedAt
@@ -92,30 +100,25 @@ export async function POST() {
         // Validate and prepare order data
         const validStatuses = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const;
         const status = validStatuses.includes(sanityOrder.status as any) ? sanityOrder.status as typeof validStatuses[number] : 'PENDING';
-        
+
         console.log(`Processing order ${orderId}: status from Sanity = "${sanityOrder.status}", validated status = "${status}"`);
 
-        const orderData = {
-          orderNumber: sanityOrder.orderNumber,
-          userId: sanityOrder.userId,
-          status: status,
-          total: sanityOrder.total,
-          stripePaymentIntentId: sanityOrder.stripePaymentIntentId,
-          createdAt: new Date(sanityOrder.createdAt),
-          // Note: updatedAt is automatically managed by Prisma
-        };
-
         if (existingOrder) {
+          // For EXISTING orders, only update status and basic fields
+          // PRESERVE shipping data from Neon (source of truth for shipping info)
           console.log(`Updating existing order ${orderId}:`, {
             oldStatus: existingOrder.status,
             newStatus: status,
-            orderData
           });
-          
-          // Update existing order
+
+          // Only update status - shipping fields are preserved from original order
           const updatedOrder = await prisma.order.update({
             where: { id: orderId },
-            data: orderData
+            data: {
+              status: status,
+              // DO NOT overwrite shipping fields - Neon is source of truth
+              // Shipping data comes from payment flow, not Sanity
+            }
           });
 
           console.log(`Order ${orderId} updated successfully. New status: ${updatedOrder.status}`);
@@ -128,12 +131,36 @@ export async function POST() {
           stats.updated++;
         } else {
           console.log(`Creating new order ${orderId} with status: ${status}`);
-          
-          // Create new order from Sanity data
+
+          // For NEW orders, map Sanity shipping fields to Neon flat structure
+          // Parse customer name into first/last
+          const customerNameParts = (sanityOrder.customerName || '').split(' ');
+          const firstName = customerNameParts[0] || '';
+          const lastName = customerNameParts.slice(1).join(' ') || '';
+
+          // Map Sanity's nested shippingAddress to Neon's flat fields
+          const shippingAddress = sanityOrder.shippingAddress || {};
+
+          // Create new order from Sanity data with proper shipping mapping
           const newOrder = await prisma.order.create({
             data: {
               id: orderId,
-              ...orderData
+              orderNumber: sanityOrder.orderNumber,
+              userId: sanityOrder.userId,
+              status: status,
+              total: sanityOrder.total,
+              stripePaymentIntentId: sanityOrder.stripePaymentIntentId,
+              createdAt: new Date(sanityOrder.createdAt),
+              // Map shipping fields from Sanity
+              shippingFirstName: sanityOrder.shippingFirstName || shippingAddress.name?.split(' ')[0] || firstName,
+              shippingLastName: sanityOrder.shippingLastName || shippingAddress.name?.split(' ').slice(1).join(' ') || lastName,
+              shippingEmail: sanityOrder.shippingEmail || sanityOrder.customerEmail || '',
+              shippingPhone: sanityOrder.shippingPhone || '',
+              shippingAddress: shippingAddress.street || '',
+              shippingCity: sanityOrder.shippingCity || shippingAddress.city || '',
+              shippingState: sanityOrder.shippingState || shippingAddress.state || '',
+              shippingZipCode: sanityOrder.shippingZipCode || shippingAddress.postalCode || '',
+              shippingCountry: sanityOrder.shippingCountry || shippingAddress.country || '',
             }
           });
 

@@ -128,6 +128,8 @@ export async function POST(req: NextRequest) {
 
               if (dbVariant) {
                 // Update existing variant with correct size/color mapping
+                // NOTE: Do NOT overwrite stock - Neon is source of truth for inventory
+                // Stock is managed via order decrements and manual restocking only
                 const option = inventoryItem.option;
                 let size, color;
 
@@ -154,7 +156,7 @@ export async function POST(req: NextRequest) {
                 await prisma.productVariant.update({
                   where: { id: dbVariant.id },
                   data: {
-                    stock: quantity,
+                    // stock is NOT updated - preserving Neon's stock value
                     size: size,
                     color: color,
                   },
@@ -163,8 +165,9 @@ export async function POST(req: NextRequest) {
                 syncResults.push({
                   productName: sanityProduct.name,
                   variantSku: sku,
-                  action: "updated",
-                  quantity: quantity,
+                  action: "updated (stock preserved)",
+                  currentStock: dbVariant.stock,
+                  sanityQuantity: quantity,
                 });
               } else {
                 // Create new variant
@@ -224,18 +227,17 @@ export async function POST(req: NextRequest) {
           });
 
           if (dbVariant) {
-            await prisma.productVariant.update({
-              where: { id: dbVariant.id },
-              data: {
-                stock: quantity,
-              },
-            });
+            // NOTE: Do NOT overwrite stock - Neon is source of truth for inventory
+            // Stock is managed via order decrements and manual restocking only
+            // Only update if creating new variant, not existing ones
+            console.log(`Variant ${sku} exists - preserving stock at ${dbVariant.stock} (Sanity has ${quantity})`);
 
             syncResults.push({
               productName: sanityProduct.name,
               variantSku: sku,
-              action: "updated",
-              quantity: quantity,
+              action: "skipped (stock preserved)",
+              currentStock: dbVariant.stock,
+              sanityQuantity: quantity,
             });
           } else {
             await prisma.productVariant.create({
