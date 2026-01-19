@@ -116,4 +116,40 @@ prisma
     console.log("Application will retry connections automatically when needed");
   });
 
+// Create a separate write client that uses DIRECT_URL for write operations
+// This bypasses the connection pooler which can cause issues with Neon writes
+let prismaWrite: PrismaClient;
+
+const createWriteClient = () => {
+  const directUrl = process.env.DIRECT_URL;
+
+  if (!directUrl) {
+    console.warn("⚠️ DIRECT_URL not set - write client will use pooler (may cause issues)");
+    return prisma; // Fallback to regular client
+  }
+
+  console.log("Creating dedicated write client with DIRECT_URL");
+
+  const client = new PrismaClient({
+    log: getPrismaLogLevels() as any,
+    datasources: {
+      db: {
+        url: directUrl,
+      },
+    },
+  });
+
+  return client;
+};
+
+if (process.env.NODE_ENV === "production") {
+  prismaWrite = createWriteClient();
+} else {
+  if (!(global as any).prismaWrite) {
+    (global as any).prismaWrite = createWriteClient();
+  }
+  prismaWrite = (global as any).prismaWrite;
+}
+
 export default prisma;
+export { prismaWrite };

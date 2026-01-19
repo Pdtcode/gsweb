@@ -1,7 +1,7 @@
  
 "use server";
 
-import prisma from "@/lib/prismaClient";
+import prisma, { prismaWrite } from "@/lib/prismaClient";
 import { DualSyncService } from "@/lib/dualSyncService";
 
 /**
@@ -247,8 +247,9 @@ export async function decrementOrderStock(orderId: string) {
         console.log(`   New stock: ${newStock}`);
 
         // Decrement the stock by the ordered quantity
-        console.log(`🔄 Executing UPDATE on variant ${variant.id}...`);
-        const updatedVariant = await prisma.productVariant.update({
+        // Use prismaWrite (direct connection) to bypass pooler issues
+        console.log(`🔄 Executing UPDATE on variant ${variant.id} via DIRECT connection...`);
+        const updatedVariant = await prismaWrite.productVariant.update({
           where: { id: variant.id },
           data: {
             stock: newStock
@@ -256,11 +257,11 @@ export async function decrementOrderStock(orderId: string) {
         });
         console.log(`✅ UPDATE returned - variant ID: ${updatedVariant.id}, stock in response: ${updatedVariant.stock}`);
 
-        // Verify the update actually persisted
-        const verifyVariant = await prisma.productVariant.findUnique({
+        // Verify the update actually persisted (read from direct connection too)
+        const verifyVariant = await prismaWrite.productVariant.findUnique({
           where: { id: variant.id }
         });
-        console.log(`🔍 VERIFICATION - Stock after update: ${verifyVariant?.stock} (expected: ${newStock})`);
+        console.log(`🔍 VERIFICATION (via DIRECT) - Stock after update: ${verifyVariant?.stock} (expected: ${newStock})`);
         if (verifyVariant?.stock !== newStock) {
           console.error(`❌ CRITICAL: Stock mismatch! DB shows ${verifyVariant?.stock} but expected ${newStock}`);
         }
@@ -325,8 +326,8 @@ export async function restoreOrderStock(orderId: string) {
       }
 
       if (variant) {
-        // Restore the stock by adding back the quantity
-        await prisma.productVariant.update({
+        // Restore the stock by adding back the quantity (use direct connection)
+        await prismaWrite.productVariant.update({
           where: { id: variant.id },
           data: {
             stock: variant.stock + item.quantity
