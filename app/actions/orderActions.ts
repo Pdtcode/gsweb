@@ -249,21 +249,48 @@ export async function decrementOrderStock(orderId: string) {
         // Decrement the stock by the ordered quantity
         // Use prismaWrite (direct connection) to bypass pooler issues
         console.log(`🔄 Executing UPDATE on variant ${variant.id} via DIRECT connection...`);
+
+        // Try RAW SQL update first to test if the connection actually works
+        console.log(`🔧 Attempting RAW SQL update as diagnostic test...`);
+        try {
+          const rawResult = await prismaWrite.$executeRaw`
+            UPDATE "ProductVariant"
+            SET stock = ${newStock}
+            WHERE id = ${variant.id}::uuid
+          `;
+          console.log(`✅ RAW SQL UPDATE affected ${rawResult} row(s)`);
+        } catch (rawError) {
+          console.error(`❌ RAW SQL UPDATE failed:`, rawError);
+        }
+
+        // Also try with Prisma ORM for comparison
         const updatedVariant = await prismaWrite.productVariant.update({
           where: { id: variant.id },
           data: {
             stock: newStock
           },
         });
-        console.log(`✅ UPDATE returned - variant ID: ${updatedVariant.id}, stock in response: ${updatedVariant.stock}`);
+        console.log(`✅ Prisma ORM UPDATE returned - variant ID: ${updatedVariant.id}, stock in response: ${updatedVariant.stock}`);
 
-        // Verify the update actually persisted (read from direct connection too)
-        const verifyVariant = await prismaWrite.productVariant.findUnique({
+        // Verify using both direct connection and regular pooler
+        const verifyDirect = await prismaWrite.productVariant.findUnique({
           where: { id: variant.id }
         });
-        console.log(`🔍 VERIFICATION (via DIRECT) - Stock after update: ${verifyVariant?.stock} (expected: ${newStock})`);
-        if (verifyVariant?.stock !== newStock) {
-          console.error(`❌ CRITICAL: Stock mismatch! DB shows ${verifyVariant?.stock} but expected ${newStock}`);
+        console.log(`🔍 VERIFY via DIRECT connection: stock = ${verifyDirect?.stock}`);
+
+        const verifyPooler = await prisma.productVariant.findUnique({
+          where: { id: variant.id }
+        });
+        console.log(`🔍 VERIFY via POOLER connection: stock = ${verifyPooler?.stock}`);
+
+        console.log(`📊 Expected stock: ${newStock}`);
+        if (verifyDirect?.stock !== newStock || verifyPooler?.stock !== newStock) {
+          console.error(`❌ CRITICAL: Stock mismatch detected!`);
+          console.error(`   Direct shows: ${verifyDirect?.stock}`);
+          console.error(`   Pooler shows: ${verifyPooler?.stock}`);
+          console.error(`   Expected: ${newStock}`);
+        } else {
+          console.log(`✅ Stock verified correctly on both connections!`);
         }
       } else {
         console.error(`❌ No variant found for product ${item.productId}, cannot decrement stock`);

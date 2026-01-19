@@ -43,8 +43,32 @@ console.log("Connecting to database...");
 if (connectionString) {
   // Extract and log only the host part to avoid showing credentials
   const url = new URL(connectionString);
+  console.log(`DATABASE_URL host: ${url.host}`);
+  console.log(`DATABASE_URL database: ${url.pathname}`);
+}
 
-  console.log(`Database host: ${url.host}`);
+// Also log DIRECT_URL for comparison
+const directUrlEnv = process.env.DIRECT_URL;
+if (directUrlEnv) {
+  try {
+    const directUrlParsed = new URL(directUrlEnv);
+    console.log(`DIRECT_URL host: ${directUrlParsed.host}`);
+    console.log(`DIRECT_URL database: ${directUrlParsed.pathname}`);
+
+    // Verify they're the same database
+    if (connectionString) {
+      const dbUrl = new URL(connectionString);
+      if (dbUrl.pathname !== directUrlParsed.pathname) {
+        console.error(`⚠️ WARNING: DATABASE_URL and DIRECT_URL point to different databases!`);
+        console.error(`   DATABASE_URL: ${dbUrl.pathname}`);
+        console.error(`   DIRECT_URL: ${directUrlParsed.pathname}`);
+      }
+    }
+  } catch (e) {
+    console.error("Failed to parse DIRECT_URL for comparison:", e);
+  }
+} else {
+  console.warn("⚠️ DIRECT_URL not set in environment");
 }
 
 // Create Prisma client with custom configuration
@@ -128,7 +152,19 @@ const createWriteClient = () => {
     return prisma; // Fallback to regular client
   }
 
-  console.log("Creating dedicated write client with DIRECT_URL");
+  // Log the direct URL host to verify it's not using pooler
+  try {
+    const directUrlObj = new URL(directUrl);
+    console.log("Creating dedicated write client with DIRECT_URL");
+    console.log(`  Direct URL host: ${directUrlObj.host}`);
+    console.log(`  Is pooler URL: ${directUrlObj.host.includes('-pooler')}`);
+
+    if (directUrlObj.host.includes('-pooler')) {
+      console.error("⚠️ WARNING: DIRECT_URL contains '-pooler' - this should be the non-pooler URL!");
+    }
+  } catch (e) {
+    console.error("Failed to parse DIRECT_URL:", e);
+  }
 
   const client = new PrismaClient({
     log: getPrismaLogLevels() as any,
