@@ -182,11 +182,11 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
           orderNumber: order.orderNumber,
           customerEmail: customerEmail,
           customerName: customerName,
-          total: order.total,
+          total: Number(order.total),
           items: order.OrderItem.map((item) => ({
             name: item.Product?.name || 'Product',
             quantity: item.quantity,
-            price: item.price,
+            price: Number(item.price),
             variantInfo: item.ProductVariant
               ? `${item.ProductVariant.size ? `Size: ${item.ProductVariant.size}` : ''}${item.ProductVariant.size && item.ProductVariant.color ? ', ' : ''}${item.ProductVariant.color ? `Color: ${item.ProductVariant.color}` : ''}`
               : undefined
