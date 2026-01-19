@@ -2,8 +2,6 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prismaClient";
-import { orderEventEmitter } from "@/lib/events/order-events";
-import "@/lib/services/email-service"; // Initialize email service
 
 // Make sure the Stripe secret key is defined
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -338,42 +336,7 @@ export async function POST(request: Request) {
       });
 
       console.log(`✅ Order created: ${order.orderNumber} (ID: ${order.id})`);
-
-      // Emit OrderConfirmed event for email notification
-      try {
-        await orderEventEmitter.emitOrderConfirmed({
-          orderId: order.id.toString(),
-          orderNumber: order.orderNumber,
-          customerEmail: customerEmail,
-          customerName: customerName,
-          total: total,
-          items: items.map((item: any) => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            variantInfo: item.variantSize || item.variantColor
-              ? `${item.variantSize ? `Size: ${item.variantSize}` : ''}${item.variantSize && item.variantColor ? ', ' : ''}${item.variantColor ? `Color: ${item.variantColor}` : ''}`
-              : undefined
-          })),
-          shippingAddress: shippingAddress,
-          paymentIntentId: paymentIntent.id,
-          serviceFee: serviceFeeAmount > 0 ? {
-            baseAmount: baseServiceFee,
-            discount: serviceFeeDiscount,
-            finalAmount: serviceFeeAmount
-          } : undefined,
-          discount: discountAmount > 0 && discount ? {
-            code: discount.code,
-            amount: discountAmount
-          } : undefined,
-          createdAt: new Date().toISOString()
-        });
-
-        console.log(`📧 OrderConfirmed event emitted for ${order.orderNumber}`);
-      } catch (eventError) {
-        console.error(`Error emitting OrderConfirmed event for ${order.orderNumber}:`, eventError);
-        // Don't fail the order creation if event emission fails
-      }
+      // Note: Email confirmation is sent via Stripe webhook after payment succeeds and inventory is decremented
 
       // Create order items
       console.log(`\n📦 Creating ${items.length} order item(s)...`);

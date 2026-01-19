@@ -3,6 +3,8 @@ import Stripe from "stripe";
 import { updateOrderStatus, getOrderByPaymentIntentId, restoreOrderStock, decrementOrderStock } from "@/app/actions/orderActions";
 import { DualSyncService } from "@/lib/dualSyncService";
 import prisma from "@/lib/prismaClient";
+import { orderEventEmitter } from "@/lib/events/order-events";
+import "@/lib/services/email-service"; // Initialize email service
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -151,6 +153,63 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         }
       });
       console.log(`✅ Webhook processing logged for payment intent ${paymentIntent.id}`);
+
+      // Send order confirmation email AFTER inventory decrement succeeds
+      console.log("\n📧 Sending order confirmation email...");
+      try {
+        // Get customer info from order shipping fields or metadata
+        const customerEmail = order.shippingEmail || paymentIntent.metadata?.customer_email || '';
+        const customerName = [order.shippingFirstName, order.shippingLastName].filter(Boolean).join(' ') || paymentIntent.metadata?.customer_name || '';
+
+        // Build shipping address string
+        const shippingAddress = [
+          order.shippingAddress,
+          order.shippingCity,
+          order.shippingState,
+          order.shippingZipCode,
+          order.shippingCountry
+        ].filter(Boolean).join(', ') || paymentIntent.metadata?.shipping_address || '';
+
+        // Get service fee and discount from payment intent metadata
+        const serviceFeeBase = parseFloat(paymentIntent.metadata?.service_fee_base || '0');
+        const serviceFeeDiscount = parseFloat(paymentIntent.metadata?.service_fee_discount || '0');
+        const serviceFeeAmount = parseFloat(paymentIntent.metadata?.service_fee_final || '0');
+        const discountAmount = parseFloat(paymentIntent.metadata?.discount_amount || '0');
+        const discountCode = paymentIntent.metadata?.discount_code || '';
+
+        await orderEventEmitter.emitOrderConfirmed({
+          orderId: order.id.toString(),
+          orderNumber: order.orderNumber,
+          customerEmail: customerEmail,
+          customerName: customerName,
+          total: order.total,
+          items: order.OrderItem.map((item) => ({
+            name: item.Product?.name || 'Product',
+            quantity: item.quantity,
+            price: item.price,
+            variantInfo: item.ProductVariant
+              ? `${item.ProductVariant.size ? `Size: ${item.ProductVariant.size}` : ''}${item.ProductVariant.size && item.ProductVariant.color ? ', ' : ''}${item.ProductVariant.color ? `Color: ${item.ProductVariant.color}` : ''}`
+              : undefined
+          })),
+          shippingAddress: shippingAddress,
+          paymentIntentId: paymentIntent.id,
+          serviceFee: serviceFeeAmount > 0 ? {
+            baseAmount: serviceFeeBase,
+            discount: serviceFeeDiscount,
+            finalAmount: serviceFeeAmount
+          } : undefined,
+          discount: discountAmount > 0 && discountCode ? {
+            code: discountCode,
+            amount: discountAmount
+          } : undefined,
+          createdAt: new Date().toISOString()
+        });
+
+        console.log(`✅ Order confirmation email sent for ${order.orderNumber}`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send order confirmation email for ${order.orderNumber}:`, emailError);
+        // Don't fail the webhook if email fails - payment and inventory are already processed
+      }
     } else {
       console.error(`❌ No order found for payment intent: ${paymentIntent.id}`);
       console.error("This usually means the order wasn't created properly in the database");

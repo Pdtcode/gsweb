@@ -130,7 +130,7 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
           <button
             onClick={refreshInventory}
             disabled={isLoading}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
+            className="text-sm hidden text-blue-600 hover:text-blue-800 underline"
           >
             {isLoading ? "Updating inventory..." : "Refresh inventory"}
           </button>
