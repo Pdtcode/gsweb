@@ -247,9 +247,9 @@ export async function POST(request: Request) {
         connected_account_id: connectedAccountId || undefined,
       },
       description: `Order for ${customerName || "Customer"}`,
-      receipt_email: customerEmail,
+      // receipt_email removed - using custom email service instead of Stripe receipts
       payment_method_types: ["card"],
-      statement_descriptor: "GrailSeekers Order",
+      statement_descriptor: "GS Design Research",
       shipping: shippingAddressData
         ? {
             name: customerName,
