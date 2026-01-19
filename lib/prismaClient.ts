@@ -38,17 +38,6 @@ const getPrismaLogLevels = () => {
   return logLevels;
 };
 
-// Custom datasource configuration for Neon
-const datasourceOptions: any = {};
-
-if (
-  modifiedConnectionString &&
-  modifiedConnectionString.includes("neon.tech")
-) {
-  console.log("Configuring Prisma for Neon connection pooling");
-  datasourceOptions.url = modifiedConnectionString;
-}
-
 // Log database connection details for debugging (without password)
 console.log("Connecting to database...");
 if (connectionString) {
@@ -64,14 +53,10 @@ const createPrismaClient = () => {
     log: getPrismaLogLevels(),
   };
 
-  // Only add datasources if we have a custom URL
-  if (Object.keys(datasourceOptions).length > 0) {
-    prismaOptions.datasources = {
-      db: {
-        url: datasourceOptions.url,
-      },
-    };
-  }
+  // Don't override datasources - let Prisma use the schema's url and directUrl
+  // The directUrl is essential for Neon to properly handle write operations
+  // Overriding datasources.db.url bypasses directUrl and causes writes to fail silently
+  console.log("Creating Prisma client with schema-defined datasources (url + directUrl)");
 
   const client = new PrismaClient(prismaOptions);
 
