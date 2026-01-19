@@ -247,13 +247,23 @@ export async function decrementOrderStock(orderId: string) {
         console.log(`   New stock: ${newStock}`);
 
         // Decrement the stock by the ordered quantity
-        await prisma.productVariant.update({
+        console.log(`🔄 Executing UPDATE on variant ${variant.id}...`);
+        const updatedVariant = await prisma.productVariant.update({
           where: { id: variant.id },
           data: {
             stock: newStock
           },
         });
-        console.log(`✅ Successfully decremented ${item.quantity} units from variant ${variant.id} (SKU: ${variant.sku})`);
+        console.log(`✅ UPDATE returned - variant ID: ${updatedVariant.id}, stock in response: ${updatedVariant.stock}`);
+
+        // Verify the update actually persisted
+        const verifyVariant = await prisma.productVariant.findUnique({
+          where: { id: variant.id }
+        });
+        console.log(`🔍 VERIFICATION - Stock after update: ${verifyVariant?.stock} (expected: ${newStock})`);
+        if (verifyVariant?.stock !== newStock) {
+          console.error(`❌ CRITICAL: Stock mismatch! DB shows ${verifyVariant?.stock} but expected ${newStock}`);
+        }
       } else {
         console.error(`❌ No variant found for product ${item.productId}, cannot decrement stock`);
         console.error(`   This means inventory will NOT be decremented for this item!`);
