@@ -46,26 +46,19 @@ function GiveawaySection() {
             Win a Trip to Japan!
           </h2>
           <p className="text-white/90 mb-4">
-            We&apos;re giving away free trip to Japan to our community. Here&apos;s how you can enter:
+            We&apos;re giving away free round trip to Japan to our community. Here&apos;s how you can enter:
           </p>
 
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2 mb-2">
             <h3 className="font-semibold">How to Enter:</h3>
-            <ul className="list-disc list-inside text-white/90 space-y-1">
-              <li>Follow us on Instagram @gsdesignresearch</li>
-              <li>Like and share our latest giveaway post</li>
-              <li>Tag 2 friends in the comments</li>
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold">Conditions:</h3>
             <ul className="list-disc list-inside text-white/90 space-y-1 text-sm">
               <li>Must be 21+ to enter</li>
+              <li>Must have valid passport</li>
               <li>Open to US residents only</li>
-              <li>Spend over $100 on GS Design Research clothing</li>
+              <li>Follow us on Instagram @gsdesignresearch</li>
+              <li>Spend over $80 on GS Design Research clothing</li>
+              <li>Hoodies is first site exclusive will give you 6 slots for the giveaway</li>
               <li>Winner will be announced on January 31st, 2026</li>
-              <li>One entry per person</li>
             </ul>
           </div>
         </div>
