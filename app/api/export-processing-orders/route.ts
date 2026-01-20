@@ -23,6 +23,9 @@ export async function GET() {
         createdAt,
         items[] {
           name,
+          sku,
+          color,
+          size,
           quantity,
           price
         }
@@ -53,9 +56,17 @@ export async function GET() {
     ];
 
     const csvRows = processingOrders.map((order: any) => {
-      // Format items as a simple string
+      // Format items as a simple string with SKU, color, size
       const itemsString = order.items
-        ?.map((item: any) => `${item.quantity}x ${item.name} ($${item.price})`)
+        ?.map((item: any) => {
+          const details = [
+            item.sku ? `SKU: ${item.sku}` : null,
+            item.color ? `Color: ${item.color}` : null,
+            item.size ? `Size: ${item.size}` : null,
+          ].filter(Boolean).join(", ");
+          const detailsStr = details ? ` (${details})` : "";
+          return `${item.quantity}x ${item.name}${detailsStr} - $${item.price}`;
+        })
         .join("; ") || "No items";
 
       // Format date

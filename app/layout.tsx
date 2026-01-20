@@ -7,7 +7,7 @@ import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { fontSans, fontUDMincho } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
-import SiteProtection from "@/components/site-protection";
+//import SiteProtection from "@/components/site-protection";
 import { SkuProvider } from "@/lib/contexts/sku-context";
 
 export const metadata: Metadata = {
@@ -45,7 +45,6 @@ export default function RootLayout({
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <SkuProvider>
-            <SiteProtection>
               <div className="relative flex flex-col h-screen">
                 <Navbar />
                   <div className="relative flex-1">
@@ -54,7 +53,6 @@ export default function RootLayout({
                     </main>
                   </div>
               </div>
-            </SiteProtection>
           </SkuProvider>
         </Providers>
       </body>
