@@ -58,7 +58,7 @@ function GiveawaySection() {
               <li>Follow us on Instagram @gsdesignresearch</li>
               <li>Spend over $80 on GS Design Research clothing</li>
               <li>Hoodies is first site exclusive will give you 6 slots for the giveaway</li>
-              <li>Winner will be announced on January 31st, 2026</li>
+              <li>Winner will be announced on a later date</li>
             </ul>
           </div>
         </div>
