@@ -308,18 +308,144 @@ export class DualSyncService {
   /**
    * Syncs inventory from Neon to Sanity after a purchase
    * Updates the inventory quantity in Sanity to match the current stock in Neon
-   */
-  /**
-   * Syncs inventory changes to Sanity (DISABLED)
-   *
-   * This function is intentionally disabled because:
-   * - Neon is the source of truth for inventory
-   * - Sanity is only used as a UI to manage/view inventory
-   * - Inventory flows: Sanity (UI) → Neon (source of truth) via webhook
-   * - No need to sync back from Neon → Sanity
+   * This ensures the product page displays the correct stock value
    */
   static async syncInventoryToSanity(orderId: string) {
-    console.log(`ℹ️ Inventory sync to Sanity skipped for order ${orderId} - Neon is source of truth`);
-    return; // Disabled - no sync needed
+    console.log(`📦 Starting inventory sync to Sanity for order ${orderId}`);
+
+    try {
+      // Get the order with its items and variants
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          OrderItem: {
+            include: {
+              Product: true,
+              ProductVariant: true,
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        console.error(`Order ${orderId} not found for inventory sync`);
+        return;
+      }
+
+      // Process each order item
+      for (const item of order.OrderItem) {
+        let variant = item.ProductVariant;
+
+        // If no variant on the order item, try to find the default variant
+        if (!variant && item.productId) {
+          variant = await prisma.productVariant.findFirst({
+            where: {
+              productId: item.productId,
+              size: "Default",
+            },
+          });
+
+          if (!variant) {
+            variant = await prisma.productVariant.findFirst({
+              where: { productId: item.productId },
+            });
+          }
+        }
+
+        if (!variant) {
+          console.log(`No variant found for product ${item.productId}, skipping Sanity sync`);
+          continue;
+        }
+
+        // Get the product to find its Sanity ID
+        const product = item.Product || await prisma.product.findUnique({
+          where: { id: item.productId },
+        });
+
+        if (!product) {
+          console.log(`Product ${item.productId} not found, skipping Sanity sync`);
+          continue;
+        }
+
+        // Update Sanity with the new stock value
+        // The product ID in Neon might be a Sanity ID or we need to find it by slug
+        const sanityProductId = product.id;
+        const newStock = variant.stock;
+
+        console.log(`Syncing stock to Sanity: Product ${product.name}, SKU ${variant.sku}, Stock ${newStock}`);
+
+        try {
+          // Fetch the current Sanity product to determine its structure
+          const sanityProduct = await sanityClient.fetch(
+            `*[_type == "product" && _id == $id][0]`,
+            { id: sanityProductId }
+          );
+
+          if (!sanityProduct) {
+            // Try to find by slug
+            const sanityProductBySlug = await sanityClient.fetch(
+              `*[_type == "product" && slug.current == $slug][0]`,
+              { slug: product.slug }
+            );
+
+            if (!sanityProductBySlug) {
+              console.log(`Product ${product.name} not found in Sanity by ID or slug`);
+              continue;
+            }
+
+            // Update using slug-found product
+            await this.updateSanityProductInventory(sanityProductBySlug, variant.sku, newStock);
+          } else {
+            await this.updateSanityProductInventory(sanityProduct, variant.sku, newStock);
+          }
+
+          console.log(`✅ Synced stock to Sanity for ${product.name}: ${newStock}`);
+        } catch (sanityError) {
+          console.error(`Failed to sync ${product.name} to Sanity:`, sanityError);
+        }
+      }
+
+      console.log(`✅ Inventory sync to Sanity completed for order ${orderId}`);
+    } catch (error) {
+      console.error(`Error syncing inventory to Sanity for order ${orderId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates a Sanity product's inventory based on its structure
+   */
+  private static async updateSanityProductInventory(
+    sanityProduct: any,
+    sku: string,
+    newStock: number
+  ) {
+    // Check if product has variants
+    if (sanityProduct.variants && sanityProduct.variants.length > 0) {
+      // Product has variants - find and update the matching inventory item
+      const updatedVariants = sanityProduct.variants.map((variant: any) => {
+        if (!variant.inventory) return variant;
+
+        const updatedInventory = variant.inventory.map((inv: any) => {
+          if (inv.sku === sku) {
+            return { ...inv, quantity: newStock };
+          }
+          return inv;
+        });
+
+        return { ...variant, inventory: updatedInventory };
+      });
+
+      await sanityClient
+        .patch(sanityProduct._id)
+        .set({ variants: updatedVariants })
+        .commit();
+    } else {
+      // Product without variants - update totalInventory
+      await sanityClient
+        .patch(sanityProduct._id)
+        .set({ totalInventory: newStock })
+        .commit();
+    }
   }
 }
