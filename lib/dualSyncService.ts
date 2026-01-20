@@ -54,6 +54,11 @@ interface OrderWithRelations {
     Product: {
       name: string;
     };
+    ProductVariant?: {
+      sku: string;
+      color: string | null;
+      size: string | null;
+    } | null;
   }>;
 }
 
@@ -97,6 +102,13 @@ export class DualSyncService {
               Product: {
                 select: {
                   name: true,
+                },
+              },
+              ProductVariant: {
+                select: {
+                  sku: true,
+                  color: true,
+                  size: true,
                 },
               },
             },
@@ -188,6 +200,13 @@ export class DualSyncService {
                   name: true,
                 },
               },
+              ProductVariant: {
+                select: {
+                  sku: true,
+                  color: true,
+                  size: true,
+                },
+              },
             },
           },
         },
@@ -254,6 +273,9 @@ export class DualSyncService {
           productId: item.productId,
           variantId: item.variantId || "",
           name: item.Product.name,
+          sku: item.ProductVariant?.sku || "",
+          color: item.ProductVariant?.color || "",
+          size: item.ProductVariant?.size || "",
           quantity: item.quantity,
           price: Number(item.price),
         })),
@@ -286,6 +308,13 @@ export class DualSyncService {
               Product: {
                 select: {
                   name: true,
+                },
+              },
+              ProductVariant: {
+                select: {
+                  sku: true,
+                  color: true,
+                  size: true,
                 },
               },
             },
