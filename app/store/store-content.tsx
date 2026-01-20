@@ -53,12 +53,12 @@ function GiveawaySection() {
             <h3 className="font-semibold">How to Enter:</h3>
             <ul className="list-disc list-inside text-white/90 space-y-1 text-sm">
               <li>Must be 21+ to enter</li>
-              <li>Must have valid passport</li>
+              <li>Must have a valid passport</li>
               <li>Open to US residents only</li>
               <li>Follow us on Instagram @gsdesignresearch</li>
-              <li>Spend over $80 on GS Design Research clothing</li>
-              <li>Hoodies is first site exclusive will give you 6 slots for the giveaway</li>
-              <li>Winner will be announced on a later date</li>
+              <li>Spend a minimum of $80</li>
+              <li>Crash Test Hoodies will give you six slots for the giveaway</li>
+              <li>Winner will be announced Feb 9</li>
             </ul>
           </div>
         </div>
