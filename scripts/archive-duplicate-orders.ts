@@ -121,7 +121,7 @@ async function main() {
 
       // Find existing group within 60 second window
       let foundGroup = false;
-      for (const group of groupsByHeuristic.values()) {
+      for (const group of Array.from(groupsByHeuristic.values())) {
         if (group.key === key) {
           // Check if this order is within 60 seconds of any order in the group
           for (const existingOrder of group.orders) {
