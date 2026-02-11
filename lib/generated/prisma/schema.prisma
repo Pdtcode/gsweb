@@ -35,7 +35,7 @@ model Order {
   total                 Decimal      @db.Decimal(10, 2)
   platformFeeAmount     Decimal?     @db.Decimal(10, 2)
   connectedAccountId    String?
-  stripePaymentIntentId String?
+  stripePaymentIntentId String?      @unique
   shippingFirstName     String?
   shippingLastName      String?
   shippingEmail         String?
@@ -47,6 +47,7 @@ model Order {
   shippingCountry       String?
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
+  archivedAt            DateTime?
   User                  User         @relation(fields: [userId], references: [id])
   OrderItem             OrderItem[]
   WebhookLog            WebhookLog[]
