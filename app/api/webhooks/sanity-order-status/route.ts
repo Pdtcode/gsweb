@@ -63,6 +63,56 @@ export async function POST(request: NextRequest) {
     const orderId = webhook._id.replace("order-", "");
     console.log(`Processing status change for order ${orderId}`);
 
+    // Extract transaction time header for stale webhook detection
+    const sanityTransactionTime = request.headers.get('sanity-transaction-time');
+
+    // Fetch current order to compare timestamps
+    const currentOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true, updatedAt: true }
+    });
+
+    if (!currentOrder) {
+      return NextResponse.json({ error: "Order not found in database" }, { status: 404 });
+    }
+
+    // Reject stale webhooks — prevents out-of-order delivery from overwriting newer data
+    if (sanityTransactionTime) {
+      const webhookTime = new Date(sanityTransactionTime);
+      if (webhookTime < currentOrder.updatedAt) {
+        console.log(`Stale webhook ignored: order=${orderId}, webhook=${webhookTime.toISOString()}, db=${currentOrder.updatedAt.toISOString()}`);
+        return NextResponse.json({
+          message: "Stale webhook ignored",
+          reason: "Newer data exists in database",
+          webhookTime: webhookTime.toISOString(),
+          currentTime: currentOrder.updatedAt.toISOString()
+        });
+      }
+    }
+
+    // Check idempotency key to prevent duplicate processing
+    const idempotencyKey = request.headers.get('idempotency-key');
+
+    if (idempotencyKey) {
+      try {
+        const existingSync = await sanityClient.fetch(
+          `*[_type == "syncState" && key == $key][0]`,
+          { key: `webhook-status-${idempotencyKey}` }
+        );
+        if (existingSync?.processed) {
+          console.log(`Duplicate webhook detected: ${idempotencyKey}`);
+          return NextResponse.json({
+            success: true,
+            message: "Webhook already processed",
+            idempotencyKey
+          });
+        }
+      } catch (error) {
+        // Log but don't block processing if idempotency check fails
+        console.warn("Idempotency check failed, proceeding:", error);
+      }
+    }
+
     // Fetch the updated order from Sanity to get current status
     const sanityOrder = await sanityClient.fetch(
       `*[_type == "order" && _id == $id][0]`,
@@ -115,6 +165,25 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error("Error updating webhook sync state:", error);
         // Don't fail the webhook for this
+      }
+
+      // Record idempotency key as processed
+      if (idempotencyKey) {
+        try {
+          await sanityClient.createOrReplace({
+            _type: "syncState",
+            _id: `webhook-status-${idempotencyKey}`,
+            key: `webhook-status-${idempotencyKey}`,
+            processed: true,
+            processedAt: new Date().toISOString(),
+            orderId,
+            oldStatus: currentOrder.status,
+            newStatus
+          });
+        } catch (error) {
+          console.warn("Idempotency tracking failed:", error);
+          // Don't fail the response for tracking issues
+        }
       }
 
       return NextResponse.json({
