@@ -303,6 +303,22 @@ export async function POST(request: Request) {
         throw new Error("Could not identify user for this order");
       }
 
+      // Idempotency check: if an order already exists for this payment intent, return it
+      // This prevents duplicate orders when users retry checkout or when the endpoint is called multiple times
+      const existingOrder = await prisma.order.findFirst({
+        where: { stripePaymentIntentId: paymentIntent.id },
+      });
+
+      if (existingOrder) {
+        console.log(`Order already exists for payment intent ${paymentIntent.id}: ${existingOrder.orderNumber}`);
+        // Skip order creation — order already exists
+        // Still return the client secret so the frontend can complete payment
+        return NextResponse.json({
+          clientSecret: paymentIntent.client_secret,
+          total,
+        });
+      }
+
       // Address management removed - users will use browser autofill
 
       // Create the order
