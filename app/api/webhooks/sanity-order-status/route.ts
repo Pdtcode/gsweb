@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
-import crypto from "crypto";
+import { isValidSignature, SIGNATURE_HEADER_NAME } from "@sanity/webhook";
 
 import prisma from "@/lib/prismaClient";
 
@@ -15,30 +15,22 @@ const sanityClient = createClient({
 // Webhook secret for validation (you'll set this in Sanity webhook config)
 const WEBHOOK_SECRET = process.env.SANITY_WEBHOOK_SECRET;
 
-function verifySignature(body: string, signature: string): boolean {
-  if (!WEBHOOK_SECRET) {
-    console.warn("No webhook secret configured - skipping signature verification");
-    return true; // Allow in development, but log warning
-  }
-
-  const expectedSignature = crypto
-    .createHmac("sha256", WEBHOOK_SECRET)
-    .update(body)
-    .digest("hex");
-
-  return crypto.timingSafeEqual(
-    Buffer.from(signature, "hex"),
-    Buffer.from(expectedSignature, "hex")
-  );
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
-    const signature = request.headers.get("x-sanity-signature");
+    const signature = request.headers.get(SIGNATURE_HEADER_NAME) ||
+                      request.headers.get('x-sanity-signature');
 
-    // Verify webhook signature for security
-    if (signature && !verifySignature(body, signature)) {
+    if (!WEBHOOK_SECRET) {
+      console.error("SANITY_WEBHOOK_SECRET not configured");
+      return NextResponse.json({ error: "Configuration error" }, { status: 500 });
+    }
+
+    if (!signature) {
+      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+    }
+
+    if (!(await isValidSignature(body, signature, WEBHOOK_SECRET))) {
       console.error("Invalid webhook signature");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
