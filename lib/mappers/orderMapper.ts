@@ -27,6 +27,7 @@ export interface NeonOrderWithRelations {
   shippingCountry: string | null;
   createdAt: Date;
   updatedAt: Date;
+  archivedAt?: Date | null;
   User: {
     email: string;
     name: string | null;

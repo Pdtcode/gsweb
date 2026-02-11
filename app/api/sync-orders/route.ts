@@ -55,6 +55,9 @@ export async function POST() {
     // Fetch orders from Neon DB
     console.log('Fetching orders from database...');
     const orders = await prisma.order.findMany({
+      where: {
+        archivedAt: null, // Only sync active (non-archived) orders
+      },
       include: {
         User: {
           select: {
@@ -120,6 +123,22 @@ export async function POST() {
         });
         stats.errors++;
       }
+    }
+
+    // After syncing all active orders, clean up orphaned Sanity documents
+    const activeNeonIds = new Set(orders.map(o => `order-${o.id}`));
+    const sanityOrderIds = await sanityClient.fetch<string[]>('*[_type == "order"]._id');
+    const orphanedIds = sanityOrderIds.filter(id => !activeNeonIds.has(id) && id !== 'order-sync-state');
+
+    if (orphanedIds.length > 0) {
+      console.log(`Cleaning up ${orphanedIds.length} orphaned Sanity orders...`);
+      const tx = sanityClient.transaction();
+      for (const id of orphanedIds) {
+        tx.delete(id);
+      }
+      await tx.commit();
+      stats.deleted = orphanedIds.length;
+      console.log(`Deleted ${orphanedIds.length} orphaned Sanity orders`);
     }
 
     console.log('=== SYNC ORDERS COMPLETE ===');

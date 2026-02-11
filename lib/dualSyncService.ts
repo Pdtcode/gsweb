@@ -242,6 +242,11 @@ export class DualSyncService {
         throw new Error(`Order with ID ${orderId} not found`);
       }
 
+      if (order.archivedAt) {
+        console.log(`Order ${orderId} is archived — skipping Sanity sync`);
+        return null;
+      }
+
       await this.syncOrderToSanity(order);
       return order;
     } catch (error) {
