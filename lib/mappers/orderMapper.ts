@@ -56,7 +56,7 @@ export interface NeonOrderWithRelations {
  */
 export function filterNullishValues<T extends Record<string, any>>(
   obj: T
-): Partial<T> {
+): T {
   return Object.fromEntries(
     Object.entries(obj)
       .filter(([_, v]) => v !== undefined && v !== null)
@@ -74,7 +74,7 @@ export function filterNullishValues<T extends Record<string, any>>(
         }
         return [k, v];
       })
-  ) as Partial<T>;
+  ) as T;
 }
 
 /**

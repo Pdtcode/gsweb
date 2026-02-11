@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 
 import prisma from "@/lib/prismaClient";
+import { mapNeonOrderToSanity } from "@/lib/mappers/orderMapper";
 
 const sanityClient = createClient({
   projectId: "arbp7h2s",
@@ -68,6 +69,13 @@ export async function POST() {
                 name: true,
               },
             },
+            ProductVariant: {
+              select: {
+                sku: true,
+                color: true,
+                size: true,
+              },
+            },
           },
         },
       },
@@ -79,56 +87,29 @@ export async function POST() {
     stats.total = orders.length;
     console.log(`Found ${orders.length} orders in database`);
 
+    // Fetch existing order IDs from Sanity (batch query to avoid N+1)
+    console.log('Fetching existing order IDs from Sanity...');
+    const existingIds = new Set(
+      await sanityClient.fetch<string[]>(
+        `*[_type == "order"]._id`
+      )
+    );
+    console.log(`Found ${existingIds.size} existing orders in Sanity`);
+
     // Sync each order to Sanity
     for (const order of orders) {
       try {
-        const sanityOrder = {
-          _type: "order",
-          _id: `order-${order.id}`,
-          orderNumber: order.orderNumber,
-          userId: order.userId,
-          customerEmail: order.User.email,
-          customerName: order.User.name || "",
-          total: parseFloat(order.total.toString()),
-          status: order.status,
-          items: order.OrderItem.map(
-            (item: {
-              id: any;
-              productId: any;
-              variantId: any;
-              Product: { name: any };
-              quantity: any;
-              price: { toString: () => string };
-            }, index: number) => ({
-              _key: `item${index}`,
-              itemId: item.id,
-              productId: item.productId,
-              variantId: item.variantId || "",
-              name: item.Product.name,
-              quantity: item.quantity,
-              price: parseFloat(item.price.toString()),
-            }),
-          ),
-          stripePaymentIntentId: order.stripePaymentIntentId || "",
-          createdAt: order.createdAt.toISOString(),
-          updatedAt: order.updatedAt.toISOString(),
-        };
+        const sanityOrder = mapNeonOrderToSanity(order);
 
-        // Check if order already exists in Sanity
-        const existingOrder = await sanityClient.fetch(
-          '*[_type == "order" && _id == $id][0]',
-          { id: `order-${order.id}` },
-        );
-
-        if (existingOrder) {
-          // Update existing order
-          await sanityClient.createOrReplace(sanityOrder);
+        // Track whether this is a create or update based on pre-fetched IDs
+        if (existingIds.has(sanityOrder._id)) {
           stats.updated++;
         } else {
-          // Create new order
-          await sanityClient.create(sanityOrder);
           stats.created++;
         }
+
+        // Upsert to Sanity (idempotent)
+        await sanityClient.createOrReplace(sanityOrder);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error(`Error syncing order ${order.id} (${order.orderNumber}):`, errorMessage);

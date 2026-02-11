@@ -1,5 +1,6 @@
 import { createClient } from "@sanity/client";
 import prisma from "@/lib/prismaClient";
+import { mapNeonOrderToSanity, NeonOrderWithRelations } from "@/lib/mappers/orderMapper";
 
 const sanityClient = createClient({
   projectId: "arbp7h2s",
@@ -21,45 +22,6 @@ interface OrderData {
   total: number;
   stripePaymentIntentId?: string;
   status?: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
-}
-
-interface OrderWithRelations {
-  id: string;
-  orderNumber: string;
-  userId: string;
-  total: any;
-  status: string;
-  stripePaymentIntentId: string | null;
-  shippingFirstName: string | null;
-  shippingLastName: string | null;
-  shippingEmail: string | null;
-  shippingPhone: string | null;
-  shippingAddress: string | null;
-  shippingCity: string | null;
-  shippingState: string | null;
-  shippingZipCode: string | null;
-  shippingCountry: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  User: {
-    email: string;
-    name: string | null;
-  };
-  OrderItem: Array<{
-    id: string;
-    productId: string;
-    variantId: string | null;
-    quantity: number;
-    price: any;
-    Product: {
-      name: string;
-    };
-    ProductVariant?: {
-      sku: string;
-      color: string | null;
-      size: string | null;
-    } | null;
-  }>;
 }
 
 export class DualSyncService {
@@ -232,59 +194,13 @@ export class DualSyncService {
    * Syncs a single order to Sanity
    * Creates or updates the order document in Sanity to mirror Neon data
    */
-  private static async syncOrderToSanity(order: OrderWithRelations) {
+  private static async syncOrderToSanity(order: NeonOrderWithRelations) {
     try {
-      // Use order ID as the Sanity document ID for consistent upserts
-      const sanityDocId = `order-${order.id}`;
-
-      const sanityOrder = {
-        _id: sanityDocId,
-        _type: "order",
-        orderNumber: order.orderNumber,
-        userId: order.userId,
-        customerEmail: order.User.email,
-        customerName: order.User.name || "",
-        total: Number(order.total),
-        status: order.status,
-        stripePaymentIntentId: order.stripePaymentIntentId || "",
-        // Map Neon DB individual shipping fields to Sanity's nested shippingAddress object
-        shippingAddress: {
-          name: `${order.shippingFirstName || ""} ${order.shippingLastName || ""}`.trim(),
-          street: order.shippingAddress || "",
-          city: order.shippingCity || "",
-          state: order.shippingState || "",
-          postalCode: order.shippingZipCode || "",
-          country: order.shippingCountry || "",
-        },
-        // Also include individual fields for backwards compatibility
-        shippingFirstName: order.shippingFirstName || "",
-        shippingLastName: order.shippingLastName || "",
-        shippingEmail: order.shippingEmail || "",
-        shippingPhone: order.shippingPhone || "",
-        shippingCity: order.shippingCity || "",
-        shippingState: order.shippingState || "",
-        shippingZipCode: order.shippingZipCode || "",
-        shippingCountry: order.shippingCountry || "",
-        createdAt: order.createdAt.toISOString(),
-        updatedAt: order.updatedAt.toISOString(),
-        items: order.OrderItem.map((item) => ({
-          _key: item.id,
-          itemId: item.id,
-          productId: item.productId,
-          variantId: item.variantId || "",
-          name: item.Product.name,
-          sku: item.ProductVariant?.sku || "",
-          color: item.ProductVariant?.color || "",
-          size: item.ProductVariant?.size || "",
-          quantity: item.quantity,
-          price: Number(item.price),
-        })),
-      };
-
-      await sanityClient.createOrReplace(sanityOrder);
-      console.log(`✅ Order ${order.orderNumber} synced to Sanity`);
+      const sanityDoc = mapNeonOrderToSanity(order);
+      await sanityClient.createOrReplace(sanityDoc);
+      console.log(`Order ${order.orderNumber} synced to Sanity`);
     } catch (error) {
-      console.error(`❌ Failed to sync order ${order.orderNumber} to Sanity:`, error);
+      console.error(`Failed to sync order ${order.orderNumber} to Sanity:`, error);
       throw error;
     }
   }
