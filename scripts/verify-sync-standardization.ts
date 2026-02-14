@@ -135,7 +135,7 @@ async function runLiveIdempotencyTest() {
     });
 
     // Fetch all current order IDs
-    const orderIds = await sanityClient.fetch<string[]>(`*[_type == "order"]._id`);
+    const orderIds = await sanityClient.fetch(`*[_type == "order"]._id`);
 
     if (orderIds.length === 0) {
       console.log('  [SKIP] No orders in Sanity to test with');
@@ -147,7 +147,7 @@ async function runLiveIdempotencyTest() {
     console.log(`  Testing with order: ${testOrderId}`);
 
     // Count documents before
-    const countBefore = await sanityClient.fetch<number>(`count(*[_id == $id])`, { id: testOrderId });
+    const countBefore = await sanityClient.fetch(`count(*[_id == $id])`, { id: testOrderId });
     check(
       `Order ${testOrderId}: count=1 before createOrReplace`,
       countBefore === 1,
@@ -155,7 +155,7 @@ async function runLiveIdempotencyTest() {
     );
 
     // Fetch the full document
-    const orderDoc = await sanityClient.fetch<any>(`*[_id == $id][0]`, { id: testOrderId });
+    const orderDoc = await sanityClient.fetch(`*[_id == $id][0]`, { id: testOrderId });
     const updatedAtBefore = orderDoc._updatedAt;
 
     // Wait a moment to ensure timestamp will change
@@ -165,7 +165,7 @@ async function runLiveIdempotencyTest() {
     await sanityClient.createOrReplace(orderDoc);
 
     // Count documents after
-    const countAfter = await sanityClient.fetch<number>(`count(*[_id == $id])`, { id: testOrderId });
+    const countAfter = await sanityClient.fetch(`count(*[_id == $id])`, { id: testOrderId });
     check(
       `Order ${testOrderId}: count=1 after createOrReplace (no duplicate)`,
       countAfter === 1,
@@ -173,7 +173,7 @@ async function runLiveIdempotencyTest() {
     );
 
     // Verify _updatedAt changed (proving update occurred)
-    const orderDocAfter = await sanityClient.fetch<any>(`*[_id == $id][0]`, { id: testOrderId });
+    const orderDocAfter = await sanityClient.fetch(`*[_id == $id][0]`, { id: testOrderId });
     const updatedAtAfter = orderDocAfter._updatedAt;
 
     check(
