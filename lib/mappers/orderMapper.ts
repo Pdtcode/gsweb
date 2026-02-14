@@ -103,23 +103,12 @@ export function mapNeonOrderToSanity(order: NeonOrderWithRelations) {
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
 
-    // Nested shipping address object (CRITICAL: fixes disappearing addresses)
-    shippingAddress: {
-      name: [order.shippingFirstName, order.shippingLastName]
-        .filter(Boolean)
-        .join(' '),
-      street: order.shippingAddress ?? undefined, // Note: Neon field is shippingAddress (= street)
-      city: order.shippingCity ?? undefined,
-      state: order.shippingState ?? undefined,
-      postalCode: order.shippingZipCode ?? undefined, // Neon=shippingZipCode, Sanity=postalCode
-      country: order.shippingCountry ?? undefined,
-    },
-
-    // Flat shipping fields for backwards compatibility
+    // Flat shipping fields (1:1 match with Neon)
     shippingFirstName: order.shippingFirstName ?? undefined,
     shippingLastName: order.shippingLastName ?? undefined,
     shippingEmail: order.shippingEmail ?? undefined,
     shippingPhone: order.shippingPhone ?? undefined,
+    shippingAddress: order.shippingAddress ?? undefined,
     shippingCity: order.shippingCity ?? undefined,
     shippingState: order.shippingState ?? undefined,
     shippingZipCode: order.shippingZipCode ?? undefined,
