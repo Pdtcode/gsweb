@@ -26,6 +26,13 @@ export async function POST(request: Request) {
     // Sync the single order to Sanity
     const order = await syncOrderToSanity(orderId);
 
+    if (!order) {
+      return NextResponse.json(
+        { success: false, message: `Order ${orderId} not found` },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: true,
