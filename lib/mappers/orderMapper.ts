@@ -25,6 +25,10 @@ export interface NeonOrderWithRelations {
   shippingState: string | null;
   shippingZipCode: string | null;
   shippingCountry: string | null;
+  deliveryMethod: string | null;
+  pickupLocationId: string | null;
+  pickupLocationName: string | null;
+  shippingApartment: string | null;
   createdAt: Date;
   updatedAt: Date;
   archivedAt?: Date | null;
@@ -109,10 +113,16 @@ export function mapNeonOrderToSanity(order: NeonOrderWithRelations) {
     shippingEmail: order.shippingEmail ?? undefined,
     shippingPhone: order.shippingPhone ?? undefined,
     shippingAddress: order.shippingAddress ?? undefined,
+    shippingApartment: order.shippingApartment ?? undefined,
     shippingCity: order.shippingCity ?? undefined,
     shippingState: order.shippingState ?? undefined,
     shippingZipCode: order.shippingZipCode ?? undefined,
     shippingCountry: order.shippingCountry ?? undefined,
+
+    // Fulfillment fields
+    deliveryMethod: order.deliveryMethod ?? undefined,
+    pickupLocationId: order.pickupLocationId ?? undefined,
+    pickupLocationName: order.pickupLocationName ?? undefined,
 
     // Items array
     items: order.OrderItem.map((item) => ({
