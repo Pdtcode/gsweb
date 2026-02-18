@@ -22,6 +22,7 @@ interface ShippingInfo {
   email: string;
   phone: string;
   address: string;
+  apartment: string;
   city: string;
   state: string;
   zipCode: string;
@@ -49,6 +50,7 @@ export default function CheckoutPage() {
     email: "",
     phone: "",
     address: "",
+    apartment: "",
     city: "",
     state: "",
     zipCode: "",
@@ -59,6 +61,7 @@ export default function CheckoutPage() {
   const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
   const [selectedPickupLocationId, setSelectedPickupLocationId] = useState<string>("");
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
+  const [showApartment, setShowApartment] = useState(false);
 
   // Handle Stripe redirect success or cancel query params
   useEffect(() => {
@@ -255,7 +258,9 @@ export default function CheckoutPage() {
           pickupLocationName: deliveryMethod === "pickup"
             ? (pickupLocations.find(l => l._id === selectedPickupLocationId)?.name ?? "")
             : undefined,
-          shippingApartment: undefined, // Wired in Plan 08-02
+          shippingApartment: deliveryMethod === "shipping" && shippingInfo.apartment
+            ? shippingInfo.apartment
+            : undefined,
           metadata: {
             customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
             customer_email: shippingInfo.email,
@@ -426,6 +431,35 @@ export default function CheckoutPage() {
                       }
                     />
                   </div>
+
+                  {/* Progressive apartment reveal */}
+                  {!showApartment ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowApartment(true)}
+                      className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline"
+                    >
+                      + Add apt, suite, floor
+                    </button>
+                  ) : (
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-2"
+                        htmlFor="apartment"
+                      >
+                        Apt, Suite, Floor (optional)
+                      </label>
+                      <input
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                        id="apartment"
+                        type="text"
+                        value={shippingInfo.apartment}
+                        onChange={(e) =>
+                          handleShippingChange("apartment", e.target.value)
+                        }
+                      />
+                    </div>
+                  )}
 
                   {/* City / State / ZIP grid */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
