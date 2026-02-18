@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prismaClient";
+import { client as sanityClient } from "@/sanity/lib/client";
 
 // Make sure the Stripe secret key is defined
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
     const requestBody = await request.json();
     console.log("Request body:", JSON.stringify(requestBody, null, 2));
     const { items, shipping, metadata, discount, serviceFee } = requestBody;
+    const { deliveryMethod, pickupLocationId, pickupLocationName, shippingApartment } = requestBody;
 
     if (!items || !items.length) {
       console.error("No items provided in request");
@@ -23,6 +25,40 @@ export async function POST(request: Request) {
         { error: "Items are required" },
         { status: 400 },
       );
+    }
+
+    // Validate deliveryMethod — required, must be "shipping" or "pickup"
+    if (!deliveryMethod || (deliveryMethod !== "shipping" && deliveryMethod !== "pickup")) {
+      console.error("Invalid or missing deliveryMethod:", deliveryMethod);
+      return NextResponse.json(
+        { error: "deliveryMethod must be 'shipping' or 'pickup'" },
+        { status: 400 },
+      );
+    }
+
+    // For pickup orders, validate pickupLocationId and verify it is active in Sanity
+    if (deliveryMethod === "pickup") {
+      if (!pickupLocationId) {
+        console.error("pickupLocationId missing for pickup order");
+        return NextResponse.json(
+          { error: "pickupLocationId is required for pickup orders" },
+          { status: 400 },
+        );
+      }
+
+      // Verify pickup location is active in Sanity (CDN staleness ~60s — acceptable)
+      const activeLocationId = await sanityClient.fetch<string | null>(
+        `*[_type == "pickupLocation" && _id == $id && isActive == true][0]._id`,
+        { id: pickupLocationId }
+      );
+
+      if (!activeLocationId) {
+        console.error("Invalid or inactive pickup location:", pickupLocationId);
+        return NextResponse.json(
+          { error: "Invalid or inactive pickup location" },
+          { status: 400 },
+        );
+      }
     }
 
     console.log("Items validation passed, found", items.length, "items");
@@ -179,6 +215,12 @@ export async function POST(request: Request) {
           }
         : undefined;
 
+    const isPickup = deliveryMethod === "pickup";
+
+    // Per user decision: pickup orders skip billing address — Stripe gets name/email only
+    // Explicitly clear shipping data for pickup to prevent any stale/accidental address
+    const effectiveShippingAddressData = isPickup ? undefined : shippingAddressData;
+
     // Calculate subtotal from items
     const subtotal = items.reduce(
       (sum: number, item: any) => sum + item.price * item.quantity,
@@ -250,10 +292,10 @@ export async function POST(request: Request) {
       // receipt_email removed - using custom email service instead of Stripe receipts
       payment_method_types: ["card"],
       statement_descriptor: "GS Design Research",
-      shipping: shippingAddressData
+      shipping: effectiveShippingAddressData
         ? {
             name: customerName,
-            address: shippingAddressData,
+            address: effectiveShippingAddressData,
           }
         : undefined,
       capture_method: "automatic",
@@ -343,11 +385,16 @@ export async function POST(request: Request) {
           shippingLastName: customerName.split(' ').slice(1).join(' ') || null,
           shippingEmail: customerEmail || null,
           shippingPhone: metadata?.customer_phone || null,
-          shippingAddress: shippingParts[0] || null,
-          shippingCity: shippingParts[1] || null,
-          shippingState: shippingParts[2] || null,
-          shippingZipCode: shippingParts[3] || null,
-          shippingCountry: shippingParts[4] || null,
+          shippingAddress: isPickup ? null : (shippingParts[0] || null),
+          shippingCity: isPickup ? null : (shippingParts[1] || null),
+          shippingState: isPickup ? null : (shippingParts[2] || null),
+          shippingZipCode: isPickup ? null : (shippingParts[3] || null),
+          shippingCountry: isPickup ? null : (shippingParts[4] || null),
+          // Fulfillment fields (Phase 7)
+          deliveryMethod,
+          pickupLocationId: isPickup ? pickupLocationId : null,
+          pickupLocationName: isPickup ? pickupLocationName : null,
+          shippingApartment: isPickup ? null : (shippingApartment || null),
         },
       });
 
