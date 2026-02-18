@@ -46,6 +46,10 @@ model Order {
   shippingState         String?
   shippingZipCode       String?
   shippingCountry       String?
+  deliveryMethod        String?
+  pickupLocationId      String?
+  pickupLocationName    String?
+  shippingApartment     String?
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
   archivedAt            DateTime?

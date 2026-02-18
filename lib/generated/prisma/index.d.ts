@@ -2769,6 +2769,10 @@ export namespace Prisma {
     shippingState: string | null
     shippingZipCode: string | null
     shippingCountry: string | null
+    deliveryMethod: string | null
+    pickupLocationId: string | null
+    pickupLocationName: string | null
+    shippingApartment: string | null
     createdAt: Date | null
     updatedAt: Date | null
     archivedAt: Date | null
@@ -2792,6 +2796,10 @@ export namespace Prisma {
     shippingState: string | null
     shippingZipCode: string | null
     shippingCountry: string | null
+    deliveryMethod: string | null
+    pickupLocationId: string | null
+    pickupLocationName: string | null
+    shippingApartment: string | null
     createdAt: Date | null
     updatedAt: Date | null
     archivedAt: Date | null
@@ -2815,6 +2823,10 @@ export namespace Prisma {
     shippingState: number
     shippingZipCode: number
     shippingCountry: number
+    deliveryMethod: number
+    pickupLocationId: number
+    pickupLocationName: number
+    shippingApartment: number
     createdAt: number
     updatedAt: number
     archivedAt: number
@@ -2850,6 +2862,10 @@ export namespace Prisma {
     shippingState?: true
     shippingZipCode?: true
     shippingCountry?: true
+    deliveryMethod?: true
+    pickupLocationId?: true
+    pickupLocationName?: true
+    shippingApartment?: true
     createdAt?: true
     updatedAt?: true
     archivedAt?: true
@@ -2873,6 +2889,10 @@ export namespace Prisma {
     shippingState?: true
     shippingZipCode?: true
     shippingCountry?: true
+    deliveryMethod?: true
+    pickupLocationId?: true
+    pickupLocationName?: true
+    shippingApartment?: true
     createdAt?: true
     updatedAt?: true
     archivedAt?: true
@@ -2896,6 +2916,10 @@ export namespace Prisma {
     shippingState?: true
     shippingZipCode?: true
     shippingCountry?: true
+    deliveryMethod?: true
+    pickupLocationId?: true
+    pickupLocationName?: true
+    shippingApartment?: true
     createdAt?: true
     updatedAt?: true
     archivedAt?: true
@@ -3006,6 +3030,10 @@ export namespace Prisma {
     shippingState: string | null
     shippingZipCode: string | null
     shippingCountry: string | null
+    deliveryMethod: string | null
+    pickupLocationId: string | null
+    pickupLocationName: string | null
+    shippingApartment: string | null
     createdAt: Date
     updatedAt: Date
     archivedAt: Date | null
@@ -3048,6 +3076,10 @@ export namespace Prisma {
     shippingState?: boolean
     shippingZipCode?: boolean
     shippingCountry?: boolean
+    deliveryMethod?: boolean
+    pickupLocationId?: boolean
+    pickupLocationName?: boolean
+    shippingApartment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     archivedAt?: boolean
@@ -3075,6 +3107,10 @@ export namespace Prisma {
     shippingState?: boolean
     shippingZipCode?: boolean
     shippingCountry?: boolean
+    deliveryMethod?: boolean
+    pickupLocationId?: boolean
+    pickupLocationName?: boolean
+    shippingApartment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     archivedAt?: boolean
@@ -3099,6 +3135,10 @@ export namespace Prisma {
     shippingState?: boolean
     shippingZipCode?: boolean
     shippingCountry?: boolean
+    deliveryMethod?: boolean
+    pickupLocationId?: boolean
+    pickupLocationName?: boolean
+    shippingApartment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     archivedAt?: boolean
@@ -3123,12 +3163,16 @@ export namespace Prisma {
     shippingState?: boolean
     shippingZipCode?: boolean
     shippingCountry?: boolean
+    deliveryMethod?: boolean
+    pickupLocationId?: boolean
+    pickupLocationName?: boolean
+    shippingApartment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     archivedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "userId" | "status" | "total" | "platformFeeAmount" | "connectedAccountId" | "stripePaymentIntentId" | "shippingFirstName" | "shippingLastName" | "shippingEmail" | "shippingPhone" | "shippingAddress" | "shippingCity" | "shippingState" | "shippingZipCode" | "shippingCountry" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "userId" | "status" | "total" | "platformFeeAmount" | "connectedAccountId" | "stripePaymentIntentId" | "shippingFirstName" | "shippingLastName" | "shippingEmail" | "shippingPhone" | "shippingAddress" | "shippingCity" | "shippingState" | "shippingZipCode" | "shippingCountry" | "deliveryMethod" | "pickupLocationId" | "pickupLocationName" | "shippingApartment" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     User?: boolean | UserDefaultArgs<ExtArgs>
     OrderItem?: boolean | Order$OrderItemArgs<ExtArgs>
@@ -3167,6 +3211,10 @@ export namespace Prisma {
       shippingState: string | null
       shippingZipCode: string | null
       shippingCountry: string | null
+      deliveryMethod: string | null
+      pickupLocationId: string | null
+      pickupLocationName: string | null
+      shippingApartment: string | null
       createdAt: Date
       updatedAt: Date
       archivedAt: Date | null
@@ -3613,6 +3661,10 @@ export namespace Prisma {
     readonly shippingState: FieldRef<"Order", 'String'>
     readonly shippingZipCode: FieldRef<"Order", 'String'>
     readonly shippingCountry: FieldRef<"Order", 'String'>
+    readonly deliveryMethod: FieldRef<"Order", 'String'>
+    readonly pickupLocationId: FieldRef<"Order", 'String'>
+    readonly pickupLocationName: FieldRef<"Order", 'String'>
+    readonly shippingApartment: FieldRef<"Order", 'String'>
     readonly createdAt: FieldRef<"Order", 'DateTime'>
     readonly updatedAt: FieldRef<"Order", 'DateTime'>
     readonly archivedAt: FieldRef<"Order", 'DateTime'>
@@ -9846,6 +9898,10 @@ export namespace Prisma {
     shippingState: 'shippingState',
     shippingZipCode: 'shippingZipCode',
     shippingCountry: 'shippingCountry',
+    deliveryMethod: 'deliveryMethod',
+    pickupLocationId: 'pickupLocationId',
+    pickupLocationName: 'pickupLocationName',
+    shippingApartment: 'shippingApartment',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     archivedAt: 'archivedAt'
@@ -10140,6 +10196,10 @@ export namespace Prisma {
     shippingState?: StringNullableFilter<"Order"> | string | null
     shippingZipCode?: StringNullableFilter<"Order"> | string | null
     shippingCountry?: StringNullableFilter<"Order"> | string | null
+    deliveryMethod?: StringNullableFilter<"Order"> | string | null
+    pickupLocationId?: StringNullableFilter<"Order"> | string | null
+    pickupLocationName?: StringNullableFilter<"Order"> | string | null
+    shippingApartment?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     archivedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
@@ -10166,6 +10226,10 @@ export namespace Prisma {
     shippingState?: SortOrderInput | SortOrder
     shippingZipCode?: SortOrderInput | SortOrder
     shippingCountry?: SortOrderInput | SortOrder
+    deliveryMethod?: SortOrderInput | SortOrder
+    pickupLocationId?: SortOrderInput | SortOrder
+    pickupLocationName?: SortOrderInput | SortOrder
+    shippingApartment?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrderInput | SortOrder
@@ -10195,6 +10259,10 @@ export namespace Prisma {
     shippingState?: StringNullableFilter<"Order"> | string | null
     shippingZipCode?: StringNullableFilter<"Order"> | string | null
     shippingCountry?: StringNullableFilter<"Order"> | string | null
+    deliveryMethod?: StringNullableFilter<"Order"> | string | null
+    pickupLocationId?: StringNullableFilter<"Order"> | string | null
+    pickupLocationName?: StringNullableFilter<"Order"> | string | null
+    shippingApartment?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     archivedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
@@ -10221,6 +10289,10 @@ export namespace Prisma {
     shippingState?: SortOrderInput | SortOrder
     shippingZipCode?: SortOrderInput | SortOrder
     shippingCountry?: SortOrderInput | SortOrder
+    deliveryMethod?: SortOrderInput | SortOrder
+    pickupLocationId?: SortOrderInput | SortOrder
+    pickupLocationName?: SortOrderInput | SortOrder
+    shippingApartment?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrderInput | SortOrder
@@ -10252,6 +10324,10 @@ export namespace Prisma {
     shippingState?: StringNullableWithAggregatesFilter<"Order"> | string | null
     shippingZipCode?: StringNullableWithAggregatesFilter<"Order"> | string | null
     shippingCountry?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    deliveryMethod?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    pickupLocationId?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    pickupLocationName?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    shippingApartment?: StringNullableWithAggregatesFilter<"Order"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
     archivedAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
@@ -10718,6 +10794,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -10744,6 +10824,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -10768,6 +10852,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10794,6 +10882,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10819,6 +10911,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -10841,6 +10937,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10864,6 +10964,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11495,6 +11599,10 @@ export namespace Prisma {
     shippingState?: SortOrder
     shippingZipCode?: SortOrder
     shippingCountry?: SortOrder
+    deliveryMethod?: SortOrder
+    pickupLocationId?: SortOrder
+    pickupLocationName?: SortOrder
+    shippingApartment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrder
@@ -11523,6 +11631,10 @@ export namespace Prisma {
     shippingState?: SortOrder
     shippingZipCode?: SortOrder
     shippingCountry?: SortOrder
+    deliveryMethod?: SortOrder
+    pickupLocationId?: SortOrder
+    pickupLocationName?: SortOrder
+    shippingApartment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrder
@@ -11546,6 +11658,10 @@ export namespace Prisma {
     shippingState?: SortOrder
     shippingZipCode?: SortOrder
     shippingCountry?: SortOrder
+    deliveryMethod?: SortOrder
+    pickupLocationId?: SortOrder
+    pickupLocationName?: SortOrder
+    shippingApartment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrder
@@ -12816,6 +12932,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -12841,6 +12961,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -12938,6 +13062,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -12963,6 +13091,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13340,6 +13472,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -13364,6 +13500,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -13418,6 +13558,10 @@ export namespace Prisma {
     shippingState?: StringNullableFilter<"Order"> | string | null
     shippingZipCode?: StringNullableFilter<"Order"> | string | null
     shippingCountry?: StringNullableFilter<"Order"> | string | null
+    deliveryMethod?: StringNullableFilter<"Order"> | string | null
+    pickupLocationId?: StringNullableFilter<"Order"> | string | null
+    pickupLocationName?: StringNullableFilter<"Order"> | string | null
+    shippingApartment?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     archivedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
@@ -13440,6 +13584,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -13465,6 +13613,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -13504,6 +13656,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13529,6 +13685,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13778,6 +13938,10 @@ export namespace Prisma {
     shippingState?: string | null
     shippingZipCode?: string | null
     shippingCountry?: string | null
+    deliveryMethod?: string | null
+    pickupLocationId?: string | null
+    pickupLocationName?: string | null
+    shippingApartment?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
@@ -13800,6 +13964,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13824,6 +13992,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13848,6 +14020,10 @@ export namespace Prisma {
     shippingState?: NullableStringFieldUpdateOperationsInput | string | null
     shippingZipCode?: NullableStringFieldUpdateOperationsInput | string | null
     shippingCountry?: NullableStringFieldUpdateOperationsInput | string | null
+    deliveryMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationId?: NullableStringFieldUpdateOperationsInput | string | null
+    pickupLocationName?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingApartment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
