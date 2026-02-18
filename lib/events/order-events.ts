@@ -10,7 +10,15 @@ interface OrderConfirmedEvent {
     price: number;
     variantInfo?: string;
   }>;
-  shippingAddress: string;
+  // Fulfillment fields — null for legacy orders (deliveryMethod not set before Phase 7)
+  deliveryMethod: string | null;
+  pickupLocationName: string | null;
+  shippingAddress: string | null;
+  shippingApartment: string | null;
+  shippingCity: string | null;
+  shippingState: string | null;
+  shippingZipCode: string | null;
+  shippingCountry: string | null;
   paymentIntentId: string;
   serviceFee?: {
     baseAmount: number;

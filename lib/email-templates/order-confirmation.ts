@@ -13,7 +13,15 @@ interface EmailTemplateData {
     price: number;
     variantInfo?: string;
   }>;
-  shippingAddress: string;
+  // Fulfillment fields — null for legacy orders
+  deliveryMethod: string | null;
+  pickupLocationName: string | null;
+  shippingAddress: string | null;
+  shippingApartment: string | null;
+  shippingCity: string | null;
+  shippingState: string | null;
+  shippingZipCode: string | null;
+  shippingCountry: string | null;
   serviceFee?: {
     baseAmount: number;
     discount: number;
@@ -36,7 +44,14 @@ export function generateOrderConfirmationEmail(orderData: OrderConfirmedEvent): 
     customerName: orderData.customerName,
     total: orderData.total,
     items: orderData.items,
-    shippingAddress: orderData.shippingAddress,
+    deliveryMethod: orderData.deliveryMethod ?? null,
+    pickupLocationName: orderData.pickupLocationName ?? null,
+    shippingAddress: orderData.shippingAddress ?? null,
+    shippingApartment: orderData.shippingApartment ?? null,
+    shippingCity: orderData.shippingCity ?? null,
+    shippingState: orderData.shippingState ?? null,
+    shippingZipCode: orderData.shippingZipCode ?? null,
+    shippingCountry: orderData.shippingCountry ?? null,
     serviceFee: orderData.serviceFee,
     discount: orderData.discount,
     createdAt: orderData.createdAt,
@@ -51,6 +66,8 @@ export function generateOrderConfirmationEmail(orderData: OrderConfirmedEvent): 
 }
 
 function generateHTMLTemplate(data: EmailTemplateData): string {
+  const isPickup = data.deliveryMethod === "pickup";
+
   const orderDate = new Date(data.createdAt).toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -166,11 +183,33 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
                 </div>
             </div>
 
+            ${isPickup ? `
+            <div class="shipping">
+                <h3>Pickup Location</h3>
+                <p>${data.pickupLocationName ?? ''}</p>
+            </div>
+            ` : `
             <div class="shipping">
                 <h3>Shipping Address</h3>
-                <p>${data.shippingAddress}</p>
+                <p>
+                    ${data.shippingAddress ?? ''}
+                    ${data.shippingApartment ? `<br>${data.shippingApartment}` : ''}
+                    ${data.shippingCity ? `<br>${data.shippingCity}, ${data.shippingState ?? ''} ${data.shippingZipCode ?? ''}` : ''}
+                    ${data.shippingCountry ? `<br>${data.shippingCountry}` : ''}
+                </p>
             </div>
+            `}
 
+            ${isPickup ? `
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 6px;">
+                <h3>What's Next?</h3>
+                <ul>
+                    <li>We'll process your order within 1-2 business days</li>
+                    <li>We'll contact you when your order is ready for pickup</li>
+                    <li>Pick up at: ${data.pickupLocationName ?? ''}</li>
+                </ul>
+            </div>
+            ` : `
             <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 6px;">
                 <h3>What's Next?</h3>
                 <ul>
@@ -179,6 +218,7 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
                     <li>Standard shipping takes 5-7 business days</li>
                 </ul>
             </div>
+            `}
         </div>
 
         <div class="footer">
@@ -192,6 +232,8 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
 }
 
 function generateTextTemplate(data: EmailTemplateData): string {
+  const isPickup = data.deliveryMethod === "pickup";
+
   const orderDate = new Date(data.createdAt).toLocaleDateString();
   const subtotal = data.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -215,13 +257,23 @@ ORDER SUMMARY
 Subtotal: $${subtotal.toFixed(2)}${data.discount ? `\nDiscount (${data.discount.code}): -$${data.discount.amount.toFixed(2)}` : ''}${data.serviceFee ? `\nService Fee (5%): $${data.serviceFee.baseAmount.toFixed(2)}${data.serviceFee.discount > 0 ? `\nService Fee Discount: -$${data.serviceFee.discount.toFixed(2)}` : ''}` : ''}
 Total: $${data.total.toFixed(2)}
 
-SHIPPING ADDRESS
-${data.shippingAddress}
+${isPickup
+  ? `PICKUP LOCATION\n${data.pickupLocationName ?? ''}`
+  : `SHIPPING ADDRESS\n${[
+      data.shippingAddress,
+      data.shippingApartment,
+      data.shippingCity
+        ? `${data.shippingCity}, ${data.shippingState ?? ''} ${data.shippingZipCode ?? ''}`
+        : null,
+      data.shippingCountry
+    ].filter(Boolean).join('\n')}`
+}
 
 WHAT'S NEXT?
-• We'll process your order within 1-2 business days
-• You'll receive a shipping confirmation email with tracking information
-• Standard shipping takes 5-7 business days
+${isPickup
+  ? `• We'll process your order within 1-2 business days\n• We'll contact you when your order is ready for pickup\n• Pick up at: ${data.pickupLocationName ?? ''}`
+  : `• We'll process your order within 1-2 business days\n• You'll receive a shipping confirmation email with tracking information\n• Standard shipping takes 5-7 business days`
+}
 
 Questions about your order? Reply to this email or contact us at support@grailseekers.com
 

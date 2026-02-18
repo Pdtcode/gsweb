@@ -161,15 +161,6 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         const customerEmail = order.shippingEmail || paymentIntent.metadata?.customer_email || '';
         const customerName = [order.shippingFirstName, order.shippingLastName].filter(Boolean).join(' ') || paymentIntent.metadata?.customer_name || '';
 
-        // Build shipping address string
-        const shippingAddress = [
-          order.shippingAddress,
-          order.shippingCity,
-          order.shippingState,
-          order.shippingZipCode,
-          order.shippingCountry
-        ].filter(Boolean).join(', ') || paymentIntent.metadata?.shipping_address || '';
-
         // Get service fee and discount from payment intent metadata
         const serviceFeeBase = parseFloat(paymentIntent.metadata?.service_fee_base || '0');
         const serviceFeeDiscount = parseFloat(paymentIntent.metadata?.service_fee_discount || '0');
@@ -191,7 +182,15 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
               ? `${item.ProductVariant.size ? `Size: ${item.ProductVariant.size}` : ''}${item.ProductVariant.size && item.ProductVariant.color ? ', ' : ''}${item.ProductVariant.color ? `Color: ${item.ProductVariant.color}` : ''}`
               : undefined
           })),
-          shippingAddress: shippingAddress,
+          // Fulfillment fields — all come directly from Neon order record
+          deliveryMethod: order.deliveryMethod ?? null,
+          pickupLocationName: order.pickupLocationName ?? null,
+          shippingAddress: order.shippingAddress ?? null,
+          shippingApartment: order.shippingApartment ?? null,
+          shippingCity: order.shippingCity ?? null,
+          shippingState: order.shippingState ?? null,
+          shippingZipCode: order.shippingZipCode ?? null,
+          shippingCountry: order.shippingCountry ?? null,
           paymentIntentId: paymentIntent.id,
           serviceFee: serviceFeeAmount > 0 ? {
             baseAmount: serviceFeeBase,

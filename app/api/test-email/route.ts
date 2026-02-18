@@ -64,7 +64,14 @@ export async function POST(request: NextRequest) {
               price: 29.99
             }
           ],
-          shippingAddress: "123 Test Street, Test City, TS 12345, United States",
+          deliveryMethod: null,
+          pickupLocationName: null,
+          shippingAddress: "123 Test Street",
+          shippingApartment: null,
+          shippingCity: "Test City",
+          shippingState: "TS",
+          shippingZipCode: "12345",
+          shippingCountry: "United States",
           paymentIntentId: "pi_test_12345",
           serviceFee: {
             baseAmount: 5.50,

@@ -78,7 +78,14 @@ export async function POST(request: NextRequest) {
           variantInfo: "Size: M, Color: Black"
         }
       ],
-      shippingAddress: "123 Debug Street, Test City, TC 12345, USA",
+      deliveryMethod: null,
+      pickupLocationName: null,
+      shippingAddress: "123 Debug Street",
+      shippingApartment: null,
+      shippingCity: "Test City",
+      shippingState: "TC",
+      shippingZipCode: "12345",
+      shippingCountry: "USA",
       paymentIntentId: "pi_debug_test",
       serviceFee: {
         baseAmount: 4.00,
