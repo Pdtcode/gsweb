@@ -11,6 +11,10 @@ import { StripePaymentForm } from "@/components/stripe-payment-form";
 import { PromoCode, DiscountInfo } from "@/components/promo-code";
 import { urlForImage } from "@/sanity/lib/image";
 import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
+import { DeliveryMethodToggle } from "@/components/delivery-method-toggle";
+import type { DeliveryMethod } from "@/components/delivery-method-toggle";
+import { PickupLocationSelector } from "@/components/pickup-location-selector";
+import type { PickupLocation } from "@/components/pickup-location-selector";
 
 interface ShippingInfo {
   firstName: string;
@@ -51,6 +55,10 @@ export default function CheckoutPage() {
     country: "US",
   });
 
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("shipping");
+  const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
+  const [selectedPickupLocationId, setSelectedPickupLocationId] = useState<string>("");
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
 
   // Handle Stripe redirect success or cancel query params
   useEffect(() => {
@@ -66,6 +74,23 @@ export default function CheckoutPage() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [clearCart]);
+
+  // Fetch pickup locations on mount
+  useEffect(() => {
+    async function fetchLocations() {
+      setIsLoadingLocations(true);
+      try {
+        const res = await fetch("/api/pickup-locations");
+        const data = await res.json();
+        setPickupLocations(data.locations ?? []);
+      } catch {
+        console.error("Failed to fetch pickup locations");
+      } finally {
+        setIsLoadingLocations(false);
+      }
+    }
+    fetchLocations();
+  }, []);
 
   // Redirect if cart is empty
   if (cart.length === 0) {
@@ -143,19 +168,36 @@ export default function CheckoutPage() {
 
     setPaymentError(null); // Clear any previous errors
 
-    // Validate shipping information
+    // Shared validation: name, email, phone always required
     if (
       !shippingInfo.firstName ||
       !shippingInfo.lastName ||
       !shippingInfo.email ||
-      !shippingInfo.phone ||
-      !shippingInfo.address ||
-      !shippingInfo.city ||
-      !shippingInfo.state ||
-      !shippingInfo.zipCode
+      !shippingInfo.phone
     ) {
-      setPaymentError("Please fill in all shipping information fields.");
+      setPaymentError("Please fill in your name, email, and phone.");
       return;
+    }
+
+    // Shipping-only validation: address fields required
+    if (deliveryMethod === "shipping") {
+      if (
+        !shippingInfo.address ||
+        !shippingInfo.city ||
+        !shippingInfo.state ||
+        !shippingInfo.zipCode
+      ) {
+        setPaymentError("Please fill in all shipping address fields.");
+        return;
+      }
+    }
+
+    // Pickup-only validation: location must be selected
+    if (deliveryMethod === "pickup") {
+      if (!selectedPickupLocationId) {
+        setPaymentError("Please select a pickup location.");
+        return;
+      }
     }
 
     setIsProcessing(true);
@@ -208,11 +250,19 @@ export default function CheckoutPage() {
               value: serviceFeeDiscount.value
             } : undefined
           },
+          deliveryMethod,
+          pickupLocationId: deliveryMethod === "pickup" ? selectedPickupLocationId : undefined,
+          pickupLocationName: deliveryMethod === "pickup"
+            ? (pickupLocations.find(l => l._id === selectedPickupLocationId)?.name ?? "")
+            : undefined,
+          shippingApartment: undefined, // Wired in Plan 08-02
           metadata: {
             customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
             customer_email: shippingInfo.email,
             customer_phone: shippingInfo.phone,
-            shipping_address: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country}`,
+            shipping_address: deliveryMethod === "shipping"
+              ? `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country}`
+              : "",
             user_id: userId || "",
             promo_code: appliedDiscount?.code || "",
           },
@@ -271,9 +321,12 @@ export default function CheckoutPage() {
             {/* Shipping Information */}
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Shipping Information</h2>
+                <h2 className="text-xl font-semibold">
+                  {deliveryMethod === "shipping" ? "Shipping Information" : "Contact Information"}
+                </h2>
               </div>
-              
+
+              <DeliveryMethodToggle value={deliveryMethod} onChange={setDeliveryMethod} />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -352,103 +405,119 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div>
-                <label
-                  className="block text-sm font-medium mb-2"
-                  htmlFor="address"
-                >
-                  Address
-                </label>
-                <input
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
-                  id="address"
-                  type="text"
-                  value={shippingInfo.address}
-                  onChange={(e) =>
-                    handleShippingChange("address", e.target.value)
-                  }
+              {deliveryMethod === "shipping" && (
+                <>
+                  {/* Address field */}
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      htmlFor="address"
+                    >
+                      Address
+                    </label>
+                    <input
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                      id="address"
+                      type="text"
+                      value={shippingInfo.address}
+                      onChange={(e) =>
+                        handleShippingChange("address", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* City / State / ZIP grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-2"
+                        htmlFor="city"
+                      >
+                        City
+                      </label>
+                      <input
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                        id="city"
+                        type="text"
+                        value={shippingInfo.city}
+                        onChange={(e) =>
+                          handleShippingChange("city", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-2"
+                        htmlFor="state"
+                      >
+                        State
+                      </label>
+                      <input
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                        id="state"
+                        type="text"
+                        value={shippingInfo.state}
+                        onChange={(e) =>
+                          handleShippingChange("state", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-2"
+                        htmlFor="zipCode"
+                      >
+                        ZIP Code
+                      </label>
+                      <input
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                        id="zipCode"
+                        type="text"
+                        value={shippingInfo.zipCode}
+                        onChange={(e) =>
+                          handleShippingChange("zipCode", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Country select */}
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      htmlFor="country"
+                    >
+                      Country
+                    </label>
+                    <select
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                      id="country"
+                      value={shippingInfo.country}
+                      onChange={(e) =>
+                        handleShippingChange("country", e.target.value)
+                      }
+                    >
+                      <option value="US">United States</option>
+                      <option value="CA">Canada</option>
+                      <option value="MX">Mexico</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {deliveryMethod === "pickup" && (
+                <PickupLocationSelector
+                  locations={pickupLocations}
+                  selectedId={selectedPickupLocationId}
+                  onSelect={setSelectedPickupLocationId}
+                  isLoading={isLoadingLocations}
                 />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label
-                    className="block text-sm font-medium mb-2"
-                    htmlFor="city"
-                  >
-                    City
-                  </label>
-                  <input
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
-                    id="city"
-                    type="text"
-                    value={shippingInfo.city}
-                    onChange={(e) =>
-                      handleShippingChange("city", e.target.value)
-                    }
-                  />
-                </div>
-                <div>
-                  <label
-                    className="block text-sm font-medium mb-2"
-                    htmlFor="state"
-                  >
-                    State
-                  </label>
-                  <input
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
-                    id="state"
-                    type="text"
-                    value={shippingInfo.state}
-                    onChange={(e) =>
-                      handleShippingChange("state", e.target.value)
-                    }
-                  />
-                </div>
-                <div>
-                  <label
-                    className="block text-sm font-medium mb-2"
-                    htmlFor="zipCode"
-                  >
-                    ZIP Code
-                  </label>
-                  <input
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
-                    id="zipCode"
-                    type="text"
-                    value={shippingInfo.zipCode}
-                    onChange={(e) =>
-                      handleShippingChange("zipCode", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  className="block text-sm font-medium mb-2"
-                  htmlFor="country"
-                >
-                  Country
-                </label>
-                <select
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
-                  id="country"
-                  value={shippingInfo.country}
-                  onChange={(e) =>
-                    handleShippingChange("country", e.target.value)
-                  }
-                >
-                  <option value="US">United States</option>
-                  <option value="CA">Canada</option>
-                  <option value="MX">Mexico</option>
-                </select>
-              </div>
+              )}
             </div>
 
             {/* Payment Form */}
@@ -531,6 +600,16 @@ export default function CheckoutPage() {
 
             {/* Order Totals */}
             <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span>Fulfillment:</span>
+                <span>
+                  {deliveryMethod === "pickup"
+                    ? pickupLocations.find(l => l._id === selectedPickupLocationId)?.name
+                      ? `Pickup — ${pickupLocations.find(l => l._id === selectedPickupLocationId)!.name}`
+                      : "Pickup"
+                    : "Shipping"}
+                </span>
+              </div>
               <div className="flex justify-between items-center">
                 <span>Subtotal:</span>
                 <span>${subtotal.toFixed(2)}</span>
