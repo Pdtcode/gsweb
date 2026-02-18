@@ -29,6 +29,15 @@ interface Order {
   total: number;
   status: string;
   createdAt: string;
+  // Fulfillment fields (all nullable — legacy orders have null)
+  deliveryMethod: string | null;
+  pickupLocationName: string | null;
+  shippingAddress: string | null;
+  shippingApartment: string | null;
+  shippingCity: string | null;
+  shippingState: string | null;
+  shippingZipCode: string | null;
+  shippingCountry: string | null;
   OrderItem: OrderItem[];
 }
 
@@ -279,6 +288,30 @@ export default function OrderSuccessClient() {
               ) : null;
             })()}
           </div>
+
+          {/* Fulfillment Info */}
+          {order.deliveryMethod === "pickup" ? (
+            order.pickupLocationName ? (
+              <div className="px-6 py-4 bg-blue-50 border-t border-blue-100">
+                <h3 className="text-sm font-medium text-gray-700 mb-1">Pickup Location</h3>
+                <p className="text-sm text-gray-900">{order.pickupLocationName}</p>
+              </div>
+            ) : null
+          ) : (
+            (order.shippingAddress || order.shippingCity) ? (
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <h3 className="text-sm font-medium text-gray-700 mb-1">Shipping Address</h3>
+                <p className="text-sm text-gray-900">
+                  {order.shippingAddress}
+                  {order.shippingApartment && <><br />{order.shippingApartment}</>}
+                  {order.shippingCity && (
+                    <><br />{order.shippingCity}, {order.shippingState} {order.shippingZipCode}</>
+                  )}
+                  {order.shippingCountry && <><br />{order.shippingCountry}</>}
+                </p>
+              </div>
+            ) : null
+          )}
         </div>
 
         {/* Next Steps */}
@@ -294,9 +327,20 @@ export default function OrderSuccessClient() {
             </div>
             <div className="space-y-3 text-sm text-gray-600">
               <p>• You&apos;ll receive an email confirmation shortly</p>
-              <p>• We&apos;ll notify you when your order ships</p>
-              <p>• Track your order status in your account</p>
-              <p>• Estimated delivery: 3-7 business days</p>
+              {order.deliveryMethod === "pickup" ? (
+                <>
+                  <p>• We&apos;ll contact you when your order is ready for pickup</p>
+                  {order.pickupLocationName && (
+                    <p>• Pick up at: {order.pickupLocationName}</p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p>• We&apos;ll notify you when your order ships</p>
+                  <p>• Track your order status in your account</p>
+                  <p>• Estimated delivery: 3-7 business days</p>
+                </>
+              )}
             </div>
           </div>
 
