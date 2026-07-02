@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -8,6 +10,8 @@ import { urlForImage } from "@/sanity/lib/image";
 import { client } from "@/sanity/lib/client";
 import { postBySlugQuery } from "@/lib/queries";
 import { Post } from "@/types";
+import { JsonLd } from "@/components/json-ld";
+import { absoluteUrl, buildMetadata, siteConfig } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -30,6 +34,48 @@ async function getPostData(slug: string): Promise<{ post: Post | null }> {
   const post = await client.fetch<Post>(postBySlugQuery, { slug });
 
   return { post };
+}
+
+function postImageUrl(post: Post): string | null {
+  if (!post.mainImage) return null;
+
+  try {
+    return urlForImage(post.mainImage).width(1200).height(630).url();
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const { post } = await getPostData(slug);
+
+  if (!post) {
+    return buildMetadata({
+      title: "Post not found",
+      path: `/news/${slug}`,
+      noindex: true,
+    });
+  }
+
+  return buildMetadata({
+    title: post.title,
+    description:
+      post.excerpt?.slice(0, 160) ||
+      `Read "${post.title}" on the ${siteConfig.name} journal.`,
+    path: `/news/${slug}`,
+    image: postImageUrl(post),
+    type: "article",
+    publishedTime: post.publishedAt,
+    authors: post.authorName ? [post.authorName] : undefined,
+    keywords: [
+      ...(post.categories?.map((c) => c.title) ?? []),
+      "streetwear",
+      siteConfig.name,
+    ],
+  });
 }
 
 export default async function BlogPostPage({
@@ -58,8 +104,33 @@ export default async function BlogPostPage({
     );
   }
 
+  const articleImage = postImageUrl(post);
+  const articleLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    ...(articleImage ? { image: [articleImage] } : {}),
+    ...(post.publishedAt ? { datePublished: post.publishedAt } : {}),
+    ...(post.authorName
+      ? { author: { "@type": "Person", name: post.authorName } }
+      : {}),
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("/logo-light.svg"),
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absoluteUrl(`/news/${slug}`),
+    },
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
+      <JsonLd data={articleLd} />
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-8">

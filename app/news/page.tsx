@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -7,8 +9,16 @@ import { urlForImage } from "@/sanity/lib/image";
 import { client } from "@/sanity/lib/client";
 import { allPostsQuery } from "@/lib/queries";
 import { Post } from "@/types";
+import { buildMetadata } from "@/lib/seo";
 
 export const revalidate = 60; // Revalidate this page every 60 seconds
+
+export const metadata: Metadata = buildMetadata({
+  title: "News",
+  description:
+    "The latest drops, stories, and updates from Grail Seekers. Streetwear culture, collection releases, and behind-the-scenes.",
+  path: "/news",
+});
 
 async function getPostsData() {
   const posts = await client.fetch<Post[]>(allPostsQuery);

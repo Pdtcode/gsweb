@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,6 +8,7 @@ import { title } from "@/components/primitives";
 import { client } from "@/sanity/lib/client";
 import { urlForImage } from "@/sanity/lib/image";
 import { collectionBySlugQuery } from "@/lib/queries";
+import { buildMetadata, siteConfig } from "@/lib/seo";
 
 export const revalidate = 60; // Revalidate this page every 60 seconds
 
@@ -17,6 +20,41 @@ interface CollectionPageProps {
 
 async function getCollectionData(slug: string) {
   return await client.fetch(collectionBySlugQuery, { slug });
+}
+
+export async function generateMetadata({
+  params,
+}: CollectionPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const collection = await getCollectionData(slug);
+
+  if (!collection) {
+    return buildMetadata({
+      title: "Collection not found",
+      path: `/store/collections/${slug}`,
+      noindex: true,
+    });
+  }
+
+  let image: string | null = null;
+
+  try {
+    image = collection.mainImage
+      ? urlForImage(collection.mainImage).width(1200).height(630).url()
+      : null;
+  } catch {
+    image = null;
+  }
+
+  return buildMetadata({
+    title: collection.title,
+    description:
+      collection.description?.slice(0, 160) ||
+      `Explore the ${collection.title} collection at ${siteConfig.name}.`,
+    path: `/store/collections/${slug}`,
+    image,
+    keywords: [collection.title, "collection", "streetwear", siteConfig.name],
+  });
 }
 
 export default async function CollectionPage({ params }: CollectionPageProps) {

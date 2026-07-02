@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import StoreContent from "./store-content";
 
 import { client } from "@/sanity/lib/client";
@@ -6,8 +8,16 @@ import {
   categoriesQuery,
   featuredCollectionsQuery,
 } from "@/lib/queries";
+import { buildMetadata } from "@/lib/seo";
 
 export const revalidate = 60; // Revalidate this page every 60 seconds
+
+export const metadata: Metadata = buildMetadata({
+  title: "Store",
+  description:
+    "Shop the full Grail Seekers collection — limited-edition hoodies, tees, and accessories. Fast shipping or local pickup.",
+  path: "/store",
+});
 
 async function getStoreData() {
   const products = await client.fetch(allProductsQuery);
