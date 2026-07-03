@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Guard against horizontal scroll on mobile (full-bleed bg/effect layers).
+   `clip` (not `hidden`) so it doesn't turn body into a scroll container and
+   break the sticky navbar. */
+html,
+body {
+  overflow-x: clip;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -20,4 +28,22 @@
     opacity: 0.8;
     transform: scale(1.05);
   }
+}
+
+/* Dripping paint edge under the maroon "Life Sucks" homepage navbar.
+   Applied via the `navbar-drip` class (navbar.tsx, homepage only). The tile
+   in /public/nav-drip.svg repeats horizontally and hangs below the bar. */
+.navbar-drip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Overlap the bar by 1px so a fractional navbar height on mobile can't
+     leave a sub-pixel gap between the bar and the drips. The SVG's top row
+     is solid maroon, so the overlap is invisible. */
+  top: calc(100% - 1px);
+  height: 72px;
+  background: url("/nav-drip.svg") repeat-x left top;
+  pointer-events: none;
+  z-index: 30;
 }

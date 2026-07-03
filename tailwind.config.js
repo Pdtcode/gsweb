@@ -17,7 +17,9 @@ const config = {
       animation: {
         fadeIn: 'fadeIn 0.6s ease-in-out',
         'float-slow': 'floatSlow 6s ease-in-out infinite',
-        'float-text': 'floatText 5s ease-in-out infinite',
+        // Pulsing neon bloom — animates opacity only, so the cached blur/blend
+        // buffer isn't re-rasterized each frame (compositor-friendly).
+        'glow-pulse': 'glowPulse 3.5s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -28,9 +30,9 @@ const config = {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-14px)' },
         },
-        floatText: {
-          '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
-          '50%': { transform: 'translateY(-6px) rotate(-1deg)' },
+        glowPulse: {
+          '0%, 100%': { opacity: '0.5' },
+          '50%': { opacity: '1' },
         },
       },
     },

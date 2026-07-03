@@ -16,6 +16,7 @@ import clsx from "clsx";
 import { useState } from "react";
 
 import { siteConfig } from "@/config/site";
+import { fontDokdo } from "@/config/fonts";
 import { NEW_ARRIVALS_HOME_ACTIVE } from "@/config/homepage";
 import { ThemeSwitch } from "@/components/theme-switch";
 import ThemeLogo from "@/components/theme-logo";
@@ -51,7 +52,15 @@ export const Navbar = () => {
       onMenuOpenChange={setIsMenuOpen}
       classNames={
         isMaroonHome
-          ? { base: "!bg-[#621600] !backdrop-blur-none" }
+          ? {
+              base: clsx(
+                "!bg-[#621600] !backdrop-blur-none !overflow-visible",
+                // Drop the drips while the mobile menu is open so they don't
+                // overlap the dropdown; they return when it closes.
+                !isMenuOpen && "navbar-drip",
+                fontDokdo.className,
+              ),
+            }
           : undefined
       }
     >
@@ -61,7 +70,7 @@ export const Navbar = () => {
             <ThemeLogo />
           </NextLink>
         </NavbarBrand>
-        <ul className="hidden lg:flex gap-4 justify-start ml-2">
+        <ul className="hidden lg:flex gap-8 justify-start ml-4">
           {siteConfig.navItems.map((item) => (
             <NavbarItem key={item.href}>
               <NextLink
@@ -69,6 +78,7 @@ export const Navbar = () => {
                   linkStyles({ color: "foreground" }),
                   "data-[active=true]:text-primary data-[active=true]:font-medium",
                   homeText,
+                  isMaroonHome && "!text-3xl",
                 )}
                 color="foreground"
                 href={item.href}
