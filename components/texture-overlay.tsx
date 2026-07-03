@@ -27,7 +27,7 @@ export default function TextureOverlay({
   if (!mounted) {
     return (
       <div
-        className={`fixed inset-0 w-screen h-[100lvh] pointer-events-none ${className}`}
+        className={`fixed inset-0 w-screen h-[100dvh] pointer-events-none ${className}`}
         style={{
           backgroundImage: `url('${textureUrl}')`,
           backgroundRepeat: "repeat",
@@ -44,7 +44,7 @@ export default function TextureOverlay({
     <>
       {/* Main texture layer */}
       <div
-        className={`fixed inset-0 w-screen h-[100lvh] pointer-events-none ${className}`}
+        className={`fixed inset-0 w-screen h-[100dvh] pointer-events-none ${className}`}
         style={{
           backgroundImage: `url('${textureUrl}')`,
           backgroundRepeat: "repeat",
