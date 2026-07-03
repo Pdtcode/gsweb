@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 
+import { NEW_ARRIVALS_HOME_ACTIVE } from "@/config/homepage";
+
 export default function ThemeLogo() {
   const { theme, resolvedTheme } = useTheme();
   const pathname = usePathname();
@@ -35,10 +37,16 @@ export default function ThemeLogo() {
   const currentTheme = theme === "system" ? resolvedTheme : theme;
   const isDarkMode = currentTheme === "dark";
 
+  // The homepage navbar is maroon (when the new-arrivals homepage is active),
+  // so force the white logo there regardless of theme to keep it legible.
+  const isMaroonHome = pathname === "/" && NEW_ARRIVALS_HOME_ACTIVE;
+  const useLightLogo = isDarkMode || isMaroonHome;
+
   // Construct the logo path based on theme and selected variant
-  const logoColor = isDarkMode ? "White" : "Black";
-  const logoNumber = selectedLogo === 5 && isDarkMode ? "06" : `0${selectedLogo}`;
-  const logoPath = `/01 Logo Exports/Logo ${selectedLogo}/${isDarkMode ? "02 white" : "01 black"}/GS-${logoNumber}-${logoColor}.svg`;
+  const logoColor = useLightLogo ? "White" : "Black";
+  const logoNumber =
+    selectedLogo === 5 && useLightLogo ? "06" : `0${selectedLogo}`;
+  const logoPath = `/01 Logo Exports/Logo ${selectedLogo}/${useLightLogo ? "02 white" : "01 black"}/GS-${logoNumber}-${logoColor}.svg`;
 
   return (
     <div className="relative w-12 h-12 mr-1">

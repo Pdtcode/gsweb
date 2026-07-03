@@ -16,11 +16,21 @@ const config = {
       },
       animation: {
         fadeIn: 'fadeIn 0.6s ease-in-out',
+        'float-slow': 'floatSlow 6s ease-in-out infinite',
+        'float-text': 'floatText 5s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        floatSlow: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-14px)' },
+        },
+        floatText: {
+          '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+          '50%': { transform: 'translateY(-6px) rotate(-1deg)' },
         },
       },
     },

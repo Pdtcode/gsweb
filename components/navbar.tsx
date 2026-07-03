@@ -11,10 +11,12 @@ import {
 import { Link } from "@heroui/link";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
+import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useState } from "react";
 
 import { siteConfig } from "@/config/site";
+import { NEW_ARRIVALS_HOME_ACTIVE } from "@/config/homepage";
 import { ThemeSwitch } from "@/components/theme-switch";
 import ThemeLogo from "@/components/theme-logo";
 import { CartButton } from "@/components/cart-button";
@@ -24,6 +26,13 @@ import { useAuth } from "@/context/AuthContext";
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logOut } = useAuth();
+
+  // Maroon navbar (matching the Life Sucks artwork) — only on the homepage
+  // AND only while the new-arrivals homepage is active (config/homepage.ts).
+  const isMaroonHome = usePathname() === "/" && NEW_ARRIVALS_HOME_ACTIVE;
+  // Cream text/icons so the nav stays legible on the maroon background
+  // (in both light and dark themes).
+  const homeText = isMaroonHome ? "!text-[#f3ede1]" : "";
 
   const handleLogout = async () => {
     try {
@@ -35,11 +44,16 @@ export const Navbar = () => {
   };
 
   return (
-    <HeroUINavbar 
-      maxWidth="xl" 
+    <HeroUINavbar
+      maxWidth="xl"
       position="sticky"
       isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
+      classNames={
+        isMaroonHome
+          ? { base: "!bg-[#621600] !backdrop-blur-none" }
+          : undefined
+      }
     >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
@@ -54,6 +68,7 @@ export const Navbar = () => {
                 className={clsx(
                   linkStyles({ color: "foreground" }),
                   "data-[active=true]:text-primary data-[active=true]:font-medium",
+                  homeText,
                 )}
                 color="foreground"
                 href={item.href}
@@ -70,7 +85,11 @@ export const Navbar = () => {
         justify="end"
       >
         <NavbarItem className="hidden sm:flex gap-2">
-          <ThemeSwitch />
+          <ThemeSwitch
+            classNames={
+              isMaroonHome ? { wrapper: "!text-[#f3ede1]" } : undefined
+            }
+          />
         </NavbarItem>
         <NavbarItem className="hidden md:flex">
           <CartButton />
@@ -81,9 +100,13 @@ export const Navbar = () => {
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <ThemeSwitch />
+        <ThemeSwitch
+          classNames={
+            isMaroonHome ? { wrapper: "!text-[#f3ede1]" } : undefined
+          }
+        />
         <CartButton />
-        <NavbarMenuToggle />
+        <NavbarMenuToggle className={homeText} />
       </NavbarContent>
 
       <NavbarMenu>
