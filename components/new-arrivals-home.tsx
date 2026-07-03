@@ -117,7 +117,7 @@ export default async function NewArrivalsHome() {
           theme's #0c0a09, for a cleaner blackout — the cloth covers it anyway. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 bg-black opacity-0 transition-opacity duration-500 ease-in-out dark:opacity-100"
+        className="pointer-events-none fixed inset-0 h-[100lvh] z-0 bg-black opacity-0 transition-opacity duration-500 ease-in-out dark:opacity-100"
       />
 
       {/* Eye-slash "slashing" intro — dark mode, new-arrivals homepage only.
@@ -134,7 +134,7 @@ export default async function NewArrivalsHome() {
           Invisible at rest; the animations only fire while `.dark` is applied. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 isolate overflow-hidden"
+        className="pointer-events-none fixed inset-0 h-[100lvh] z-0 isolate overflow-hidden"
       >
         {/* Neon Kabuki revealed through the eye — the tear unzips open (a chevron
             clip-path sliding along the midline, intersected with the eye mask).
@@ -233,7 +233,7 @@ export default async function NewArrivalsHome() {
           at rest. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 isolate overflow-hidden"
+        className="pointer-events-none fixed inset-0 h-[100lvh] z-0 isolate overflow-hidden"
       >
         <div
           className="absolute inset-0 opacity-0 dark:animate-tears-reveal"
@@ -290,7 +290,7 @@ export default async function NewArrivalsHome() {
           tears all read first, then the full cloth materializes around them. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 isolate overflow-hidden opacity-0 transition-opacity duration-700 ease-in-out dark:opacity-100 dark:delay-[2050ms]"
+        className="pointer-events-none fixed inset-0 h-[100lvh] z-0 isolate overflow-hidden opacity-0 transition-opacity duration-700 ease-in-out dark:opacity-100 dark:delay-[2050ms]"
       >
         {/* Kabukicho street underneath — shifted ~10% left (wider layer offset
             left so there's no gap on the right) */}
@@ -386,7 +386,7 @@ export default async function NewArrivalsHome() {
           avoid stacking mask+filter on one node. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-100 transition-opacity duration-700 ease-in-out dark:opacity-0"
+        className="pointer-events-none fixed inset-0 h-[100lvh] z-0 overflow-hidden opacity-100 transition-opacity duration-700 ease-in-out dark:opacity-0"
       >
         <div
           className="absolute inset-0"
@@ -429,13 +429,8 @@ export default async function NewArrivalsHome() {
             canvas, so stacking them reconstructs the full composition while
             each layer floats independently. */}
         <div className="relative w-full max-w-[520px] animate-fadeIn">
-          {/* Soft dark halo behind the character — dark mode only. The torn-cloth
-              tears reveal neon right up against her silhouette (busy/glitchy on
-              mobile), so a blurred radial pool of the base dark calms the neon
-              immediately around her while the framing tears further out still
-              show. It's inside the z-10 section, so it paints over the z-0 tear
-              layers. Skipped in light mode (a dark blob on cream would be wrong). */}
-          <div className="hero-halo pointer-events-none absolute inset-0 -z-10 scale-125 blur-2xl" />
+          {/* Soft glow behind the plate */}
+          <div className="absolute inset-0 -z-10 scale-110 rounded-[2rem]  blur-3xl" />
 
           <div className="relative aspect-square overflow-hidden rounded-[2rem]  sm:p-10">
             <div className="relative h-full w-full">
