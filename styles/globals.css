@@ -10,6 +10,20 @@ body {
   overflow-x: clip;
 }
 
+/* Soft dark halo behind the "Life Sucks" hero character (dark mode only).
+   The torn-cloth tears reveal neon right against her silhouette, which reads
+   as busy/glitchy on mobile; this pools the base dark immediately around her
+   so she stays legible while the framing tears further out still show. Light
+   mode is skipped (a dark blob on the cream page would be wrong). */
+.dark .hero-halo {
+  background: radial-gradient(
+    62% 56% at 50% 45%,
+    rgba(12, 10, 9, 0.92),
+    rgba(12, 10, 9, 0.55) 55%,
+    transparent 78%
+  );
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);

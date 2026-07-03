@@ -101,6 +101,11 @@ const websiteLd = {
 };
 
 export const viewport: Viewport = {
+  // Explicit so the mobile viewport meta is always emitted — without
+  // width=device-width, iPhones fall back to a ~980px desktop layout and the
+  // page renders zoomed-out / broken.
+  width: "device-width",
+  initialScale: 1,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" },

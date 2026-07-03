@@ -429,8 +429,13 @@ export default async function NewArrivalsHome() {
             canvas, so stacking them reconstructs the full composition while
             each layer floats independently. */}
         <div className="relative w-full max-w-[520px] animate-fadeIn">
-          {/* Soft glow behind the plate */}
-          <div className="absolute inset-0 -z-10 scale-110 rounded-[2rem]  blur-3xl" />
+          {/* Soft dark halo behind the character — dark mode only. The torn-cloth
+              tears reveal neon right up against her silhouette (busy/glitchy on
+              mobile), so a blurred radial pool of the base dark calms the neon
+              immediately around her while the framing tears further out still
+              show. It's inside the z-10 section, so it paints over the z-0 tear
+              layers. Skipped in light mode (a dark blob on cream would be wrong). */}
+          <div className="hero-halo pointer-events-none absolute inset-0 -z-10 scale-125 blur-2xl" />
 
           <div className="relative aspect-square overflow-hidden rounded-[2rem]  sm:p-10">
             <div className="relative h-full w-full">
