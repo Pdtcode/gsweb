@@ -6,8 +6,9 @@ import { Providers } from "./providers";
 
 import { siteConfig } from "@/config/site";
 import { fontSans, fontUDMincho } from "@/config/fonts";
+import { NEW_ARRIVALS_HOME_ACTIVE } from "@/config/homepage";
 import { Navbar } from "@/components/navbar";
-//import SiteProtection from "@/components/site-protection";
+import SiteProtection from "@/components/site-protection";
 import { SkuProvider } from "@/lib/contexts/sku-context";
 import { JsonLd } from "@/components/json-ld";
 import {
@@ -116,15 +117,24 @@ export default function RootLayout({
       <head />
       <body
         className={clsx(
-          "min-h-screen bg-background font-sans antialiased",
+          "min-h-screen bg-background font-sans antialiased transition-colors duration-700 ease-in-out",
           fontSans.variable,
           fontUDMincho.variable,
         )}
       >
         <JsonLd data={organizationLd} />
         <JsonLd data={websiteLd} />
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+        {/* New-arrivals homepage defaults to light; the original site keeps
+            dark. Users can still toggle either way (this is only the default
+            when there's no stored preference). */}
+        <Providers
+          themeProps={{
+            attribute: "class",
+            defaultTheme: NEW_ARRIVALS_HOME_ACTIVE ? "light" : "dark",
+          }}
+        >
           <SkuProvider>
+            <SiteProtection>
               <div className="relative flex flex-col h-screen">
                 <Navbar />
                   <div className="relative flex-1">
@@ -133,6 +143,7 @@ export default function RootLayout({
                     </main>
                   </div>
               </div>
+            </SiteProtection>
           </SkuProvider>
         </Providers>
       </body>

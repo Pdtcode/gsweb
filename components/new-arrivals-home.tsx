@@ -108,10 +108,190 @@ export default async function NewArrivalsHome() {
 
   return (
     <>
+      {/* Blackout curtain — the first beat of the → dark transition. Fades the
+          whole background to solid black FAST (500ms) so the eye-slash intro and
+          cloth (both delayed) play against black rather than a half-lit page.
+          Sits at the very bottom of the z-0 background stack (painted first), so
+          the eye-slash reveal + cloth paint on top of it; the light-mode layers
+          render above it but are transparent in dark mode. bg-black, not the
+          theme's #0c0a09, for a cleaner blackout — the cloth covers it anyway. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 bg-black opacity-0 transition-opacity duration-500 ease-in-out dark:opacity-100"
+      />
+
+      {/* Eye-slash "slashing" intro — dark mode, new-arrivals homepage only.
+          Runs on the → dark transition AFTER the blackout above lands. Full
+          sequence: blackout → EYE unzips + glints (here) → the surrounding tears
+          unzip + glint (next wrapper) → the torn cloth fades in (dark:delay-[2050ms]).
+          Two staggered beats here: the eye tear UNZIPS first (eye-reveal, 0.5s
+          delay — a chevron clip-path whose apex slides along the eye's midline,
+          gaping the slash open behind it), THEN a blade glint sweeps across the
+          open eye (eye-glint, 1.0s delay), revealing the neon Kabuki underneath. Its
+          revealed content matches the cloth's eye HOLE exactly (same eye
+          geometry via mask-size:cover + same Kabuki transforms), so it hands
+          off seamlessly once the cloth fades in over it and occludes it.
+          Invisible at rest; the animations only fire while `.dark` is applied. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 isolate overflow-hidden"
+      >
+        {/* Neon Kabuki revealed through the eye — the tear unzips open (a chevron
+            clip-path sliding along the midline, intersected with the eye mask).
+            Mobile/desktop variants mirror the cloth's eye-hole position +
+            Kabuki transforms so the reveal lines up with the tear that follows. */}
+        <div
+          className="absolute inset-0 opacity-0 dark:animate-eye-reveal md:hidden"
+          style={{
+            WebkitMaskImage: "url('/eye-slash-mobile.svg')",
+            maskImage: "url('/eye-slash-mobile.svg')",
+            WebkitMaskSize: "cover",
+            maskSize: "cover",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+          }}
+        >
+          <div
+            className="absolute inset-y-0 -left-[38%] right-0 -translate-y-[12%] scale-110 bg-cover bg-center"
+            style={{
+              backgroundImage: "url('/KabukichoStreet.jpg')",
+              filter: "brightness(1.3) saturate(1.3)",
+            }}
+          />
+        </div>
+        <div
+          className="absolute inset-0 hidden opacity-0 dark:animate-eye-reveal md:block"
+          style={{
+            WebkitMaskImage: "url('/eye-slash.svg')",
+            maskImage: "url('/eye-slash.svg')",
+            WebkitMaskSize: "cover",
+            maskSize: "cover",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+          }}
+        >
+          <div
+            className="absolute inset-y-0 -left-[20%] right-0 bg-cover bg-center"
+            style={{
+              backgroundImage: "url('/KabukichoStreet.jpg')",
+              filter: "brightness(1.3) saturate(1.3)",
+            }}
+          />
+        </div>
+
+        {/* Blade glint — a thin bright diagonal streak sweeping across the eye,
+            tracking the slash edge. Masked to the same eye shape so it only
+            flashes inside the tear. Painted after the reveal so it sits on top. */}
+        <div
+          className="absolute inset-0 opacity-0 dark:animate-eye-glint md:hidden"
+          style={{
+            background:
+              "linear-gradient(120deg, rgba(224,255,252,0) 0%, rgba(224,255,252,0.7) 44%, #f2fffe 50%, rgba(224,255,252,0.7) 56%, rgba(224,255,252,0) 100%)",
+            filter: "blur(1.5px)",
+            mixBlendMode: "screen",
+            WebkitMaskImage: "url('/eye-slash-mobile.svg')",
+            maskImage: "url('/eye-slash-mobile.svg')",
+            WebkitMaskSize: "cover",
+            maskSize: "cover",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+          }}
+        />
+        <div
+          className="absolute inset-0 hidden opacity-0 dark:animate-eye-glint md:block"
+          style={{
+            background:
+              "linear-gradient(120deg, rgba(224,255,252,0) 0%, rgba(224,255,252,0.7) 44%, #f2fffe 50%, rgba(224,255,252,0.7) 56%, rgba(224,255,252,0) 100%)",
+            filter: "blur(1.5px)",
+            mixBlendMode: "screen",
+            WebkitMaskImage: "url('/eye-slash.svg')",
+            maskImage: "url('/eye-slash.svg')",
+            WebkitMaskSize: "cover",
+            maskSize: "cover",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+          }}
+        />
+      </div>
+
+      {/* Surrounding tears intro — repeats the eye's unzip + glint on the OTHER
+          tears AFTER the eye, then hands off to the cloth. Masked to
+          ripped-tears.svg (all non-eye tears; one SVG covers both breakpoints).
+          Same structure/purpose as the eye-reveal wrapper above, but the reveal
+          uses a FULL-VIEWPORT chevron sweep (dark:animate-tears-reveal) since the
+          tears are scattered, not a single midline-scoped one. Kabuki children
+          match the cloth's base-layer transforms per breakpoint so the revealed
+          neon lines up with the cloth's tear holes that fade in after; occluded
+          at rest. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 isolate overflow-hidden"
+      >
+        <div
+          className="absolute inset-0 opacity-0 dark:animate-tears-reveal"
+          style={{
+            WebkitMaskImage: "url('/ripped-tears.svg')",
+            maskImage: "url('/ripped-tears.svg')",
+            WebkitMaskSize: "cover",
+            maskSize: "cover",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+          }}
+        >
+          <div
+            className="absolute inset-y-0 -left-[38%] right-0 -translate-y-[12%] scale-110 bg-cover bg-center md:hidden"
+            style={{
+              backgroundImage: "url('/KabukichoStreet.jpg')",
+              filter: "brightness(1.3) saturate(1.3)",
+            }}
+          />
+          <div
+            className="absolute inset-y-0 -left-[20%] right-0 hidden bg-cover bg-center md:block"
+            style={{
+              backgroundImage: "url('/KabukichoStreet.jpg')",
+              filter: "brightness(1.3) saturate(1.3)",
+            }}
+          />
+        </div>
+
+        <div
+          className="absolute inset-0 opacity-0 dark:animate-tears-glint"
+          style={{
+            background:
+              "linear-gradient(120deg, rgba(224,255,252,0) 0%, rgba(224,255,252,0.7) 44%, #f2fffe 50%, rgba(224,255,252,0.7) 56%, rgba(224,255,252,0) 100%)",
+            filter: "blur(1.5px)",
+            mixBlendMode: "screen",
+            WebkitMaskImage: "url('/ripped-tears.svg')",
+            maskImage: "url('/ripped-tears.svg')",
+            WebkitMaskSize: "cover",
+            maskSize: "cover",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+          }}
+        />
+      </div>
+
       {/* Ripped-cloth dark background — dark mode, new-arrivals homepage only.
           A dark torn cloth laid over the Kabukicho street: the neon shows
-          through the tears. Hidden in light mode. */}
-      <div aria-hidden className="fixed inset-0 z-0 hidden isolate overflow-hidden dark:block">
+          through the tears. Hidden in light mode. Its fade-in is delayed
+          (dark:delay-[2050ms]) so the blackout, the eye, AND the surrounding
+          tears all read first, then the full cloth materializes around them. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 isolate overflow-hidden opacity-0 transition-opacity duration-700 ease-in-out dark:opacity-100 dark:delay-[2050ms]"
+      >
         {/* Kabukicho street underneath — shifted ~10% left (wider layer offset
             left so there's no gap on the right) */}
         <div
@@ -123,7 +303,7 @@ export default async function NewArrivalsHome() {
             so the glow is revealed through the same tears. Matches the base
             layer's transforms exactly to stay aligned. */}
         <div
-          className="absolute inset-y-0 -left-[38%] right-0 -translate-y-[12%] scale-110 animate-glow-pulse bg-cover bg-center md:-left-[20%] md:translate-y-0 md:scale-100"
+          className="absolute inset-y-0 -left-[38%] right-0 -translate-y-[12%] scale-110 bg-cover bg-center dark:animate-glow-pulse md:-left-[20%] md:translate-y-0 md:scale-100"
           style={{
             backgroundImage: "url('/KabukichoStreet.jpg')",
             filter: "blur(7px) brightness(1.35) saturate(1.4)",
@@ -197,6 +377,50 @@ export default async function NewArrivalsHome() {
         textureUrl="https://i.ibb.co/x8tL47Pd/fabric-texture1.png"
       />
 
+      {/* Light-mode torn slashes — the inverse of dark mode: the cream page is
+          "torn" and dark fabric shows through the slashes. The tears-only SVG
+          (eye slash removed) masks a darkened fabric layer so only the slashes
+          paint. Same tear geometry/position as dark mode; one SVG covers both
+          breakpoints since the eye slash was the only desktop/mobile diff.
+          Mask (outer) and filter (inner) are split onto separate elements to
+          avoid stacking mask+filter on one node. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-100 transition-opacity duration-700 ease-in-out dark:opacity-0"
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            WebkitMaskImage: "url('/ripped-tears.svg')",
+            maskImage: "url('/ripped-tears.svg')",
+            WebkitMaskSize: "cover",
+            maskSize: "cover",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+          }}
+        >
+          {/* Same #0c0a09 cloth base + grain as dark mode, but the grain is
+              pushed harder (0.4 vs 0.12) so the weave still reads inside the
+              narrow slashes against the bright cream surroundings — at dark
+              mode's 0.12 the eye adapts to the surround and it looks flat. */}
+          <div className="absolute inset-0" style={{ backgroundColor: "#0c0a09" }}>
+            <div
+              className="absolute inset-0 bg-repeat"
+              style={{
+                backgroundImage:
+                  "url('https://i.ibb.co/x8tL47Pd/fabric-texture1.png')",
+                backgroundSize: "1000px 1000px",
+                opacity: 0.4,
+                mixBlendMode: "screen",
+                filter: "invert(1)",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
       <section className="relative z-10 flex w-full max-w-full flex-col items-center overflow-x-hidden px-4 pb-10 pt-24 sm:pt-10">
 
         {/* ── Layered "LIFE SUCKS" hero art ────────────────────── */}
@@ -260,23 +484,54 @@ export default async function NewArrivalsHome() {
 
         {/* ── Also new: two featured products ──────────────────── */}
         {products.length > 0 && (
-          <div className="mt-14 w-full max-w-4xl">
-            <h2 className="mb-8 text-center text-sm font-semibold uppercase tracking-[0.25em] text-foreground/70">
-              Also New
-            </h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
-              {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
+          <div className="mt-16 w-full max-w-4xl">
+            {/* Subtle scroll prompt — a gently bobbing chevron hinting there's
+                more below. Sits over the scene, above the cream panel.
+                Decorative, so aria-hidden. */}
+            <div
+              aria-hidden
+              className="mb-16 flex justify-center text-foreground/50"
+            >
+              <svg
+                className="h-6 w-6 animate-scroll-hint"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
             </div>
 
-            <div className="mt-10 text-center">
-              <Link
-                className="text-sm uppercase tracking-widest text-foreground/70 underline-offset-4 hover:underline"
-                href="/store"
-              >
-                View all products
-              </Link>
+            {/* Cream panel with a maroon top-border accent — a solid plate that
+                lifts the products off the dark scene. Full-bleed to the viewport
+                edges via w-screen + a centering margin (breaks out of the
+                max-w-4xl / px-4 container), with the products kept in a centered
+                max-width container inside. Fill + text colors are fixed (not
+                theme-driven) since the panel is always cream, so the dark text
+                stays legible in both light and dark mode. */}
+            <div className="ml-[calc(50%-50vw)] w-screen border-t-4 border-[#621600] bg-[#f3ede1] py-12 text-[#2a1810]">
+              <div className="mx-auto w-full max-w-4xl px-6 sm:px-10">
+                <h2 className="mb-8 text-center text-sm font-semibold uppercase tracking-[0.25em] text-[#621600]">
+                  Also New
+                </h2>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
+                  {products.map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+
+                <div className="mt-10 text-center">
+                  <Link
+                    className="text-sm uppercase tracking-widest text-[#621600]/80 underline-offset-4 hover:underline"
+                    href="/store"
+                  >
+                    View all products
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         )}

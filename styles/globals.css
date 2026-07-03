@@ -32,7 +32,21 @@ body {
 
 /* Dripping paint edge under the maroon "Life Sucks" homepage navbar.
    Applied via the `navbar-drip` class (navbar.tsx, homepage only). The tile
-   in /public/nav-drip.svg repeats horizontally and hangs below the bar. */
+   in /public/nav-drip.svg repeats horizontally and hangs below the bar.
+
+   Animated via a clip-path transition so it plays in BOTH directions off the
+   theme toggle (a `.dark`-only keyframe couldn't reverse — it vanishes the
+   instant `.dark` is removed):
+   - base (light) = clipped away (top→bottom reveal collapsed), so light mode
+     shows no drip.
+   - `.dark` = fully revealed.
+   → dark: the paint runs DOWN into place (accelerating, gravity-ish ease) after
+     a 2.4s delay so it starts as the blackout → eye → tears → cloth-fade hero
+     sequence in new-arrivals-home.tsx is nearly settled.
+   → light: the transition runs in reverse — the drip retracts UP (bottom-first)
+     immediately (0 delay), with the mirrored/decelerating ease.
+   The box always exists (even in light) so the transition has something to
+   animate; it's just clipped to nothing there. */
 .navbar-drip::after {
   content: "";
   position: absolute;
@@ -46,4 +60,18 @@ body {
   background: url("/nav-drip.svg") repeat-x left top;
   pointer-events: none;
   z-index: 30;
+  /* Light / retracted state + the → light (reverse) transition: immediate,
+     decelerating ease (the mirror of the → dark accelerating ease). */
+  -webkit-clip-path: inset(0 0 100% 0);
+  clip-path: inset(0 0 100% 0);
+  transition:
+    clip-path 0.8s cubic-bezier(0.1, 0.6, 0.5, 1) 0s,
+    -webkit-clip-path 0.8s cubic-bezier(0.1, 0.6, 0.5, 1) 0s;
+}
+.dark .navbar-drip::after {
+  -webkit-clip-path: inset(0 0 0 0);
+  clip-path: inset(0 0 0 0);
+  /* → dark: accelerating ease, delayed until the hero scene is nearly settled. */
+  transition-timing-function: cubic-bezier(0.5, 0, 0.9, 0.4);
+  transition-delay: 2s;
 }

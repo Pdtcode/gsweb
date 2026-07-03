@@ -13,7 +13,7 @@ export type HomepageVariant = "default" | "new-arrivals";
 
 // 👇 The only line you need to change: "default" or "new-arrivals".
 // (The `as HomepageVariant` keeps the union type so comparisons below stay valid.)
-export const HOMEPAGE_VARIANT = "default" as HomepageVariant;
+export const HOMEPAGE_VARIANT = "new-arrivals" as HomepageVariant;
 
 /**
  * True when the "Life Sucks" new-arrivals homepage is active. The navbar
