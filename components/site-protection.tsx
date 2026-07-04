@@ -17,6 +17,16 @@ export default function SiteProtection({ children }: SiteProtectionProps) {
     setIsLoading(false);
   }, []);
 
+  // When the gate hands off to the real site, the tall content mounts in one
+  // shot and iOS Safari/Chrome can land the page a little scrolled down (you
+  // could nudge back up to the true top). Snap to the top once access is
+  // granted — after the next frame so the layout has settled first.
+  useEffect(() => {
+    if (hasAccess && !isLoading) {
+      requestAnimationFrame(() => window.scrollTo(0, 0));
+    }
+  }, [hasAccess, isLoading]);
+
   const handlePasswordCorrect = () => {
     setHasAccess(true);
   };
