@@ -120,7 +120,7 @@ export default async function NewArrivalsHome() {
           theme's #0c0a09, for a cleaner blackout — the cloth covers it anyway. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 h-[100dvh] z-0 bg-black opacity-0 transition-opacity duration-500 ease-in-out dark:opacity-100"
+        className="pointer-events-none fixed inset-0 h-[var(--app-height)] z-0 bg-black opacity-0 transition-opacity duration-500 ease-in-out dark:opacity-100"
       />
 
       {/* Eye-slash "slashing" intro — dark mode, new-arrivals homepage only.
@@ -137,7 +137,7 @@ export default async function NewArrivalsHome() {
           Invisible at rest; the animations only fire while `.dark` is applied. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 h-[100dvh] z-0 isolate overflow-hidden"
+        className="pointer-events-none fixed inset-0 h-[var(--app-height)] z-0 isolate overflow-hidden"
       >
         {/* Neon Kabuki revealed through the eye — the tear unzips open (a chevron
             clip-path sliding along the midline, intersected with the eye mask).
@@ -236,7 +236,7 @@ export default async function NewArrivalsHome() {
           at rest. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 h-[100dvh] z-0 isolate overflow-hidden"
+        className="pointer-events-none fixed inset-0 h-[var(--app-height)] z-0 isolate overflow-hidden"
       >
         <div
           className="absolute inset-0 opacity-0 dark:animate-tears-reveal"
@@ -293,7 +293,7 @@ export default async function NewArrivalsHome() {
           tears all read first, then the full cloth materializes around them. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 h-[100dvh] z-0 isolate overflow-hidden opacity-0 transition-opacity duration-700 ease-in-out dark:opacity-100 dark:delay-[2050ms]"
+        className="pointer-events-none fixed inset-0 h-[var(--app-height)] z-0 isolate overflow-hidden opacity-0 transition-opacity duration-700 ease-in-out dark:opacity-100 dark:delay-[2050ms]"
       >
         {/* Kabukicho street underneath — shifted ~10% left (wider layer offset
             left so there's no gap on the right) */}
@@ -389,7 +389,7 @@ export default async function NewArrivalsHome() {
           avoid stacking mask+filter on one node. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 h-[100dvh] z-0 overflow-hidden opacity-100 transition-opacity duration-700 ease-in-out dark:opacity-0"
+        className="pointer-events-none fixed inset-0 h-[var(--app-height)] z-0 overflow-hidden opacity-100 transition-opacity duration-700 ease-in-out dark:opacity-0"
       >
         <div
           className="absolute inset-0"
