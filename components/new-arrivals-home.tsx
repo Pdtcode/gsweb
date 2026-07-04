@@ -61,7 +61,10 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
 
   return (
     <Link
-      className="group block w-full"
+      // Cap + center the card on mobile so the square image doesn't fill the
+      // full column width (looked too big) and cream shows around it. On sm+
+      // it fills its grid cell as before.
+      className="group mx-auto block w-full max-w-[280px] sm:max-w-none"
       href={`/store/products/${product.slug}`}
     >
       <div className="relative aspect-square overflow-hidden rounded-2xl bg-black/20 backdrop-blur-sm ring-1 ring-white/10">
@@ -432,7 +435,11 @@ export default async function NewArrivalsHome() {
           {/* Soft glow behind the plate */}
           <div className="absolute inset-0 -z-10 scale-110 rounded-[2rem]  blur-3xl" />
 
-          <div className="relative aspect-square overflow-hidden rounded-[2rem]  sm:p-10">
+          {/* overflow-visible (not hidden): the lstext layer is translated up and
+              floats, so it must be free to render past the square's top edge —
+              otherwise its top clips at the peak of the float. No visible plate
+              bg here, so nothing needs the rounded clip. */}
+          <div className="relative aspect-square overflow-visible rounded-[2rem]  sm:p-10">
             <div className="relative h-full w-full">
               <Image
                 fill
