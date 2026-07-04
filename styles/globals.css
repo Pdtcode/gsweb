@@ -72,6 +72,13 @@ body {
   background: url("/nav-drip.svg") repeat-x left top;
   pointer-events: none;
   z-index: 30;
+  /* Keep the drip on its own persistent compositing layer. Without this, mobile
+     Chrome (Blink) discards the layer the instant the → light transition clips
+     the box to zero area (inset ... 100% ...) instead of animating the collapse,
+     so the drip snaps away rather than retracting up. will-change + a GPU-layer
+     hint make Chrome hold the layer and interpolate the clip-path both ways. */
+  will-change: clip-path;
+  transform: translateZ(0);
   /* Light / retracted state + the → light (reverse) transition: immediate,
      decelerating ease (the mirror of the → dark accelerating ease). */
   -webkit-clip-path: inset(0 0 100% 0);
