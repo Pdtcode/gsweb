@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Predicted viewport height for the full-screen fixed bg layers.
+   `lvh` = the LARGE (toolbar-retracted) viewport height, and it resolves to
+   that height at parse time even while Chrome mobile's toolbar is still showing
+   on first paint. So the `bg-cover` art is scaled to the final height from the
+   very first frame — no "short-then-grow rescale on scroll". app/providers.tsx
+   then pins this to a stable px value (and re-locks on orientation change);
+   this CSS default just covers the moment before that JS runs and older
+   browsers without lvh (which fall back to filling the inset-0 box). */
+:root {
+  --app-height: 100lvh;
+}
+
 /* Guard against horizontal scroll on mobile (full-bleed bg/effect layers).
    `clip` (not `hidden`) so it doesn't turn body into a scroll container and
    break the sticky navbar. */
