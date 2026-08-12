@@ -87,45 +87,9 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
             </div>
           )}
 
-          {/* Enhanced Add to Cart with real-time variants */}
-          <AddToCartButtonWrapper
-            product={{
-              ...product,
-              // Use real-time inventory data if available
-              ...(product.availableVariants && {
-                variants: product.variants?.map(variant => {
-                  // Check if product has multiple variant dimensions (Color + Size)
-                  const hasMultipleDimensions = product.variants && product.variants.length > 1;
-
-                  // Don't show stock counts on individual options if product has multiple dimensions
-                  // Stock will only be shown after all variants are selected
-                  if (hasMultipleDimensions) {
-                    return {
-                      ...variant,
-                      options: variant.options
-                    };
-                  }
-
-                  // For products with single variant dimension, show stock counts
-                  return {
-                    ...variant,
-                    options: variant.options?.map(option => {
-                      const matchingVariant = product.availableVariants?.find(av => {
-                        if (variant.name === "Color") {
-                          return av.color?.toLowerCase() === option.toLowerCase();
-                        }
-                        if (variant.name === "Size") {
-                          return av.size?.toLowerCase() === option.toLowerCase();
-                        }
-                        return false;
-                      });
-                      return `${option}${matchingVariant ? ` (${matchingVariant.stock} left)` : ""}`;
-                    })
-                  };
-                })
-              })
-            }}
-          />
+          {/* Add to Cart — stock counts are shown by InventoryDisplay once
+              every variant dimension is selected, not on the option buttons */}
+          <AddToCartButtonWrapper product={product} />
 
           <button
             onClick={refreshInventory}
