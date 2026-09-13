@@ -67,6 +67,7 @@ export function generateOrderConfirmationEmail(orderData: OrderConfirmedEvent): 
 
 function generateHTMLTemplate(data: EmailTemplateData): string {
   const isPickup = data.deliveryMethod === "pickup";
+  const isInPerson = data.deliveryMethod === "inperson";
 
   const orderDate = new Date(data.createdAt).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -183,7 +184,12 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
                 </div>
             </div>
 
-            ${isPickup ? `
+            ${isInPerson ? `
+            <div class="shipping">
+                <h3>Collected In Person</h3>
+                <p>You picked this order up in person — nothing is being shipped.</p>
+            </div>
+            ` : isPickup ? `
             <div class="shipping">
                 <h3>Pickup Location</h3>
                 <p>${data.pickupLocationName ?? ''}</p>
@@ -200,7 +206,15 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
             </div>
             `}
 
-            ${isPickup ? `
+            ${isInPerson ? `
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 6px;">
+                <h3>What's Next?</h3>
+                <ul>
+                    <li>Nothing — you already have your items</li>
+                    <li>Keep this email as your receipt</li>
+                </ul>
+            </div>
+            ` : isPickup ? `
             <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 6px;">
                 <h3>What's Next?</h3>
                 <ul>
@@ -233,6 +247,7 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
 
 function generateTextTemplate(data: EmailTemplateData): string {
   const isPickup = data.deliveryMethod === "pickup";
+  const isInPerson = data.deliveryMethod === "inperson";
 
   const orderDate = new Date(data.createdAt).toLocaleDateString();
   const subtotal = data.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -257,7 +272,9 @@ ORDER SUMMARY
 Subtotal: $${subtotal.toFixed(2)}${data.discount ? `\nDiscount (${data.discount.code}): -$${data.discount.amount.toFixed(2)}` : ''}${data.serviceFee ? `\nService Fee (5%): $${data.serviceFee.baseAmount.toFixed(2)}${data.serviceFee.discount > 0 ? `\nService Fee Discount: -$${data.serviceFee.discount.toFixed(2)}` : ''}` : ''}
 Total: $${data.total.toFixed(2)}
 
-${isPickup
+${isInPerson
+  ? `COLLECTED IN PERSON\nYou picked this order up in person - nothing is being shipped.`
+  : isPickup
   ? `PICKUP LOCATION\n${data.pickupLocationName ?? ''}`
   : `SHIPPING ADDRESS\n${[
       data.shippingAddress,
@@ -270,7 +287,9 @@ ${isPickup
 }
 
 WHAT'S NEXT?
-${isPickup
+${isInPerson
+  ? `• Nothing - you already have your items\n• Keep this email as your receipt`
+  : isPickup
   ? `• We'll process your order within 1-2 business days\n• We'll contact you when your order is ready for pickup\n• Pick up at: ${data.pickupLocationName ?? ''}`
   : `• We'll process your order within 1-2 business days\n• You'll receive a shipping confirmation email with tracking information\n• Standard shipping takes 5-7 business days`
 }

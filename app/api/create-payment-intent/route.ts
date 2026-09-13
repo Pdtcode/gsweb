@@ -28,16 +28,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate deliveryMethod — required, must be "shipping" or "pickup"
-    if (!deliveryMethod || (deliveryMethod !== "shipping" && deliveryMethod !== "pickup")) {
+    // Validate deliveryMethod. "inperson" is a face-to-face sale: the customer
+    // pays by card while standing with us and takes the goods away, so it needs
+    // neither a shipping address nor a pickup location.
+    const VALID_DELIVERY_METHODS = ["shipping", "pickup", "inperson"];
+
+    if (!deliveryMethod || !VALID_DELIVERY_METHODS.includes(deliveryMethod)) {
       console.error("Invalid or missing deliveryMethod:", deliveryMethod);
       return NextResponse.json(
-        { error: "deliveryMethod must be 'shipping' or 'pickup'" },
+        { error: "deliveryMethod must be 'shipping', 'pickup' or 'inperson'" },
         { status: 400 },
       );
     }
 
-    // For pickup orders, validate pickupLocationId and verify it is active in Sanity
+    // Only collect-later pickups need a location verified against Sanity
     if (deliveryMethod === "pickup") {
       if (!pickupLocationId) {
         console.error("pickupLocationId missing for pickup order");
@@ -257,11 +261,16 @@ export async function POST(request: Request) {
           }
         : undefined;
 
+    // Everything that is not shipped has no address to carry, so pickup and
+    // in-person orders are treated the same way here.
+    const isShipping = deliveryMethod === "shipping";
     const isPickup = deliveryMethod === "pickup";
 
-    // Per user decision: pickup orders skip billing address — Stripe gets name/email only
-    // Explicitly clear shipping data for pickup to prevent any stale/accidental address
-    const effectiveShippingAddressData = isPickup ? undefined : shippingAddressData;
+    // Per user decision: non-shipped orders skip billing address — Stripe gets
+    // name/email only. Clear shipping data to prevent any stale address.
+    const effectiveShippingAddressData = isShipping
+      ? shippingAddressData
+      : undefined;
 
     // Calculate subtotal from items
     const subtotal = items.reduce(
@@ -427,16 +436,16 @@ export async function POST(request: Request) {
           shippingLastName: customerName.split(' ').slice(1).join(' ') || null,
           shippingEmail: customerEmail || null,
           shippingPhone: metadata?.customer_phone || null,
-          shippingAddress: isPickup ? null : (shippingParts[0] || null),
-          shippingCity: isPickup ? null : (shippingParts[1] || null),
-          shippingState: isPickup ? null : (shippingParts[2] || null),
-          shippingZipCode: isPickup ? null : (shippingParts[3] || null),
-          shippingCountry: isPickup ? null : (shippingParts[4] || null),
+          shippingAddress: isShipping ? (shippingParts[0] || null) : null,
+          shippingCity: isShipping ? (shippingParts[1] || null) : null,
+          shippingState: isShipping ? (shippingParts[2] || null) : null,
+          shippingZipCode: isShipping ? (shippingParts[3] || null) : null,
+          shippingCountry: isShipping ? (shippingParts[4] || null) : null,
           // Fulfillment fields (Phase 7)
           deliveryMethod,
           pickupLocationId: isPickup ? pickupLocationId : null,
           pickupLocationName: isPickup ? pickupLocationName : null,
-          shippingApartment: isPickup ? null : (shippingApartment || null),
+          shippingApartment: isShipping ? (shippingApartment || null) : null,
         },
       });
 

@@ -290,7 +290,16 @@ export default function OrderSuccessClient() {
           </div>
 
           {/* Fulfillment Info */}
-          {order.deliveryMethod === "pickup" ? (
+          {order.deliveryMethod === "inperson" ? (
+            <div className="px-6 py-4 bg-blue-50 border-t border-blue-100">
+              <h3 className="text-sm font-medium text-gray-700 mb-1">
+                Collected In Person
+              </h3>
+              <p className="text-sm text-gray-900">
+                You took this order with you — nothing is being shipped.
+              </p>
+            </div>
+          ) : order.deliveryMethod === "pickup" ? (
             order.pickupLocationName ? (
               <div className="px-6 py-4 bg-blue-50 border-t border-blue-100">
                 <h3 className="text-sm font-medium text-gray-700 mb-1">Pickup Location</h3>
@@ -327,7 +336,12 @@ export default function OrderSuccessClient() {
             </div>
             <div className="space-y-3 text-sm text-gray-600">
               <p>• You&apos;ll receive an email confirmation shortly</p>
-              {order.deliveryMethod === "pickup" ? (
+              {order.deliveryMethod === "inperson" ? (
+                <>
+                  <p>• Nothing else to do — you already have your items</p>
+                  <p>• Keep your confirmation email as a receipt</p>
+                </>
+              ) : order.deliveryMethod === "pickup" ? (
                 <>
                   <p>• We&apos;ll contact you when your order is ready for pickup</p>
                   {order.pickupLocationName && (

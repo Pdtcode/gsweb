@@ -15,6 +15,7 @@ import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage }
 import { DeliveryMethodToggle } from "@/components/delivery-method-toggle";
 import type { DeliveryMethod } from "@/components/delivery-method-toggle";
 import { PickupLocationSelector } from "@/components/pickup-location-selector";
+import { PickupModeSelector } from "@/components/pickup-mode-selector";
 import type { PickupLocation } from "@/components/pickup-location-selector";
 
 interface ShippingInfo {
@@ -196,7 +197,8 @@ export default function CheckoutPage() {
       }
     }
 
-    // Pickup-only validation: location must be selected
+    // Collect-later pickup needs a location. In-person sales need nothing
+    // beyond the contact details already validated above.
     if (deliveryMethod === "pickup") {
       if (!selectedPickupLocationId) {
         setPaymentError("Please select a pickup location.");
@@ -345,7 +347,9 @@ export default function CheckoutPage() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">
-                  {deliveryMethod === "shipping" ? "Shipping Information" : "Contact Information"}
+                  {deliveryMethod === "shipping"
+                    ? "Shipping Information"
+                    : "Contact Information"}
                 </h2>
               </div>
 
@@ -562,13 +566,26 @@ export default function CheckoutPage() {
                 </>
               )}
 
-              {deliveryMethod === "pickup" && (
-                <PickupLocationSelector
-                  locations={pickupLocations}
-                  selectedId={selectedPickupLocationId}
-                  onSelect={setSelectedPickupLocationId}
-                  isLoading={isLoadingLocations}
-                />
+              {(deliveryMethod === "pickup" || deliveryMethod === "inperson") && (
+                <div className="space-y-4">
+                  <PickupModeSelector
+                    value={deliveryMethod}
+                    onChange={(mode) => {
+                      setDeliveryMethod(mode);
+                      // Drop any stale location when switching to in person
+                      if (mode === "inperson") setSelectedPickupLocationId("");
+                    }}
+                  />
+
+                  {deliveryMethod === "pickup" && (
+                    <PickupLocationSelector
+                      locations={pickupLocations}
+                      selectedId={selectedPickupLocationId}
+                      onSelect={setSelectedPickupLocationId}
+                      isLoading={isLoadingLocations}
+                    />
+                  )}
+                </div>
               )}
             </div>
 
@@ -675,11 +692,13 @@ export default function CheckoutPage() {
               <div className="flex justify-between items-center">
                 <span>Fulfillment:</span>
                 <span>
-                  {deliveryMethod === "pickup"
-                    ? pickupLocations.find(l => l._id === selectedPickupLocationId)?.name
-                      ? `Pickup — ${pickupLocations.find(l => l._id === selectedPickupLocationId)!.name}`
-                      : "Pickup"
-                    : "Shipping"}
+                  {deliveryMethod === "inperson"
+                    ? "In person"
+                    : deliveryMethod === "pickup"
+                      ? pickupLocations.find(l => l._id === selectedPickupLocationId)?.name
+                        ? `Pickup — ${pickupLocations.find(l => l._id === selectedPickupLocationId)!.name}`
+                        : "Pickup"
+                      : "Shipping"}
                 </span>
               </div>
               <div className="flex justify-between items-center">
