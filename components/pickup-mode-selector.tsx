@@ -10,7 +10,7 @@ interface PickupModeSelectorProps {
 const OPTIONS: {
   value: PickupMode;
   label: string;
-  description: string;
+  description?: string;
 }[] = [
   {
     value: "pickup",
@@ -20,8 +20,6 @@ const OPTIONS: {
   {
     value: "inperson",
     label: "In Person",
-    description:
-      "You're with us and taking your items today. No address or pickup location needed.",
   },
 ];
 
@@ -65,9 +63,11 @@ export function PickupModeSelector({ value, onChange }: PickupModeSelectorProps)
               htmlFor={`pickupMode-${option.value}`}
             >
               <span className="block text-sm font-medium">{option.label}</span>
-              <span className="block text-sm text-gray-500 dark:text-gray-400">
-                {option.description}
-              </span>
+              {option.description && (
+                <span className="block text-sm text-gray-500 dark:text-gray-400">
+                  {option.description}
+                </span>
+              )}
             </label>
           </div>
         );
