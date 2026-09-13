@@ -145,9 +145,9 @@ export default function StoreContent({
     <div className="container mx-auto px-4 py-4">
       {/* Bundle Deals — shown first so savings lead the page */}
       {bundles.length > 0 && (
-        <div className="mb-12">
-          <div className="flex items-baseline justify-between gap-4 mb-4">
-            <h2 className={title({ size: "md" }).toString()}>Bundle Deals</h2>
+        <div className="mb-10">
+          <div className="flex items-baseline justify-between gap-4 mb-2">
+            <h2 className={title({ size: "sm" }).toString()}>Bundle Deals</h2>
             <Link
               className="text-sm font-medium hover:underline whitespace-nowrap"
               href="/store/bundles"
@@ -155,12 +155,14 @@ export default function StoreContent({
               View all →
             </Link>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Buy pieces together and pay less than buying them separately.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {bundles.slice(0, 3).map((bundle) => (
-              <BundleCard key={bundle._id} bundle={bundle} />
+          {/* Matches the product grid below so bundles read as peers rather
+              than dominating the top of the page. */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {bundles.slice(0, 4).map((bundle) => (
+              <BundleCard key={bundle._id} compact bundle={bundle} />
             ))}
           </div>
         </div>
