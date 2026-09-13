@@ -19,7 +19,7 @@ const OPTIONS: {
   },
   {
     value: "inperson",
-    label: "In person, right now",
+    label: "In Person",
     description:
       "You're with us and taking your items today. No address or pickup location needed.",
   },

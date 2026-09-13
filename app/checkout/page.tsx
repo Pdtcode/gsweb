@@ -693,7 +693,7 @@ export default function CheckoutPage() {
                 <span>Fulfillment:</span>
                 <span>
                   {deliveryMethod === "inperson"
-                    ? "In person"
+                    ? "In Person"
                     : deliveryMethod === "pickup"
                       ? pickupLocations.find(l => l._id === selectedPickupLocationId)?.name
                         ? `Pickup — ${pickupLocations.find(l => l._id === selectedPickupLocationId)!.name}`
