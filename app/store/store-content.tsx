@@ -6,7 +6,9 @@ import { useState, useEffect } from "react";
 
 import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
+import { productImageUrl } from "@/lib/product-image";
 import { Category, Collection, Product } from "@/types";
+import { BundleCard, type BundleCardData } from "@/components/bundle-card";
 
 // SKU Data Types
 interface ProductSku {
@@ -82,10 +84,12 @@ export default function StoreContent({
   products,
   categories,
   featuredCollections,
+  bundles = [],
 }: {
   products: Product[];
   categories: Category[];
   featuredCollections: Collection[];
+  bundles?: BundleCardData[];
 }) {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
@@ -139,21 +143,28 @@ export default function StoreContent({
 
   return (
     <div className="container mx-auto px-4 py-4">
-      {/* Bundle Deals entry point */}
-      <Link
-        className="group mb-12 flex items-center justify-between gap-4 rounded-lg border border-gray-200 dark:border-gray-800 p-5 hover:border-gray-400 dark:hover:border-gray-600 transition-colors"
-        href="/store/bundles"
-      >
-        <div>
-          <h2 className="text-lg font-semibold">Bundle Deals</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+      {/* Bundle Deals — shown first so savings lead the page */}
+      {bundles.length > 0 && (
+        <div className="mb-12">
+          <div className="flex items-baseline justify-between gap-4 mb-4">
+            <h2 className={title({ size: "md" }).toString()}>Bundle Deals</h2>
+            <Link
+              className="text-sm font-medium hover:underline whitespace-nowrap"
+              href="/store/bundles"
+            >
+              View all →
+            </Link>
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
             Buy pieces together and pay less than buying them separately.
           </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {bundles.slice(0, 3).map((bundle) => (
+              <BundleCard key={bundle._id} bundle={bundle} />
+            ))}
+          </div>
         </div>
-        <span className="text-sm font-medium whitespace-nowrap group-hover:underline">
-          Shop bundles →
-        </span>
-      </Link>
+      )}
 
       {/* Featured Collections */}
       {featuredCollections.length > 0 && (
@@ -271,7 +282,7 @@ export default function StoreContent({
                       fill
                       alt={product.name}
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      src={urlForImage(product.mainImage).url() || ""}
+                      src={productImageUrl(product.mainImage, 800, product.imageDisplay)}
                     />
                   )}
                   {!product.inStock && (

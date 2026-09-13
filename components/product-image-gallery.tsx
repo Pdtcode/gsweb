@@ -3,13 +3,15 @@
 import { useState } from "react";
 import Image from "next/image";
 import { SanityImageObject } from "@sanity/image-url/lib/types/types";
-import { urlForImage } from "@/sanity/lib/image";
+import { productImageUrl } from "@/lib/product-image";
+import type { ImageDisplay } from "@/types";
 
 interface ProductImageGalleryProps {
   productName: string;
   mainImage: SanityImageObject;
   additionalImages?: SanityImageObject[];
   inStock: boolean;
+  imageDisplay?: ImageDisplay;
 }
 
 export function ProductImageGallery({
@@ -17,6 +19,7 @@ export function ProductImageGallery({
   mainImage,
   additionalImages,
   inStock,
+  imageDisplay,
 }: ProductImageGalleryProps) {
   // Combine main image with additional images for the full gallery
   const allImages = [mainImage, ...(additionalImages || [])];
@@ -31,7 +34,7 @@ export function ProductImageGallery({
           priority
           alt={productName}
           className="object-cover"
-          src={urlForImage(allImages[selectedImageIndex]).url()}
+          src={productImageUrl(allImages[selectedImageIndex], 1000, imageDisplay)}
           sizes="(max-width: 768px) 100vw, 50vw"
         />
         {!inStock && (
@@ -58,7 +61,7 @@ export function ProductImageGallery({
                 fill
                 alt={`${productName} - Image ${index + 1}`}
                 className="object-cover"
-                src={urlForImage(image).url()}
+                src={productImageUrl(image, 200, imageDisplay)}
                 sizes="(max-width: 768px) 25vw, 12.5vw"
               />
             </button>

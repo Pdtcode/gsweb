@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { useCart, type CartBundle } from "@/context/CartContext";
 import { urlForImage } from "@/sanity/lib/image";
+import { productImageUrl } from "@/lib/product-image";
 import type {
   BundleComponent,
   BundleComponentVariant,
@@ -190,7 +191,7 @@ export function BundleBuilder({ bundle }: BundleBuilderProps) {
                       fill
                       alt={component.name}
                       className="object-cover"
-                      src={urlForImage(component.mainImage).width(128).height(128).url()}
+                      src={productImageUrl(component.mainImage, 128, component.imageDisplay)}
                     />
                   </div>
                 )}

@@ -65,6 +65,7 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
           productName={product.name}
           mainImage={product.mainImage}
           additionalImages={product.images}
+          imageDisplay={product.imageDisplay}
           inStock={isInStock()}
         />
 

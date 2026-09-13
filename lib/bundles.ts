@@ -40,7 +40,8 @@ const BUNDLE_PROJECTION = `
       name,
       "slug": slug.current,
       price,
-      mainImage
+      mainImage,
+      imageDisplay
     }
   }
 `;
@@ -65,6 +66,7 @@ export interface RawBundleItem {
     slug: string | null;
     price: number | null;
     mainImage?: any;
+    imageDisplay?: any;
   } | null;
 }
 
@@ -94,6 +96,7 @@ export interface ResolvedComponent {
   slug: string;
   price: number;
   mainImage?: any;
+  imageDisplay?: any;
   quantity: number;
   variants: ResolvedVariant[];
   hasVariants: boolean;
@@ -109,6 +112,7 @@ export interface ResolvedBundle {
   slug: { current: string };
   description?: string;
   mainImage?: any;
+  imageDisplay?: any;
   images?: any[];
   bundlePrice: number;
   featured?: boolean;
@@ -116,6 +120,43 @@ export interface ResolvedBundle {
   componentSum: number;
   savings: number;
   maxBundles: number;
+}
+
+// Garment sizes sort by physical size, not alphabetically — otherwise the
+// picker reads "Large, Medium, Small, XL, XXL". Anything unrecognised keeps a
+// stable alphabetical order after the known sizes.
+const SIZE_ORDER = [
+  "xxxs", "xxs", "xs", "s", "small",
+  "m", "medium", "l", "large",
+  "xl", "xxl", "xxxl", "4xl", "5xl",
+  "one size", "os", "default",
+];
+
+function sizeRank(size: string): number {
+  const key = size.trim().toLowerCase();
+  const exact = SIZE_ORDER.indexOf(key);
+
+  if (exact !== -1) return exact;
+
+  // Tolerate spellings like "X-Large", "2XL", "Extra Large"
+  const normalized = key
+    .replace(/[\s._-]/g, "")
+    .replace(/^extra/, "x")
+    .replace(/^2x/, "xx")
+    .replace(/^3x/, "xxx");
+
+  const fuzzy = SIZE_ORDER.indexOf(normalized);
+
+  return fuzzy !== -1 ? fuzzy : Number.MAX_SAFE_INTEGER;
+}
+
+export function compareSizes(a: string, b: string): number {
+  const ra = sizeRank(a);
+  const rb = sizeRank(b);
+
+  if (ra !== rb) return ra - rb;
+
+  return a.localeCompare(b);
 }
 
 /**
@@ -177,7 +218,7 @@ export async function resolveBundle(
           color: v.color,
           stock: v.stock,
         }))
-        .sort((a, b) => a.size.localeCompare(b.size));
+        .sort((a, b) => compareSizes(a.size, b.size));
 
       // A single "Default" variant means the product is not really sized
       const hasVariants = !(
@@ -191,6 +232,7 @@ export async function resolveBundle(
         slug: product.slug ?? product._id,
         price: product.price ?? 0,
         mainImage: product.mainImage,
+        imageDisplay: product.imageDisplay,
         quantity,
         variants,
         hasVariants,
@@ -224,6 +266,8 @@ export async function resolveBundle(
     slug: raw.slug,
     description: raw.description,
     mainImage: raw.mainImage || components[0]?.mainImage,
+    // When falling back to a component's photo, inherit its sizing too
+    imageDisplay: raw.mainImage ? undefined : components[0]?.imageDisplay,
     images: raw.images,
     bundlePrice: raw.bundlePrice,
     featured: raw.featured,

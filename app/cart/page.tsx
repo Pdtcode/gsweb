@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useCart, getCartItemId, getCartItemKey } from "@/context/CartContext";
 import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
+import { productImageUrl } from "@/lib/product-image";
 import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
 
 export default function CartPage() {
@@ -100,7 +101,7 @@ export default function CartPage() {
                         fill
                         alt={item.product.name}
                         className="object-cover"
-                        src={urlForImage(item.product.mainImage).url() || ""}
+                        src={productImageUrl(item.product.mainImage, 200, item.product.imageDisplay)}
                       />
                     )}
                   </div>

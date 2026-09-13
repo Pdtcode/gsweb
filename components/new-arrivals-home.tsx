@@ -7,6 +7,7 @@ import TextureOverlay from "@/components/texture-overlay";
 import ThemeInstagram from "@/components/theme-instagram";
 import { client } from "@/sanity/lib/client";
 import { urlForImage } from "@/sanity/lib/image";
+import { productImageUrl } from "@/lib/product-image";
 
 // The two products to spotlight beneath the hero. Change these slugs to
 // feature different products — data (price/image/stock) is pulled live.
@@ -24,6 +25,7 @@ interface FeaturedProduct {
   comparePrice?: number;
   inStock: boolean;
   mainImage?: any;
+  imageDisplay?: any;
 }
 
 const featuredHomeProductsQuery = groq`*[_type == "product" && slug.current in $slugs]{
@@ -33,7 +35,8 @@ const featuredHomeProductsQuery = groq`*[_type == "product" && slug.current in $
   price,
   comparePrice,
   inStock,
-  mainImage
+  mainImage,
+  imageDisplay
 }`;
 
 async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
@@ -54,7 +57,7 @@ async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
 
 function ProductCard({ product }: { product: FeaturedProduct }) {
   const imageUrl = product.mainImage
-    ? urlForImage(product.mainImage).width(1000).height(1000).url()
+    ? productImageUrl(product.mainImage, 1000, product.imageDisplay)
     : null;
   const onSale =
     product.comparePrice != null && product.comparePrice > product.price;

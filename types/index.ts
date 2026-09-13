@@ -87,6 +87,13 @@ export interface AvailableVariant {
   sku: string;
 }
 
+// How a product photo is fitted into the store's square frames
+export interface ImageDisplay {
+  fit?: "cover" | "contain";
+  background?: string;
+  pad?: number;
+}
+
 // Product
 export interface Product {
   _id: string;
@@ -98,6 +105,7 @@ export interface Product {
   description?: string;
   mainImage: SanityImageObject;
   images?: SanityImageObject[];
+  imageDisplay?: ImageDisplay;
   categories: Category[];
   collections?: Collection[];
   inStock: boolean;
@@ -136,6 +144,7 @@ export interface BundleComponent {
   price: number;
   mainImage?: SanityImageObject;
   quantity: number;
+  imageDisplay?: ImageDisplay;
   variants: BundleComponentVariant[];
   // True when the product has no variant dimensions (single default SKU)
   hasVariants: boolean;

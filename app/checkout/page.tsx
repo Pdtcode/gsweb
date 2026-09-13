@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { StripePaymentForm } from "@/components/stripe-payment-form";
 import { PromoCode, DiscountInfo } from "@/components/promo-code";
 import { urlForImage } from "@/sanity/lib/image";
+import { productImageUrl } from "@/lib/product-image";
 import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
 import { DeliveryMethodToggle } from "@/components/delivery-method-toggle";
 import type { DeliveryMethod } from "@/components/delivery-method-toggle";
@@ -611,10 +612,11 @@ export default function CheckoutPage() {
                         fill
                         alt={item.product.name}
                         className="object-cover rounded-md"
-                        src={urlForImage(item.product.mainImage)
-                          .width(64)
-                          .height(64)
-                          .url()}
+                        src={productImageUrl(
+                          item.product.mainImage,
+                          128,
+                          item.product.imageDisplay,
+                        )}
                       />
                     </div>
                   )}
