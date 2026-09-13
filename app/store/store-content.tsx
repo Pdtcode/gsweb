@@ -146,7 +146,7 @@ export default function StoreContent({
       {/* Bundle Deals — shown first so savings lead the page */}
       {bundles.length > 0 && (
         <div className="mb-10">
-          <div className="flex items-baseline justify-between gap-4 mb-2">
+          <div className="flex items-baseline justify-between gap-4 mb-4">
             <h2 className={title({ size: "sm" }).toString()}>Bundle Deals</h2>
             <Link
               className="text-sm font-medium hover:underline whitespace-nowrap"
@@ -155,9 +155,6 @@ export default function StoreContent({
               View all →
             </Link>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Buy pieces together and pay less than buying them separately.
-          </p>
           {/* Matches the product grid below so bundles read as peers rather
               than dominating the top of the page. */}
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
