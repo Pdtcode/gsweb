@@ -114,3 +114,58 @@ export interface Product {
   realTimeInStock?: boolean;
   availableVariants?: AvailableVariant[];
 }
+
+// --- Bundle Deals ---------------------------------------------------------
+// A bundle holds NO stock of its own. It expands into its component products
+// at order creation, so inventory is deducted per-component exactly as it is
+// for a normal single-product order.
+
+// One selectable variant of a bundle component, with live Neon stock
+export interface BundleComponentVariant {
+  sku: string;
+  size: string;
+  color: string | null;
+  stock: number;
+}
+
+// A product inside a bundle, as returned by /api/bundles/[slug]
+export interface BundleComponent {
+  _id: string;
+  name: string;
+  slug: string;
+  price: number;
+  mainImage?: SanityImageObject;
+  quantity: number;
+  variants: BundleComponentVariant[];
+  // True when the product has no variant dimensions (single default SKU)
+  hasVariants: boolean;
+}
+
+export interface BundleDeal {
+  _id: string;
+  _type: "bundleDeal";
+  name: string;
+  slug: SanitySlug;
+  description?: string;
+  mainImage?: SanityImageObject;
+  images?: SanityImageObject[];
+  bundlePrice: number;
+  featured?: boolean;
+  components: BundleComponent[];
+  // Sum of component list prices x quantity
+  componentSum: number;
+  savings: number;
+  // How many complete bundles current stock can fulfil
+  maxBundles: number;
+}
+
+// The customer's per-component variant choice, carried in the cart
+export interface BundleSelection {
+  productId: string;
+  productSlug: string;
+  productName: string;
+  quantity: number;
+  sku: string;
+  size?: string;
+  color?: string;
+}

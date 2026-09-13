@@ -4,6 +4,30 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 import { Product } from "@/types";
 
+// One component of a bundle, with the variant the customer picked
+export interface CartBundleSelection {
+  productId: string;
+  productSlug: string;
+  productName: string;
+  // How many of this product are in ONE bundle
+  quantity: number;
+  sku: string;
+  size?: string;
+  color?: string;
+}
+
+// A bundle line in the cart. The bundle itself holds no stock — `selections`
+// is what actually gets deducted, one OrderItem per entry, at checkout.
+export interface CartBundle {
+  bundleId: string;
+  slug: string;
+  name: string;
+  bundlePrice: number;
+  selections: CartBundleSelection[];
+  // Complete bundles the selected SKUs could supply when added to the cart
+  maxAvailable: number;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
@@ -12,11 +36,46 @@ export interface CartItem {
     color?: string;
     sku?: string;
   };
+  // Present only on bundle lines. `product` is a synthetic stand-in carrying
+  // the bundle's name/price/image so existing cart UI renders it unchanged.
+  bundle?: CartBundle;
+}
+
+// Signature identifying a bundle line by its exact component choices, so
+// "Tee M + Hoodie L" and "Tee S + Hoodie L" are separate cart lines.
+export function getBundleSignature(bundle: CartBundle): string {
+  return bundle.selections
+    .map((s) => `${s.productId}:${s.sku}`)
+    .sort()
+    .join("|");
+}
+
+function buildVariantKey(selectedVariant?: {
+  size?: string;
+  color?: string;
+  sku?: string;
+}): string {
+  return selectedVariant
+    ? `${selectedVariant.size || ""}-${selectedVariant.color || ""}`
+    : "default";
+}
+
+// Single source of truth for how a cart line is identified. Used by the cart
+// UI and by add/remove/update so bundles and products key consistently.
+export function getCartItemKey(item: CartItem): string {
+  if (item.bundle) return `bundle:${getBundleSignature(item.bundle)}`;
+
+  return buildVariantKey(item.selectedVariant);
+}
+
+export function getCartItemId(item: CartItem): string {
+  return item.product.slug?.current || item.product._id;
 }
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product, quantity?: number, selectedVariant?: { size?: string; color?: string; sku?: string }) => void;
+  addBundleToCart: (bundle: CartBundle, product: Product, quantity?: number) => void;
   removeFromCart: (productId: string, variantKey?: string) => void;
   updateQuantity: (productId: string, quantity: number, variantKey?: string) => void;
   clearCart: () => void;
@@ -107,23 +166,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return 999;
   };
 
+  // Bundle lines carry their own cap (min complete bundles across the selected
+  // SKUs, computed against live Neon stock when the bundle was added).
+  const getItemAvailableInventory = (item: CartItem) => {
+    if (item.bundle) return item.bundle.maxAvailable;
+
+    return getAvailableInventory(item.product, item.selectedVariant);
+  };
+
   const addToCart = (product: Product, quantity = 1, selectedVariant?: { size?: string; color?: string; sku?: string }) => {
     // Get Sanity ID for the product
     const productId = product.slug?.current || product._id;
 
     // Create a unique key for this variant combination
-    const variantKey = selectedVariant
-      ? `${selectedVariant.size || ''}-${selectedVariant.color || ''}`
-      : 'default';
+    const variantKey = buildVariantKey(selectedVariant);
 
     setCart((prevCart) => {
       const existingItemIndex = prevCart.findIndex(
         (item) => {
-          const itemId = item.product.slug?.current || item.product._id;
-          const itemVariantKey = item.selectedVariant
-            ? `${item.selectedVariant.size || ''}-${item.selectedVariant.color || ''}`
-            : 'default';
-          return itemId === productId && itemVariantKey === variantKey;
+          // A bundle line never merges with a plain product line
+          if (item.bundle) return false;
+
+          return getCartItemId(item) === productId && getCartItemKey(item) === variantKey;
         }
       );
 
@@ -162,19 +226,63 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  // Add a bundle as a single cart line. `product` is the synthetic stand-in
+  // built by the caller (bundle name, bundle price, bundle image) so the rest
+  // of the cart UI can treat it like any other line.
+  const addBundleToCart = (bundle: CartBundle, product: Product, quantity = 1) => {
+    const signature = getBundleSignature(bundle);
+
+    setCart((prevCart) => {
+      const existingItemIndex = prevCart.findIndex(
+        (item) => item.bundle && getBundleSignature(item.bundle) === signature,
+      );
+
+      const available = bundle.maxAvailable;
+      const currentQuantityInCart =
+        existingItemIndex >= 0 ? prevCart[existingItemIndex].quantity : 0;
+      const newTotalQuantity = currentQuantityInCart + quantity;
+
+      if (newTotalQuantity > available) {
+        console.warn(
+          `Cannot add ${quantity} bundles. Only ${available - currentQuantityInCart} available.`,
+        );
+
+        if (currentQuantityInCart < available) {
+          quantity = available - currentQuantityInCart;
+        } else {
+          return prevCart;
+        }
+      }
+
+      if (quantity <= 0) return prevCart;
+
+      if (existingItemIndex >= 0) {
+        const updatedCart = [...prevCart];
+
+        updatedCart[existingItemIndex] = {
+          ...updatedCart[existingItemIndex],
+          quantity: updatedCart[existingItemIndex].quantity + quantity,
+          // Refresh availability with the latest read
+          bundle,
+        };
+
+        return updatedCart;
+      }
+
+      return [...prevCart, { product, quantity, bundle }];
+    });
+  };
+
   const removeFromCart = (productId: string, variantKey?: string) => {
     setCart((prevCart) =>
       prevCart.filter(
         (item) => {
-          const itemId = item.product.slug?.current || item.product._id;
+          const itemId = getCartItemId(item);
           if (itemId !== productId) return true;
 
           // If variantKey is provided, only remove that specific variant
           if (variantKey) {
-            const itemVariantKey = item.selectedVariant
-              ? `${item.selectedVariant.size || ''}-${item.selectedVariant.color || ''}`
-              : 'default';
-            return itemVariantKey !== variantKey;
+            return getCartItemKey(item) !== variantKey;
           }
 
           // If no variantKey, remove all variants of this product
@@ -193,23 +301,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     setCart((prevCart) =>
       prevCart.map((item) => {
-        const itemId = item.product.slug?.current || item.product._id;
+        const itemId = getCartItemId(item);
         if (itemId !== productId) return item;
 
         // Check if this is the item we're updating
-        const shouldUpdate = variantKey
-          ? (() => {
-              const itemVariantKey = item.selectedVariant
-                ? `${item.selectedVariant.size || ''}-${item.selectedVariant.color || ''}`
-                : 'default';
-              return itemVariantKey === variantKey;
-            })()
-          : true;
+        const shouldUpdate = variantKey ? getCartItemKey(item) === variantKey : true;
 
         if (!shouldUpdate) return item;
 
         // Validate against available inventory
-        const availableInventory = getAvailableInventory(item.product, item.selectedVariant);
+        const availableInventory = getItemAvailableInventory(item);
 
         // Cap quantity at available inventory
         const validatedQuantity = Math.min(quantity, availableInventory);
@@ -242,6 +343,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         cart,
         addToCart,
+        addBundleToCart,
         removeFromCart,
         updateQuantity,
         clearCart,

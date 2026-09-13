@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { useCart } from "@/context/CartContext";
+import { useCart, getCartItemId, getCartItemKey } from "@/context/CartContext";
 import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
 import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
@@ -80,11 +80,12 @@ export default function CartPage() {
           </div>
 
           {cart.map((item) => {
-            const productId = item.product.slug?.current || item.product._id;
-            const variantKey = item.selectedVariant
-              ? `${item.selectedVariant.size || ''}-${item.selectedVariant.color || ''}`
-              : 'default';
+            const productId = getCartItemId(item);
+            const variantKey = getCartItemKey(item);
             const uniqueKey = `${productId}-${variantKey}`;
+            const itemHref = item.bundle
+              ? `/store/bundles/${item.bundle.slug}`
+              : `/store/products/${item.product.slug.current}`;
 
             return (
               <div
@@ -105,13 +106,27 @@ export default function CartPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">
-                      <Link
-                        className="hover:underline"
-                        href={`/store/products/${item.product.slug.current}`}
-                      >
+                      <Link className="hover:underline" href={itemHref}>
                         {item.product.name}
                       </Link>
+                      {item.bundle && (
+                        <span className="ml-2 align-middle text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-black text-white dark:bg-white dark:text-black">
+                          Bundle
+                        </span>
+                      )}
                     </h3>
+                    {item.bundle && (
+                      <ul className="text-sm text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
+                        {item.bundle.selections.map((sel) => (
+                          <li key={`${sel.productId}-${sel.sku}`}>
+                            {sel.quantity > 1 ? `${sel.quantity}× ` : ""}
+                            {sel.productName}
+                            {sel.size ? ` — ${sel.size}` : ""}
+                            {sel.color ? ` / ${sel.color}` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {item.selectedVariant && (item.selectedVariant.size || item.selectedVariant.color) && (
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {item.selectedVariant.size && `Size: ${item.selectedVariant.size}`}

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prismaClient";
 import { client as sanityClient } from "@/sanity/lib/client";
+import { validateAndExpandBundle, type BundleExpansion } from "@/lib/bundles";
 
 // Make sure the Stripe secret key is defined
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -62,6 +63,47 @@ export async function POST(request: Request) {
     }
 
     console.log("Items validation passed, found", items.length, "items");
+
+    // --- Bundle validation & expansion ------------------------------------
+    // A bundle has no stock of its own — it is expanded below into one
+    // OrderItem per component, which the Stripe webhook then decrements like
+    // any other line. The bundle is re-read from Sanity here so price,
+    // component list and stock all come from the server; the client payload
+    // only says WHICH variant the customer picked.
+    const bundleExpansions = new Map<number, BundleExpansion>();
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (!item?.bundle) continue;
+
+      console.log(`🎁 Validating bundle "${item.bundle.slug}" (qty ${item.quantity})`);
+
+      const result = await validateAndExpandBundle(
+        item.bundle.slug,
+        item.bundle.selections || [],
+        item.quantity,
+      );
+
+      if (!result.ok || !result.expansion) {
+        console.error("Bundle validation failed:", result.error);
+
+        return NextResponse.json(
+          { error: result.error || "Bundle is no longer available" },
+          { status: 400 },
+        );
+      }
+
+      bundleExpansions.set(i, result.expansion);
+
+      // Never trust a client-supplied bundle price or name
+      item.price = result.expansion.bundle.bundlePrice;
+      item.name = result.expansion.bundle.name;
+
+      console.log(
+        `✅ Bundle "${item.name}" verified at $${item.price} → ${result.expansion.lines.length} component row(s)`,
+      );
+    }
 
     // Validate inventory before processing payment
     const inventoryValidation = [];
@@ -417,6 +459,45 @@ export async function POST(request: Request) {
         });
 
         try {
+          // Bundle line: write one OrderItem per component instead of a single
+          // row. Each row carries a real productId + SKU, so decrementOrderStock
+          // deducts them exactly as it would for separately-purchased products.
+          const expansion = bundleExpansions.get(i);
+
+          if (expansion) {
+            console.log(
+              `🎁 Expanding bundle "${expansion.bundle.name}" into ${expansion.lines.length} order item(s)`,
+            );
+
+            for (const line of expansion.lines) {
+              // Allocation is computed per single bundle, so scale by how many
+              // bundles were purchased. This keeps the row totals summing to
+              // exactly bundlePrice × quantity.
+              const rowQuantity = line.quantity * item.quantity;
+
+              const variant = await prisma.productVariant.findUnique({
+                where: { sku: line.sku },
+              });
+
+              await prisma.orderItem.create({
+                data: {
+                  orderId: order.id,
+                  productId: line.productId,
+                  variantId: variant?.id ?? null,
+                  sku: line.sku,
+                  quantity: rowQuantity,
+                  price: line.unitPriceCents / 100,
+                },
+              });
+
+              console.log(
+                `  ✅ ${line.productName} (${line.sku}) ×${rowQuantity} @ $${(line.unitPriceCents / 100).toFixed(2)}`,
+              );
+            }
+
+            continue;
+          }
+
           let product = null;
 
           product = await prisma.product.findFirst({

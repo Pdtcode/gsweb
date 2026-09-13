@@ -27,7 +27,7 @@ async function safeFetch(query: string): Promise<SitemapEntity[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, collections, posts] = await Promise.all([
+  const [products, collections, posts, bundles] = await Promise.all([
     safeFetch(
       `*[_type == "product" && dropExclusive != true && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
     ),
@@ -37,12 +37,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     safeFetch(
       `*[_type == "post" && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
     ),
+    safeFetch(
+      `*[_type == "bundleDeal" && isActive == true && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
+    ),
   ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: "daily", priority: 1 },
     { url: `${siteUrl}/store`, changeFrequency: "daily", priority: 0.9 },
     { url: `${siteUrl}/drop`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${siteUrl}/store/bundles`, changeFrequency: "daily", priority: 0.8 },
     { url: `${siteUrl}/news`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${siteUrl}/contact`, changeFrequency: "yearly", priority: 0.4 },
   ];
@@ -61,6 +65,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  const bundleRoutes: MetadataRoute.Sitemap = bundles.map((b) => ({
+    url: `${siteUrl}/store/bundles/${b.slug}`,
+    lastModified: b.updatedAt ? new Date(b.updatedAt) : undefined,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
   const postRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
     url: `${siteUrl}/news/${p.slug}`,
     lastModified: p.updatedAt ? new Date(p.updatedAt) : undefined,
@@ -72,6 +83,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticRoutes,
     ...productRoutes,
     ...collectionRoutes,
+    ...bundleRoutes,
     ...postRoutes,
   ];
 }

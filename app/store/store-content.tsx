@@ -139,6 +139,22 @@ export default function StoreContent({
 
   return (
     <div className="container mx-auto px-4 py-4">
+      {/* Bundle Deals entry point */}
+      <Link
+        className="group mb-12 flex items-center justify-between gap-4 rounded-lg border border-gray-200 dark:border-gray-800 p-5 hover:border-gray-400 dark:hover:border-gray-600 transition-colors"
+        href="/store/bundles"
+      >
+        <div>
+          <h2 className="text-lg font-semibold">Bundle Deals</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Buy pieces together and pay less than buying them separately.
+          </p>
+        </div>
+        <span className="text-sm font-medium whitespace-nowrap group-hover:underline">
+          Shop bundles →
+        </span>
+      </Link>
+
       {/* Featured Collections */}
       {featuredCollections.length > 0 && (
         <div className="mb-12">

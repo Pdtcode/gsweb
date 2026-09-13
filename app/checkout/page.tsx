@@ -235,6 +235,23 @@ export default function CheckoutPage() {
             variantId: item.selectedVariant?.sku || null,
             variantSize: item.selectedVariant?.size || null,
             variantColor: item.selectedVariant?.color || null,
+            // Bundle lines carry their component choices. The server re-reads
+            // the bundle from Sanity and expands it into one OrderItem per
+            // component, so stock is deducted per product as normal.
+            bundle: item.bundle
+              ? {
+                  bundleId: item.bundle.bundleId,
+                  slug: item.bundle.slug,
+                  selections: item.bundle.selections.map((sel) => ({
+                    productId: sel.productId,
+                    productSlug: sel.productSlug,
+                    quantity: sel.quantity,
+                    sku: sel.sku,
+                    size: sel.size ?? null,
+                    color: sel.color ?? null,
+                  })),
+                }
+              : undefined,
           })),
           shipping: {
             cost: 0,
@@ -602,7 +619,26 @@ export default function CheckoutPage() {
                     </div>
                   )}
                   <div className="flex-1">
-                    <h3 className="font-medium">{item.product.name}</h3>
+                    <h3 className="font-medium">
+                      {item.product.name}
+                      {item.bundle && (
+                        <span className="ml-2 align-middle text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-black text-white dark:bg-white dark:text-black">
+                          Bundle
+                        </span>
+                      )}
+                    </h3>
+                    {item.bundle && (
+                      <ul className="text-sm text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
+                        {item.bundle.selections.map((sel) => (
+                          <li key={`${sel.productId}-${sel.sku}`}>
+                            {sel.quantity > 1 ? `${sel.quantity}× ` : ""}
+                            {sel.productName}
+                            {sel.size ? ` — ${sel.size}` : ""}
+                            {sel.color ? ` / ${sel.color}` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {item.selectedVariant && (item.selectedVariant.size || item.selectedVariant.color) && (
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {item.selectedVariant.size && `Size: ${item.selectedVariant.size}`}
