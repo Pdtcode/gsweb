@@ -22,12 +22,7 @@ export default async function BundlesPage() {
 
   return (
     <div className="container mx-auto max-w-7xl px-6 py-12">
-      <div className="mb-10">
-        <h1 className={title({ size: "md" })}>Bundle Deals</h1>
-        <p className="mt-3 text-gray-600 dark:text-gray-400">
-          Buy together, pay less. Pick your sizes at checkout.
-        </p>
-      </div>
+      <h1 className={`${title({ size: "md" })} mb-10`}>Bundle Deals</h1>
 
       {bundles.length === 0 ? (
         <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-12 text-center">
