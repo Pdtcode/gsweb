@@ -42,7 +42,7 @@ export const postBySlugQuery = groq`*[_type == "post" && slug.current == $slug][
 /**
  * Query to get featured products for the homepage
  */
-export const featuredProductsQuery = groq`*[_type == "product" && featured == true && dropExclusive != true] {
+export const featuredProductsQuery = groq`*[_type == "product" && featured == true && dropExclusive != true] | order(publishedAt desc) {
   _id,
   name,
   slug,
@@ -58,12 +58,16 @@ export const featuredProductsQuery = groq`*[_type == "product" && featured == tr
     title,
     slug
   }
-} | order(publishedAt desc) [0...4]`;
+} [0...4]`;
 
 /**
  * Query to get all products
+ *
+ * order() goes before the projection: ordering after it can only see the
+ * fields the projection kept, and publishedAt isn't one of them — which
+ * silently falls back to document order. Same applies to the queries below.
  */
-export const allProductsQuery = groq`*[_type == "product" && dropExclusive != true] {
+export const allProductsQuery = groq`*[_type == "product" && dropExclusive != true] | order(publishedAt desc) {
   _id,
   name,
   slug,
@@ -79,7 +83,7 @@ export const allProductsQuery = groq`*[_type == "product" && dropExclusive != tr
     title,
     slug
   }
-} | order(publishedAt desc)`;
+}`;
 
 /**
  * Query to get a single product by slug
@@ -127,7 +131,7 @@ export const categoriesQuery = groq`*[_type == "category"] | order(order asc) {
 /**
  * Query to get all products in a category
  */
-export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusive != true && references(*[_type == "category" && slug.current == $slug]._id)] {
+export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusive != true && references(*[_type == "category" && slug.current == $slug]._id)] | order(publishedAt desc) {
   _id,
   name,
   slug,
@@ -143,12 +147,12 @@ export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusiv
     title,
     slug
   }
-} | order(publishedAt desc)`;
+}`;
 
 /**
  * Query to get featured collections
  */
-export const featuredCollectionsQuery = groq`*[_type == "collection" && featured == true] {
+export const featuredCollectionsQuery = groq`*[_type == "collection" && featured == true] | order(startDate desc) {
   _id,
   title,
   slug,
@@ -156,7 +160,7 @@ export const featuredCollectionsQuery = groq`*[_type == "collection" && featured
   mainImage,
   highlight,
   collectionType
-} | order(startDate desc) [0...3]`;
+} [0...3]`;
 
 /**
  * Query to get a collection by slug with its products
@@ -226,7 +230,7 @@ export const activeDropSettingsQuery = groq`*[_type == "dropSettings" && active 
 /**
  * Query to get drop-exclusive products (products only available in drops)
  */
-export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclusive == true] {
+export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclusive == true] | order(publishedAt desc) {
   _id,
   name,
   slug,
@@ -242,7 +246,7 @@ export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclu
   totalInventory,
   sku,
   lowStockAlert
-} | order(publishedAt desc)`;
+}`;
 
 /**
  * Query to get a promo code by code
