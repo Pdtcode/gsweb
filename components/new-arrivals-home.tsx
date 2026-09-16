@@ -11,7 +11,7 @@ import { productImageUrl } from "@/lib/product-image";
 
 // The two products to spotlight beneath the hero. Change these slugs to
 // feature different products — data (price/image/stock) is pulled live.
-const FEATURED_SLUGS = ["crash-dummy-hoodie", "yots"];
+const FEATURED_SLUGS = ["life-sucks-trucker-hat", "gs-x-han-jan-collab"];
 
 // Where the hero "Shop the Drop" button points. Set to a product slug
 // (e.g. "/store/products/life-sucks-tee") once the item is in the store.
