@@ -530,7 +530,18 @@ export default async function NewArrivalsHome() {
                 <h2 className="mb-8 text-center text-sm font-semibold uppercase tracking-[0.25em] text-[#621600]">
                   Also New
                 </h2>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
+                {/* A lone card would sit in the left cell of the 2-up grid and
+                    read as off-centre, which happens as soon as one of the two
+                    FEATURED_SLUGS products is switched off in the Studio. In
+                    that case drop the grid and centre a single card at roughly
+                    one column's width instead. */}
+                <div
+                  className={
+                    products.length === 1
+                      ? "mx-auto w-full max-w-[280px] sm:max-w-sm"
+                      : "grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8"
+                  }
+                >
                   {products.map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}
