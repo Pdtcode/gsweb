@@ -168,7 +168,7 @@ export default async function BlogPostPage({
                 fill
                 alt={post.authorName || "Author"}
                 className="object-cover"
-                src={urlForImage(post.authorImage).url() || ""}
+                src={urlForImage(post.authorImage).width(160).height(160).url() || ""}
               />
             </div>
           )}
@@ -193,7 +193,7 @@ export default async function BlogPostPage({
               priority
               alt={post.title}
               className="object-cover"
-              src={urlForImage(post.mainImage).url() || ""}
+              src={urlForImage(post.mainImage).width(1200).url() || ""}
             />
           </div>
         )}
@@ -210,7 +210,7 @@ export default async function BlogPostPage({
                         fill
                         alt={value.alt || "Blog image"}
                         className="object-cover"
-                        src={urlForImage(value).url() || ""}
+                        src={urlForImage(value).width(1200).url() || ""}
                       />
                     </div>
                   ),
@@ -231,7 +231,7 @@ export default async function BlogPostPage({
                     fill
                     alt={post.authorName || "Author"}
                     className="object-cover"
-                    src={urlForImage(post.authorImage).url() || ""}
+                    src={urlForImage(post.authorImage).width(160).height(160).url() || ""}
                   />
                 </div>
               )}

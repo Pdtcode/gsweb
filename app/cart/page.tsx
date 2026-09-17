@@ -100,6 +100,7 @@ export default function CartPage() {
                       <Image
                         fill
                         alt={item.product.name}
+                        sizes="80px"
                         className="object-cover"
                         src={productImageUrl(item.product.mainImage, 200, item.product.imageDisplay)}
                       />

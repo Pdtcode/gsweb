@@ -628,6 +628,7 @@ export default function CheckoutPage() {
                       <Image
                         fill
                         alt={item.product.name}
+                        sizes="64px"
                         className="object-cover rounded-md"
                         src={productImageUrl(
                           item.product.mainImage,

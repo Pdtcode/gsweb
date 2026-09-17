@@ -45,7 +45,7 @@ export default async function NewsPage() {
                   fill
                   alt={posts[0].title}
                   className="object-cover"
-                  src={urlForImage(posts[0].mainImage).url() || ""}
+                  src={urlForImage(posts[0].mainImage).width(1200).url() || ""}
                 />
               )}
             </div>
@@ -82,7 +82,7 @@ export default async function NewsPage() {
                       fill
                       alt={posts[0].authorName || "Author"}
                       className="object-cover"
-                      src={urlForImage(posts[0].authorImage).url() || ""}
+                      src={urlForImage(posts[0].authorImage).width(96).height(96).url() || ""}
                     />
                   </div>
                 )}
@@ -120,7 +120,7 @@ export default async function NewsPage() {
                       fill
                       alt={post.title}
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      src={urlForImage(post.mainImage).url() || ""}
+                      src={urlForImage(post.mainImage).width(800).url() || ""}
                     />
                   )}
                 </div>
@@ -152,7 +152,7 @@ export default async function NewsPage() {
                         fill
                         alt={post.authorName || "Author"}
                         className="object-cover"
-                        src={urlForImage(post.authorImage).url() || ""}
+                        src={urlForImage(post.authorImage).width(96).height(96).url() || ""}
                       />
                     </div>
                   )}

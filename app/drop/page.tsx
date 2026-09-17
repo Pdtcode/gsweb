@@ -239,8 +239,9 @@ function ProductCard({ product }: { product: Product }) {
           <Image
             fill
             alt={product.name}
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            src={urlForImage(product.mainImage).url() || ""}
+            src={urlForImage(product.mainImage).width(800).height(800).url() || ""}
           />
         )}
         {!product.inStock && (

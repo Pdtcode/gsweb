@@ -183,8 +183,9 @@ export default function StoreContent({
                     <Image
                       fill
                       alt={collection.title}
+                      sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      src={urlForImage(collection.mainImage).url() || ""}
+                      src={urlForImage(collection.mainImage).width(800).height(800).url() || ""}
                     />
                   )}
                   <div className="absolute inset-0 bg-black bg-opacity-30 flex items-end p-4">
@@ -280,6 +281,7 @@ export default function StoreContent({
                     <Image
                       fill
                       alt={product.name}
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                       src={productImageUrl(product.mainImage, 800, product.imageDisplay)}
                     />

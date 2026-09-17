@@ -115,8 +115,9 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
             fill
             priority
             alt={collection.title}
+            sizes="100vw"
             className="object-cover"
-            src={urlForImage(collection.mainImage).url()}
+            src={urlForImage(collection.mainImage).width(1600).url()}
           />
         )}
         <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-end p-6">
@@ -155,8 +156,9 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
                   <Image
                     fill
                     alt={product.name}
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    src={urlForImage(product.mainImage).url()}
+                    src={urlForImage(product.mainImage).width(800).height(800).url()}
                   />
                 )}
                 {!product.inStock && (
