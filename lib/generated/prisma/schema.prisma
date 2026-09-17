@@ -81,6 +81,10 @@ model Product {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   inStock        Boolean          @default(true)
+  // Mirrors the Sanity `isActive` toggle. false = retired from the storefront
+  // but kept on record, so existing orders and their line items stay intact.
+  // Defaults to true so every product that predates this column stays live.
+  isActive       Boolean          @default(true)
   dropId         String?
   OrderItem      OrderItem[]
   Drop           Drop?            @relation(fields: [dropId], references: [id])

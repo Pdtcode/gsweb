@@ -42,7 +42,7 @@ export const postBySlugQuery = groq`*[_type == "post" && slug.current == $slug][
 /**
  * Query to get featured products for the homepage
  */
-export const featuredProductsQuery = groq`*[_type == "product" && featured == true && dropExclusive != true] {
+export const featuredProductsQuery = groq`*[_type == "product" && featured == true && dropExclusive != true && isActive != false] {
   _id,
   name,
   slug,
@@ -63,7 +63,7 @@ export const featuredProductsQuery = groq`*[_type == "product" && featured == tr
 /**
  * Query to get all products
  */
-export const allProductsQuery = groq`*[_type == "product" && dropExclusive != true] {
+export const allProductsQuery = groq`*[_type == "product" && dropExclusive != true && isActive != false] {
   _id,
   name,
   slug,
@@ -84,7 +84,7 @@ export const allProductsQuery = groq`*[_type == "product" && dropExclusive != tr
 /**
  * Query to get a single product by slug
  */
-export const productBySlugQuery = groq`*[_type == "product" && slug.current == $slug][0] {
+export const productBySlugQuery = groq`*[_type == "product" && slug.current == $slug && isActive != false][0] {
   _id,
   name,
   slug,
@@ -127,7 +127,7 @@ export const categoriesQuery = groq`*[_type == "category"] | order(order asc) {
 /**
  * Query to get all products in a category
  */
-export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusive != true && references(*[_type == "category" && slug.current == $slug]._id)] {
+export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusive != true && isActive != false && references(*[_type == "category" && slug.current == $slug]._id)] {
   _id,
   name,
   slug,
@@ -171,7 +171,7 @@ export const collectionBySlugQuery = groq`*[_type == "collection" && slug.curren
   endDate,
   highlight,
   collectionType,
-  "products": products[]->[dropExclusive != true] {
+  "products": products[]->[dropExclusive != true && isActive != false] {
     _id,
     name,
     slug,
@@ -205,7 +205,7 @@ export const activeDropSettingsQuery = groq`*[_type == "dropSettings" && active 
   dropDescription,
   startDate,
   endDate,
-  "dropProducts": dropProducts[]-> {
+  "dropProducts": dropProducts[]->[isActive != false] {
     _id,
     name,
     slug,
@@ -226,7 +226,7 @@ export const activeDropSettingsQuery = groq`*[_type == "dropSettings" && active 
 /**
  * Query to get drop-exclusive products (products only available in drops)
  */
-export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclusive == true] {
+export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclusive == true && isActive != false] {
   _id,
   name,
   slug,

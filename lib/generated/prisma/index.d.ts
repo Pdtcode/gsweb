@@ -5317,6 +5317,7 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     inStock: boolean | null
+    isActive: boolean | null
     dropId: string | null
   }
 
@@ -5330,6 +5331,7 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     inStock: boolean | null
+    isActive: boolean | null
     dropId: string | null
   }
 
@@ -5344,6 +5346,7 @@ export namespace Prisma {
     createdAt: number
     updatedAt: number
     inStock: number
+    isActive: number
     dropId: number
     _all: number
   }
@@ -5367,6 +5370,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     inStock?: true
+    isActive?: true
     dropId?: true
   }
 
@@ -5380,6 +5384,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     inStock?: true
+    isActive?: true
     dropId?: true
   }
 
@@ -5394,6 +5399,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     inStock?: true
+    isActive?: true
     dropId?: true
     _all?: true
   }
@@ -5495,6 +5501,7 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     inStock: boolean
+    isActive: boolean
     dropId: string | null
     _count: ProductCountAggregateOutputType | null
     _avg: ProductAvgAggregateOutputType | null
@@ -5528,6 +5535,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     inStock?: boolean
+    isActive?: boolean
     dropId?: boolean
     OrderItem?: boolean | Product$OrderItemArgs<ExtArgs>
     Drop?: boolean | Product$DropArgs<ExtArgs>
@@ -5546,6 +5554,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     inStock?: boolean
+    isActive?: boolean
     dropId?: boolean
     Drop?: boolean | Product$DropArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
@@ -5561,6 +5570,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     inStock?: boolean
+    isActive?: boolean
     dropId?: boolean
     Drop?: boolean | Product$DropArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
@@ -5576,10 +5586,11 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     inStock?: boolean
+    isActive?: boolean
     dropId?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "price" | "images" | "slug" | "category" | "createdAt" | "updatedAt" | "inStock" | "dropId", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "price" | "images" | "slug" | "category" | "createdAt" | "updatedAt" | "inStock" | "isActive" | "dropId", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     OrderItem?: boolean | Product$OrderItemArgs<ExtArgs>
     Drop?: boolean | Product$DropArgs<ExtArgs>
@@ -5611,6 +5622,7 @@ export namespace Prisma {
       createdAt: Date
       updatedAt: Date
       inStock: boolean
+      isActive: boolean
       dropId: string | null
     }, ExtArgs["result"]["product"]>
     composites: {}
@@ -6048,6 +6060,7 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"Product", 'DateTime'>
     readonly updatedAt: FieldRef<"Product", 'DateTime'>
     readonly inStock: FieldRef<"Product", 'Boolean'>
+    readonly isActive: FieldRef<"Product", 'Boolean'>
     readonly dropId: FieldRef<"Product", 'String'>
   }
     
@@ -9934,6 +9947,7 @@ export namespace Prisma {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     inStock: 'inStock',
+    isActive: 'isActive',
     dropId: 'dropId'
   };
 
@@ -10420,6 +10434,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
     inStock?: BoolFilter<"Product"> | boolean
+    isActive?: BoolFilter<"Product"> | boolean
     dropId?: StringNullableFilter<"Product"> | string | null
     OrderItem?: OrderItemListRelationFilter
     Drop?: XOR<DropNullableScalarRelationFilter, DropWhereInput> | null
@@ -10437,6 +10452,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     inStock?: SortOrder
+    isActive?: SortOrder
     dropId?: SortOrderInput | SortOrder
     OrderItem?: OrderItemOrderByRelationAggregateInput
     Drop?: DropOrderByWithRelationInput
@@ -10457,6 +10473,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
     inStock?: BoolFilter<"Product"> | boolean
+    isActive?: BoolFilter<"Product"> | boolean
     dropId?: StringNullableFilter<"Product"> | string | null
     OrderItem?: OrderItemListRelationFilter
     Drop?: XOR<DropNullableScalarRelationFilter, DropWhereInput> | null
@@ -10474,6 +10491,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     inStock?: SortOrder
+    isActive?: SortOrder
     dropId?: SortOrderInput | SortOrder
     _count?: ProductCountOrderByAggregateInput
     _avg?: ProductAvgOrderByAggregateInput
@@ -10496,6 +10514,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
     inStock?: BoolWithAggregatesFilter<"Product"> | boolean
+    isActive?: BoolWithAggregatesFilter<"Product"> | boolean
     dropId?: StringNullableWithAggregatesFilter<"Product"> | string | null
   }
 
@@ -11051,6 +11070,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     OrderItem?: OrderItemCreateNestedManyWithoutProductInput
     Drop?: DropCreateNestedOneWithoutProductInput
     ProductVariant?: ProductVariantCreateNestedManyWithoutProductInput
@@ -11067,6 +11087,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     dropId?: string | null
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     ProductVariant?: ProductVariantUncheckedCreateNestedManyWithoutProductInput
@@ -11083,6 +11104,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     OrderItem?: OrderItemUpdateManyWithoutProductNestedInput
     Drop?: DropUpdateOneWithoutProductNestedInput
     ProductVariant?: ProductVariantUpdateManyWithoutProductNestedInput
@@ -11099,6 +11121,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     dropId?: NullableStringFieldUpdateOperationsInput | string | null
     OrderItem?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     ProductVariant?: ProductVariantUncheckedUpdateManyWithoutProductNestedInput
@@ -11115,6 +11138,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     dropId?: string | null
   }
 
@@ -11129,6 +11153,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ProductUncheckedUpdateManyInput = {
@@ -11142,6 +11167,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     dropId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -11830,6 +11856,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     inStock?: SortOrder
+    isActive?: SortOrder
     dropId?: SortOrder
   }
 
@@ -11847,6 +11874,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     inStock?: SortOrder
+    isActive?: SortOrder
     dropId?: SortOrder
   }
 
@@ -11860,6 +11888,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     inStock?: SortOrder
+    isActive?: SortOrder
     dropId?: SortOrder
   }
 
@@ -12685,6 +12714,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     OrderItem?: OrderItemCreateNestedManyWithoutProductInput
     ProductVariant?: ProductVariantCreateNestedManyWithoutProductInput
   }
@@ -12700,6 +12730,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutProductInput
     ProductVariant?: ProductVariantUncheckedCreateNestedManyWithoutProductInput
   }
@@ -12744,6 +12775,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
     inStock?: BoolFilter<"Product"> | boolean
+    isActive?: BoolFilter<"Product"> | boolean
     dropId?: StringNullableFilter<"Product"> | string | null
   }
 
@@ -12987,6 +13019,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     Drop?: DropCreateNestedOneWithoutProductInput
     ProductVariant?: ProductVariantCreateNestedManyWithoutProductInput
   }
@@ -13002,6 +13035,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     dropId?: string | null
     ProductVariant?: ProductVariantUncheckedCreateNestedManyWithoutProductInput
   }
@@ -13123,6 +13157,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     Drop?: DropUpdateOneWithoutProductNestedInput
     ProductVariant?: ProductVariantUpdateManyWithoutProductNestedInput
   }
@@ -13138,6 +13173,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     dropId?: NullableStringFieldUpdateOperationsInput | string | null
     ProductVariant?: ProductVariantUncheckedUpdateManyWithoutProductNestedInput
   }
@@ -13374,6 +13410,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     OrderItem?: OrderItemCreateNestedManyWithoutProductInput
     Drop?: DropCreateNestedOneWithoutProductInput
   }
@@ -13389,6 +13426,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
     dropId?: string | null
     OrderItem?: OrderItemUncheckedCreateNestedManyWithoutProductInput
   }
@@ -13436,6 +13474,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     OrderItem?: OrderItemUpdateManyWithoutProductNestedInput
     Drop?: DropUpdateOneWithoutProductNestedInput
   }
@@ -13451,6 +13490,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     dropId?: NullableStringFieldUpdateOperationsInput | string | null
     OrderItem?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
   }
@@ -13706,6 +13746,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inStock?: boolean
+    isActive?: boolean
   }
 
   export type ProductUpdateWithoutDropInput = {
@@ -13719,6 +13760,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     OrderItem?: OrderItemUpdateManyWithoutProductNestedInput
     ProductVariant?: ProductVariantUpdateManyWithoutProductNestedInput
   }
@@ -13734,6 +13776,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     OrderItem?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
     ProductVariant?: ProductVariantUncheckedUpdateManyWithoutProductNestedInput
   }
@@ -13749,6 +13792,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inStock?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type OrderItemCreateManyOrderInput = {

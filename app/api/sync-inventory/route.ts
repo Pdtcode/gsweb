@@ -82,6 +82,9 @@ export async function POST(req: NextRequest) {
                   ]
                 : [],
               inStock: sanityProduct.inStock ?? true,
+              // Absent in Sanity means the product predates the Studio toggle,
+              // which means live.
+              isActive: sanityProduct.isActive !== false,
             },
             include: {
               ProductVariant: true,
@@ -101,6 +104,9 @@ export async function POST(req: NextRequest) {
                   ]
                 : [],
               inStock: sanityProduct.inStock ?? true,
+              // Absent in Sanity means the product predates the Studio toggle,
+              // which means live.
+              isActive: sanityProduct.isActive !== false,
             },
             include: {
               ProductVariant: true,
