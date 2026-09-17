@@ -42,7 +42,7 @@ export const postBySlugQuery = groq`*[_type == "post" && slug.current == $slug][
 /**
  * Query to get featured products for the homepage
  */
-export const featuredProductsQuery = groq`*[_type == "product" && featured == true && dropExclusive != true] | order(publishedAt desc) {
+export const featuredProductsQuery = groq`*[_type == "product" && featured == true && dropExclusive != true && isActive != false] | order(publishedAt desc) {
   _id,
   name,
   slug,
@@ -67,7 +67,7 @@ export const featuredProductsQuery = groq`*[_type == "product" && featured == tr
  * fields the projection kept, and publishedAt isn't one of them — which
  * silently falls back to document order. Same applies to the queries below.
  */
-export const allProductsQuery = groq`*[_type == "product" && dropExclusive != true] | order(publishedAt desc) {
+export const allProductsQuery = groq`*[_type == "product" && dropExclusive != true && isActive != false] | order(publishedAt desc) {
   _id,
   name,
   slug,
@@ -88,7 +88,7 @@ export const allProductsQuery = groq`*[_type == "product" && dropExclusive != tr
 /**
  * Query to get a single product by slug
  */
-export const productBySlugQuery = groq`*[_type == "product" && slug.current == $slug][0] {
+export const productBySlugQuery = groq`*[_type == "product" && slug.current == $slug && isActive != false][0] {
   _id,
   name,
   slug,
@@ -131,7 +131,7 @@ export const categoriesQuery = groq`*[_type == "category"] | order(order asc) {
 /**
  * Query to get all products in a category
  */
-export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusive != true && references(*[_type == "category" && slug.current == $slug]._id)] | order(publishedAt desc) {
+export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusive != true && isActive != false && references(*[_type == "category" && slug.current == $slug]._id)] | order(publishedAt desc) {
   _id,
   name,
   slug,
@@ -175,7 +175,7 @@ export const collectionBySlugQuery = groq`*[_type == "collection" && slug.curren
   endDate,
   highlight,
   collectionType,
-  "products": products[]->[dropExclusive != true] {
+  "products": products[]->[dropExclusive != true && isActive != false] {
     _id,
     name,
     slug,
@@ -209,7 +209,7 @@ export const activeDropSettingsQuery = groq`*[_type == "dropSettings" && active 
   dropDescription,
   startDate,
   endDate,
-  "dropProducts": dropProducts[]-> {
+  "dropProducts": dropProducts[]->[isActive != false] {
     _id,
     name,
     slug,
@@ -230,7 +230,7 @@ export const activeDropSettingsQuery = groq`*[_type == "dropSettings" && active 
 /**
  * Query to get drop-exclusive products (products only available in drops)
  */
-export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclusive == true] | order(publishedAt desc) {
+export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclusive == true && isActive != false] | order(publishedAt desc) {
   _id,
   name,
   slug,

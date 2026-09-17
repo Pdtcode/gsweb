@@ -18,6 +18,7 @@ export async function GET() {
       },
       where: {
         inStock: true, // Only include products that are in stock
+        isActive: true, // ...and that are still live on the storefront
       },
     });
 

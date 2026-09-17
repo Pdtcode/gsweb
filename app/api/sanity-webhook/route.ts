@@ -90,6 +90,7 @@ async function syncProductsFromSanity() {
       slug,
       price,
       description,
+      isActive,
       images[] {
         asset->{
           _id,
@@ -136,6 +137,9 @@ async function syncProductsFromSanity() {
         images: sanityProduct.images?.map((img: any) => img.asset?.url).filter(Boolean) || [],
         category: sanityProduct.category?.title || null,
         inStock: true,
+        // Products created before the Studio toggle existed have no value here,
+        // so absent means live.
+        isActive: sanityProduct.isActive !== false,
       };
 
       let product;

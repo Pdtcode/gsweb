@@ -21,6 +21,7 @@ const ACTIVE_BUNDLE_FILTER = `
   && isActive == true
   && (!defined(startDate) || startDate <= now())
   && (!defined(endDate) || endDate >= now())
+  && count(items[product->isActive == false]) == 0
 `;
 
 const BUNDLE_PROJECTION = `

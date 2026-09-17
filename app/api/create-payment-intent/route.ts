@@ -68,6 +68,37 @@ export async function POST(request: Request) {
 
     console.log("Items validation passed, found", items.length, "items");
 
+    // --- Retired products -------------------------------------------------
+    // A product switched off in the Studio disappears from every storefront
+    // query, but carts live in localStorage and can outlive that change. Re-read
+    // the flag here so a stale cart cannot quietly buy something the client has
+    // pulled. Bundle lines are covered separately: the bundle query itself drops
+    // any bundle with a hidden component.
+    const plainProductIds = items
+      .filter((item: any) => !item?.bundle && item?.id)
+      .map((item: any) => item.id);
+
+    if (plainProductIds.length > 0) {
+      // item.id is a Sanity _id for most lines but a slug for some, so match both.
+      const retiredProducts = await sanityClient.fetch<Array<{ name: string }>>(
+        `*[_type == "product" && isActive == false && (_id in $ids || slug.current in $ids)]{ name }`,
+        { ids: plainProductIds },
+      );
+
+      if (retiredProducts.length > 0) {
+        const names = retiredProducts.map((product) => product.name).join(", ");
+
+        console.log(`❌ CHECKOUT BLOCKED - retired product(s) in cart: ${names}`);
+
+        return NextResponse.json(
+          {
+            error: `No longer available: ${names}. Please remove ${retiredProducts.length > 1 ? "these items" : "this item"} from your cart.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     // --- Bundle validation & expansion ------------------------------------
     // A bundle has no stock of its own — it is expanded below into one
     // OrderItem per component, which the Stripe webhook then decrements like

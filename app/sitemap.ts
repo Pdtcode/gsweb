@@ -29,7 +29,7 @@ async function safeFetch(query: string): Promise<SitemapEntity[]> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, collections, posts, bundles] = await Promise.all([
     safeFetch(
-      `*[_type == "product" && dropExclusive != true && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
+      `*[_type == "product" && dropExclusive != true && isActive != false && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
     ),
     safeFetch(
       `*[_type == "collection" && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       `*[_type == "post" && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
     ),
     safeFetch(
-      `*[_type == "bundleDeal" && isActive == true && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
+      `*[_type == "bundleDeal" && isActive == true && count(items[product->isActive == false]) == 0 && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
     ),
   ]);
 
