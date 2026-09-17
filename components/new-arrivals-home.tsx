@@ -28,7 +28,10 @@ interface FeaturedProduct {
   imageDisplay?: any;
 }
 
-const featuredHomeProductsQuery = groq`*[_type == "product" && slug.current in $slugs]{
+// A product retired in the Studio drops out of the homepage too. The slugs
+// below are hand-picked, so without this a hidden product would keep its
+// spot here long after it vanished from the store.
+const featuredHomeProductsQuery = groq`*[_type == "product" && slug.current in $slugs && isActive != false]{
   _id,
   name,
   "slug": slug.current,
