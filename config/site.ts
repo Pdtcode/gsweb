@@ -5,19 +5,11 @@ export const siteConfig = {
   description: "Seek until you find",
   navItems: [
     {
-      label: "Drop",
-      href: "/drop",
-    },
-    {
       label: "Store",
       href: "/store",
     },
   ],
   navMenuItems: [
-    {
-      label: "Drop",
-      href: "/drop",
-    },
     {
       label: "Store",
       href: "/store",
