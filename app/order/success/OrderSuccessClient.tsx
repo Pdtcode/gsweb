@@ -27,6 +27,9 @@ interface Order {
   id: string;
   orderNumber: string;
   total: number;
+  // Spend & Save discount (Prisma Decimal arrives as a string); null when none
+  campaignDiscount: number | string | null;
+  campaignName: string | null;
   status: string;
   createdAt: string;
   // Fulfillment fields (all nullable — legacy orders have null)
@@ -267,6 +270,40 @@ export default function OrderSuccessClient() {
             {(() => {
               const subtotal = order.OrderItem.reduce((sum, item) => sum + (item.price * item.quantity), 0);
               const discountAmount = subtotal - order.total;
+              const campaignDiscount = Number(order.campaignDiscount ?? 0);
+              // Promo codes and the service fee aren't stored per order, so
+              // whatever the Spend & Save line doesn't explain is shown together
+              const otherAdjustments = Number(order.total) - (subtotal - campaignDiscount);
+
+              if (campaignDiscount > 0) {
+                return (
+                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Subtotal:</span>
+                        <span>{formatPrice(subtotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>{order.campaignName || "Spend & Save"}:</span>
+                        <span>-{formatPrice(campaignDiscount)}</span>
+                      </div>
+                      {Math.abs(otherAdjustments) >= 0.01 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Service fee &amp; other discounts:</span>
+                          <span>
+                            {otherAdjustments > 0 ? "+" : "-"}
+                            {formatPrice(Math.abs(otherAdjustments))}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-semibold text-lg border-t border-gray-200 pt-2">
+                        <span>Total:</span>
+                        <span>{formatPrice(order.total)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
 
               return discountAmount > 0 ? (
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">

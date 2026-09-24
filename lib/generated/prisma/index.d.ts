@@ -2743,11 +2743,13 @@ export namespace Prisma {
 
   export type OrderAvgAggregateOutputType = {
     total: Decimal | null
+    campaignDiscount: Decimal | null
     platformFeeAmount: Decimal | null
   }
 
   export type OrderSumAggregateOutputType = {
     total: Decimal | null
+    campaignDiscount: Decimal | null
     platformFeeAmount: Decimal | null
   }
 
@@ -2757,6 +2759,8 @@ export namespace Prisma {
     userId: string | null
     status: $Enums.OrderStatus | null
     total: Decimal | null
+    campaignDiscount: Decimal | null
+    campaignName: string | null
     platformFeeAmount: Decimal | null
     connectedAccountId: string | null
     stripePaymentIntentId: string | null
@@ -2784,6 +2788,8 @@ export namespace Prisma {
     userId: string | null
     status: $Enums.OrderStatus | null
     total: Decimal | null
+    campaignDiscount: Decimal | null
+    campaignName: string | null
     platformFeeAmount: Decimal | null
     connectedAccountId: string | null
     stripePaymentIntentId: string | null
@@ -2811,6 +2817,8 @@ export namespace Prisma {
     userId: number
     status: number
     total: number
+    campaignDiscount: number
+    campaignName: number
     platformFeeAmount: number
     connectedAccountId: number
     stripePaymentIntentId: number
@@ -2836,11 +2844,13 @@ export namespace Prisma {
 
   export type OrderAvgAggregateInputType = {
     total?: true
+    campaignDiscount?: true
     platformFeeAmount?: true
   }
 
   export type OrderSumAggregateInputType = {
     total?: true
+    campaignDiscount?: true
     platformFeeAmount?: true
   }
 
@@ -2850,6 +2860,8 @@ export namespace Prisma {
     userId?: true
     status?: true
     total?: true
+    campaignDiscount?: true
+    campaignName?: true
     platformFeeAmount?: true
     connectedAccountId?: true
     stripePaymentIntentId?: true
@@ -2877,6 +2889,8 @@ export namespace Prisma {
     userId?: true
     status?: true
     total?: true
+    campaignDiscount?: true
+    campaignName?: true
     platformFeeAmount?: true
     connectedAccountId?: true
     stripePaymentIntentId?: true
@@ -2904,6 +2918,8 @@ export namespace Prisma {
     userId?: true
     status?: true
     total?: true
+    campaignDiscount?: true
+    campaignName?: true
     platformFeeAmount?: true
     connectedAccountId?: true
     stripePaymentIntentId?: true
@@ -3018,6 +3034,8 @@ export namespace Prisma {
     userId: string
     status: $Enums.OrderStatus
     total: Decimal
+    campaignDiscount: Decimal | null
+    campaignName: string | null
     platformFeeAmount: Decimal | null
     connectedAccountId: string | null
     stripePaymentIntentId: string | null
@@ -3064,6 +3082,8 @@ export namespace Prisma {
     userId?: boolean
     status?: boolean
     total?: boolean
+    campaignDiscount?: boolean
+    campaignName?: boolean
     platformFeeAmount?: boolean
     connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
@@ -3095,6 +3115,8 @@ export namespace Prisma {
     userId?: boolean
     status?: boolean
     total?: boolean
+    campaignDiscount?: boolean
+    campaignName?: boolean
     platformFeeAmount?: boolean
     connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
@@ -3123,6 +3145,8 @@ export namespace Prisma {
     userId?: boolean
     status?: boolean
     total?: boolean
+    campaignDiscount?: boolean
+    campaignName?: boolean
     platformFeeAmount?: boolean
     connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
@@ -3151,6 +3175,8 @@ export namespace Prisma {
     userId?: boolean
     status?: boolean
     total?: boolean
+    campaignDiscount?: boolean
+    campaignName?: boolean
     platformFeeAmount?: boolean
     connectedAccountId?: boolean
     stripePaymentIntentId?: boolean
@@ -3172,7 +3198,7 @@ export namespace Prisma {
     archivedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "userId" | "status" | "total" | "platformFeeAmount" | "connectedAccountId" | "stripePaymentIntentId" | "shippingFirstName" | "shippingLastName" | "shippingEmail" | "shippingPhone" | "shippingAddress" | "shippingCity" | "shippingState" | "shippingZipCode" | "shippingCountry" | "deliveryMethod" | "pickupLocationId" | "pickupLocationName" | "shippingApartment" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "userId" | "status" | "total" | "campaignDiscount" | "campaignName" | "platformFeeAmount" | "connectedAccountId" | "stripePaymentIntentId" | "shippingFirstName" | "shippingLastName" | "shippingEmail" | "shippingPhone" | "shippingAddress" | "shippingCity" | "shippingState" | "shippingZipCode" | "shippingCountry" | "deliveryMethod" | "pickupLocationId" | "pickupLocationName" | "shippingApartment" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     User?: boolean | UserDefaultArgs<ExtArgs>
     OrderItem?: boolean | Order$OrderItemArgs<ExtArgs>
@@ -3199,6 +3225,8 @@ export namespace Prisma {
       userId: string
       status: $Enums.OrderStatus
       total: Prisma.Decimal
+      campaignDiscount: Prisma.Decimal | null
+      campaignName: string | null
       platformFeeAmount: Prisma.Decimal | null
       connectedAccountId: string | null
       stripePaymentIntentId: string | null
@@ -3649,6 +3677,8 @@ export namespace Prisma {
     readonly userId: FieldRef<"Order", 'String'>
     readonly status: FieldRef<"Order", 'OrderStatus'>
     readonly total: FieldRef<"Order", 'Decimal'>
+    readonly campaignDiscount: FieldRef<"Order", 'Decimal'>
+    readonly campaignName: FieldRef<"Order", 'String'>
     readonly platformFeeAmount: FieldRef<"Order", 'Decimal'>
     readonly connectedAccountId: FieldRef<"Order", 'String'>
     readonly stripePaymentIntentId: FieldRef<"Order", 'String'>
@@ -9899,6 +9929,8 @@ export namespace Prisma {
     userId: 'userId',
     status: 'status',
     total: 'total',
+    campaignDiscount: 'campaignDiscount',
+    campaignName: 'campaignName',
     platformFeeAmount: 'platformFeeAmount',
     connectedAccountId: 'connectedAccountId',
     stripePaymentIntentId: 'stripePaymentIntentId',
@@ -10198,6 +10230,8 @@ export namespace Prisma {
     userId?: StringFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     total?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
+    campaignName?: StringNullableFilter<"Order"> | string | null
     platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: StringNullableFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableFilter<"Order"> | string | null
@@ -10228,6 +10262,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    campaignDiscount?: SortOrderInput | SortOrder
+    campaignName?: SortOrderInput | SortOrder
     platformFeeAmount?: SortOrderInput | SortOrder
     connectedAccountId?: SortOrderInput | SortOrder
     stripePaymentIntentId?: SortOrderInput | SortOrder
@@ -10262,6 +10298,8 @@ export namespace Prisma {
     userId?: StringFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     total?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
+    campaignName?: StringNullableFilter<"Order"> | string | null
     platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: StringNullableFilter<"Order"> | string | null
     shippingFirstName?: StringNullableFilter<"Order"> | string | null
@@ -10291,6 +10329,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    campaignDiscount?: SortOrderInput | SortOrder
+    campaignName?: SortOrderInput | SortOrder
     platformFeeAmount?: SortOrderInput | SortOrder
     connectedAccountId?: SortOrderInput | SortOrder
     stripePaymentIntentId?: SortOrderInput | SortOrder
@@ -10326,6 +10366,8 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Order"> | string
     status?: EnumOrderStatusWithAggregatesFilter<"Order"> | $Enums.OrderStatus
     total?: DecimalWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: DecimalNullableWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
+    campaignName?: StringNullableWithAggregatesFilter<"Order"> | string | null
     platformFeeAmount?: DecimalNullableWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: StringNullableWithAggregatesFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableWithAggregatesFilter<"Order"> | string | null
@@ -10801,6 +10843,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -10831,6 +10875,8 @@ export namespace Prisma {
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -10859,6 +10905,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10889,6 +10937,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10918,6 +10968,8 @@ export namespace Prisma {
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -10944,6 +10996,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10971,6 +11025,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -11613,6 +11669,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    campaignDiscount?: SortOrder
+    campaignName?: SortOrder
     platformFeeAmount?: SortOrder
     connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
@@ -11636,6 +11694,7 @@ export namespace Prisma {
 
   export type OrderAvgOrderByAggregateInput = {
     total?: SortOrder
+    campaignDiscount?: SortOrder
     platformFeeAmount?: SortOrder
   }
 
@@ -11645,6 +11704,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    campaignDiscount?: SortOrder
+    campaignName?: SortOrder
     platformFeeAmount?: SortOrder
     connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
@@ -11672,6 +11733,8 @@ export namespace Prisma {
     userId?: SortOrder
     status?: SortOrder
     total?: SortOrder
+    campaignDiscount?: SortOrder
+    campaignName?: SortOrder
     platformFeeAmount?: SortOrder
     connectedAccountId?: SortOrder
     stripePaymentIntentId?: SortOrder
@@ -11695,6 +11758,7 @@ export namespace Prisma {
 
   export type OrderSumOrderByAggregateInput = {
     total?: SortOrder
+    campaignDiscount?: SortOrder
     platformFeeAmount?: SortOrder
   }
 
@@ -12952,6 +13016,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -12981,6 +13047,8 @@ export namespace Prisma {
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -13084,6 +13152,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13113,6 +13183,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13500,6 +13572,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -13528,6 +13602,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -13586,6 +13662,8 @@ export namespace Prisma {
     userId?: StringFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     total?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
+    campaignName?: StringNullableFilter<"Order"> | string | null
     platformFeeAmount?: DecimalNullableFilter<"Order"> | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: StringNullableFilter<"Order"> | string | null
     stripePaymentIntentId?: StringNullableFilter<"Order"> | string | null
@@ -13612,6 +13690,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -13641,6 +13721,8 @@ export namespace Prisma {
     userId: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -13684,6 +13766,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13713,6 +13797,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13970,6 +14056,8 @@ export namespace Prisma {
     orderNumber: string
     status?: $Enums.OrderStatus
     total: Decimal | DecimalJsLike | number | string
+    campaignDiscount?: Decimal | DecimalJsLike | number | string | null
+    campaignName?: string | null
     platformFeeAmount?: Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: string | null
     stripePaymentIntentId?: string | null
@@ -13996,6 +14084,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -14024,6 +14114,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -14052,6 +14144,8 @@ export namespace Prisma {
     orderNumber?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     total?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    campaignDiscount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    campaignName?: NullableStringFieldUpdateOperationsInput | string | null
     platformFeeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     connectedAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     stripePaymentIntentId?: NullableStringFieldUpdateOperationsInput | string | null

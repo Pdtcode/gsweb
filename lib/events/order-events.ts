@@ -29,6 +29,11 @@ interface OrderConfirmedEvent {
     code: string;
     amount: number;
   };
+  // Spend & Save campaign discount, applied automatically
+  campaignDiscount?: {
+    name: string;
+    amount: number;
+  };
   createdAt: string;
 }
 

@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prismaClient";
 import { client as sanityClient } from "@/sanity/lib/client";
 import { validateAndExpandBundle, type BundleExpansion } from "@/lib/bundles";
+import { getSpendDiscount } from "@/lib/spend-campaign";
+import { getSpendCampaign } from "@/lib/spend-campaign-server";
 
 // Make sure the Stripe secret key is defined
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -311,7 +313,15 @@ export async function POST(request: Request) {
 
     // Apply discount if provided
     const discountAmount = discount?.amount || 0;
-    const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
+
+    // Site-wide Spend & Save campaign: worked out here from the items subtotal
+    // (bundles already re-priced above), never taken from the client. It
+    // stacks with any promo code.
+    const spendCampaign = await getSpendCampaign({ fresh: true });
+    const { discount: campaignDiscount } = getSpendDiscount(subtotal, spendCampaign);
+    const campaignName = campaignDiscount > 0 ? spendCampaign!.name : null;
+
+    const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount - campaignDiscount);
 
     // Apply service fee calculations
     const serviceFeeAmount = serviceFee?.finalServiceFee || 0;
@@ -348,6 +358,8 @@ export async function POST(request: Request) {
         subtotal: subtotal.toString(),
         discount_amount: discountAmount.toString(),
         discount_code: discount?.code || "",
+        campaign_discount: campaignDiscount.toString(),
+        campaign_name: campaignName || "",
         service_fee_base: baseServiceFee.toString(),
         service_fee_discount: serviceFeeDiscount.toString(),
         service_fee_final: serviceFeeAmount.toString(),
@@ -440,6 +452,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
           clientSecret: paymentIntent.client_secret,
           total,
+          campaignDiscount,
         });
       }
 
@@ -459,6 +472,8 @@ export async function POST(request: Request) {
           orderNumber: `ORD-${Date.now()}`,
           userId: user.id,
           total: total, // This includes subtotal + service fee - discounts
+          campaignDiscount: campaignDiscount > 0 ? campaignDiscount : null,
+          campaignName,
           status: "PROCESSING",
           stripePaymentIntentId: paymentIntent.id,
           platformFeeAmount: platformFeeAmount > 0 ? platformFeeAmount / 100 : null,
@@ -655,6 +670,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       total,
+      campaignDiscount,
     });
   } catch (error: any) {
     console.error("Payment intent creation error:", error.message);

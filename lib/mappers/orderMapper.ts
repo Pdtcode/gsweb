@@ -14,6 +14,9 @@ export interface NeonOrderWithRelations {
   orderNumber: string;
   userId: string;
   total: any; // Prisma Decimal type
+  // Spend & Save discount; optional so callers selecting older shapes still type-check
+  campaignDiscount?: any; // Prisma Decimal type
+  campaignName?: string | null;
   status: string;
   stripePaymentIntentId: string | null;
   shippingFirstName: string | null;
@@ -103,6 +106,8 @@ export function mapNeonOrderToSanity(order: NeonOrderWithRelations) {
     userId: order.userId,
     customerEmail: order.User.email,
     total: Number(order.total),
+    campaignDiscount: order.campaignDiscount != null ? Number(order.campaignDiscount) : undefined,
+    campaignName: order.campaignName ?? undefined,
     status: order.status,
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),

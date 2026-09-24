@@ -10,6 +10,8 @@ import { NEW_ARRIVALS_HOME_ACTIVE } from "@/config/homepage";
 import { Navbar } from "@/components/navbar";
 import SiteProtection from "@/components/site-protection";
 import { accessKeyFor, getSiteProtection } from "@/lib/site-protection";
+import { getSpendCampaign } from "@/lib/spend-campaign-server";
+import { SpendCampaignBanner } from "@/components/spend-campaign-banner";
 import { SkuProvider } from "@/lib/contexts/sku-context";
 import { JsonLd } from "@/components/json-ld";
 import {
@@ -119,7 +121,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   // Password gate is switched on/off and its password set in Sanity Studio
-  const siteProtection = await getSiteProtection();
+  const [siteProtection, spendCampaign] = await Promise.all([
+    getSiteProtection(),
+    getSpendCampaign(),
+  ]);
   const siteAccessKey =
     siteProtection.enabled && siteProtection.password
       ? accessKeyFor(siteProtection.password)
@@ -149,6 +154,9 @@ export default async function RootLayout({
           <SkuProvider>
             <SiteProtection enabled={siteProtection.enabled} requiredKey={siteAccessKey}>
               <div className="relative flex flex-col h-screen">
+                {spendCampaign && spendCampaign.showBanner !== false && (
+                  <SpendCampaignBanner campaign={spendCampaign} />
+                )}
                 <Navbar />
                   <div className="relative flex-1">
                     <main className="container mx-auto max-w-7xl pt-4 px-6 flex-grow">

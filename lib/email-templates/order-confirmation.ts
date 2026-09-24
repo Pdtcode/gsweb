@@ -31,6 +31,11 @@ interface EmailTemplateData {
     code: string;
     amount: number;
   };
+  // Spend & Save campaign discount, applied automatically
+  campaignDiscount?: {
+    name: string;
+    amount: number;
+  };
   createdAt: string;
 }
 
@@ -54,6 +59,7 @@ export function generateOrderConfirmationEmail(orderData: OrderConfirmedEvent): 
     shippingCountry: orderData.shippingCountry ?? null,
     serviceFee: orderData.serviceFee,
     discount: orderData.discount,
+    campaignDiscount: orderData.campaignDiscount,
     createdAt: orderData.createdAt,
   };
 
@@ -165,6 +171,12 @@ function generateHTMLTemplate(data: EmailTemplateData): string {
                         <span>-$${data.discount.amount.toFixed(2)}</span>
                     </div>
                     ` : ''}
+                    ${data.campaignDiscount ? `
+                    <div class="total-row discount">
+                        <span>${data.campaignDiscount.name}:</span>
+                        <span>-$${data.campaignDiscount.amount.toFixed(2)}</span>
+                    </div>
+                    ` : ''}
                     ${data.serviceFee ? `
                     <div class="total-row">
                         <span>Service Fee (5%):</span>
@@ -269,7 +281,7 @@ ${data.items.map(item =>
 ).join('\n')}
 
 ORDER SUMMARY
-Subtotal: $${subtotal.toFixed(2)}${data.discount ? `\nDiscount (${data.discount.code}): -$${data.discount.amount.toFixed(2)}` : ''}${data.serviceFee ? `\nService Fee (5%): $${data.serviceFee.baseAmount.toFixed(2)}${data.serviceFee.discount > 0 ? `\nService Fee Discount: -$${data.serviceFee.discount.toFixed(2)}` : ''}` : ''}
+Subtotal: $${subtotal.toFixed(2)}${data.discount ? `\nDiscount (${data.discount.code}): -$${data.discount.amount.toFixed(2)}` : ''}${data.campaignDiscount ? `\n${data.campaignDiscount.name}: -$${data.campaignDiscount.amount.toFixed(2)}` : ''}${data.serviceFee ? `\nService Fee (5%): $${data.serviceFee.baseAmount.toFixed(2)}${data.serviceFee.discount > 0 ? `\nService Fee Discount: -$${data.serviceFee.discount.toFixed(2)}` : ''}` : ''}
 Total: $${data.total.toFixed(2)}
 
 ${isInPerson

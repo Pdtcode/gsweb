@@ -12,6 +12,7 @@ import { PromoCode, DiscountInfo } from "@/components/promo-code";
 import { urlForImage } from "@/sanity/lib/image";
 import { productImageUrl } from "@/lib/product-image";
 import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
+import { getSpendDiscount, type SpendCampaign } from "@/lib/spend-campaign";
 import { DeliveryMethodToggle } from "@/components/delivery-method-toggle";
 import type { DeliveryMethod } from "@/components/delivery-method-toggle";
 import { PickupLocationSelector } from "@/components/pickup-location-selector";
@@ -64,6 +65,7 @@ export default function CheckoutPage() {
   const [selectedPickupLocationId, setSelectedPickupLocationId] = useState<string>("");
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [showApartment, setShowApartment] = useState(false);
+  const [spendCampaign, setSpendCampaign] = useState<SpendCampaign | null>(null);
 
   // Handle Stripe redirect success or cancel query params
   useEffect(() => {
@@ -95,6 +97,15 @@ export default function CheckoutPage() {
       }
     }
     fetchLocations();
+  }, []);
+
+  // Spend & Save campaign, for previewing the discount. The server works the
+  // discount out again when the payment is created and charges its own figure.
+  useEffect(() => {
+    fetch("/api/spend-campaign")
+      .then((res) => res.json())
+      .then((data) => setSpendCampaign(data.campaign ?? null))
+      .catch(() => console.error("Failed to fetch spend campaign"));
   }, []);
 
   // Redirect if cart is empty
@@ -158,11 +169,13 @@ export default function CheckoutPage() {
     return calculateServiceFee(subtotal, serviceFeeDiscount);
   };
 
+  const getCampaignDiscount = () => getSpendDiscount(getCartTotal(), spendCampaign).discount;
+
   const getDiscountedTotal = () => {
     const subtotal = getCartTotal();
     const discount = calculateDiscount();
     const serviceFeeCalc = getServiceFeeCalculation();
-    return Math.max(0, (subtotal - discount) + serviceFeeCalc.finalServiceFee);
+    return Math.max(0, (subtotal - discount - getCampaignDiscount()) + serviceFeeCalc.finalServiceFee);
   };
 
   const handlePayment = async () => {
@@ -300,7 +313,24 @@ export default function CheckoutPage() {
         );
       }
 
-      const { clientSecret } = await response.json();
+      const { clientSecret, total: chargedTotal } = await response.json();
+
+      // The server applies the Spend & Save discount as it stands right now.
+      // If that differs from what the customer was shown (the offer just
+      // started or ended), stop and show the real figure instead of charging it.
+      const shownTotal = getDiscountedTotal();
+
+      if (typeof chargedTotal === "number" && Math.abs(chargedTotal - shownTotal) >= 0.01) {
+        const res = await fetch("/api/spend-campaign").catch(() => null);
+        const data = res ? await res.json().catch(() => null) : null;
+
+        setSpendCampaign(data?.campaign ?? null);
+        setPaymentError(
+          `Your total has changed to $${chargedTotal.toFixed(2)} because the Spend & Save offer changed. Please review your order and pay again.`,
+        );
+
+        return;
+      }
 
       // Confirm payment
       const { error, paymentIntent } = await stripe.confirmCardPayment(
@@ -334,6 +364,7 @@ export default function CheckoutPage() {
   const serviceFeeCalc = getServiceFeeCalculation();
   const serviceFeeDisplay = formatServiceFeeDisplay(serviceFeeCalc);
   const total = getDiscountedTotal();
+  const campaign = getSpendDiscount(subtotal, spendCampaign);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -711,6 +742,13 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-center text-green-600 dark:text-green-400">
                   <span>Discount ({appliedDiscount.code}):</span>
                   <span>-${discount.toFixed(2)}</span>
+                </div>
+              )}
+
+              {campaign.discount > 0 && spendCampaign && (
+                <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                  <span>{spendCampaign.name}:</span>
+                  <span>-${campaign.discount.toFixed(2)}</span>
                 </div>
               )}
 

@@ -167,6 +167,8 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         const serviceFeeAmount = parseFloat(paymentIntent.metadata?.service_fee_final || '0');
         const discountAmount = parseFloat(paymentIntent.metadata?.discount_amount || '0');
         const discountCode = paymentIntent.metadata?.discount_code || '';
+        const campaignDiscount = parseFloat(paymentIntent.metadata?.campaign_discount || '0');
+        const campaignName = paymentIntent.metadata?.campaign_name || 'Spend & Save';
 
         await orderEventEmitter.emitOrderConfirmed({
           orderId: order.id.toString(),
@@ -200,6 +202,10 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
           discount: discountAmount > 0 && discountCode ? {
             code: discountCode,
             amount: discountAmount
+          } : undefined,
+          campaignDiscount: campaignDiscount > 0 ? {
+            name: campaignName,
+            amount: campaignDiscount
           } : undefined,
           createdAt: new Date().toISOString()
         });

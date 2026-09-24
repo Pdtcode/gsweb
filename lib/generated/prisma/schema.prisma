@@ -33,6 +33,8 @@ model Order {
   userId                String
   status                OrderStatus  @default(PENDING)
   total                 Decimal      @db.Decimal(10, 2)
+  campaignDiscount      Decimal?     @db.Decimal(10, 2)
+  campaignName          String?
   platformFeeAmount     Decimal?     @db.Decimal(10, 2)
   connectedAccountId    String?
   stripePaymentIntentId String?      @unique
