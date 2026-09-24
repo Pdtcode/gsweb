@@ -9,13 +9,24 @@ import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
 import { productImageUrl } from "@/lib/product-image";
 import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
+import { getSpendDiscount, type SpendCampaign } from "@/lib/spend-campaign";
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart();
   const [mounted, setMounted] = useState(false);
+  const [spendCampaign, setSpendCampaign] = useState<SpendCampaign | null>(null);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Spend & Save campaign, to show the discount once a tier is reached. The
+  // final figure is worked out again on the server at checkout.
+  useEffect(() => {
+    fetch("/api/spend-campaign")
+      .then((res) => res.json())
+      .then((data) => setSpendCampaign(data.campaign ?? null))
+      .catch(() => console.error("Failed to fetch spend campaign"));
   }, []);
 
   // Handle quantity change
@@ -210,7 +221,8 @@ export default function CartPage() {
           const subtotal = getCartTotal();
           const serviceFeeCalc = calculateServiceFee(subtotal);
           const serviceFeeDisplay = formatServiceFeeDisplay(serviceFeeCalc);
-          const total = subtotal + serviceFeeCalc.finalServiceFee;
+          const { discount: campaignDiscount } = getSpendDiscount(subtotal, spendCampaign);
+          const total = Math.max(0, subtotal - campaignDiscount) + serviceFeeCalc.finalServiceFee;
 
           return (
             <div className="border-t border-gray-200 dark:border-gray-800 pt-6 mb-6">
@@ -219,6 +231,12 @@ export default function CartPage() {
                   <span>Subtotal:</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
+                {campaignDiscount > 0 && spendCampaign && (
+                  <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                    <span>{spendCampaign.name}:</span>
+                    <span>-${campaignDiscount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
                   <span>Service Fee ({getServiceFeePercentage()}%):</span>
                   <span>{serviceFeeDisplay.finalServiceFeeText}</span>
