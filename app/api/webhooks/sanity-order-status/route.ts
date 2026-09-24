@@ -12,6 +12,15 @@ const sanityClient = createClient({
   token: process.env.SANITY_API_TOKEN,
 });
 
+/**
+ * Sanity webhook: copies order status changes made in Studio to Neon.
+ * Configured in sanity.io/manage → API → Webhooks ("Order status → database"):
+ *   filter:     _type == "order" && delta::changedAny(status)
+ *   triggers:   update (published documents only)
+ *   projection: {_id, _type, "transition": delta::operation(), "changedFields": ["status"], "previousValue": {"status": before().status}}
+ *   secret:     same value as SANITY_WEBHOOK_SECRET
+ */
+
 // Webhook secret for validation (you'll set this in Sanity webhook config)
 const WEBHOOK_SECRET = process.env.SANITY_WEBHOOK_SECRET;
 
