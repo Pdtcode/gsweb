@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { color } from 'framer-motion';
 
 interface WorkInProgressProps {
-  onPasswordCorrect: () => void;
+  onPasswordCorrect: (accessKey: string | null) => void;
 }
 
 export default function WorkInProgress({ onPasswordCorrect }: WorkInProgressProps) {
@@ -32,8 +32,7 @@ export default function WorkInProgress({ onPasswordCorrect }: WorkInProgressProp
       const data = await response.json();
 
       if (data.success) {
-        localStorage.setItem('site-access', 'granted');
-        onPasswordCorrect();
+        onPasswordCorrect(data.accessKey ?? null);
       } else {
         setError(data.error || 'Incorrect password');
         setPassword('');

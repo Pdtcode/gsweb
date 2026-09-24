@@ -3,19 +3,39 @@
 import { useState, useEffect } from 'react';
 import WorkInProgress from './work-in-progress';
 
+const ACCESS_STORAGE_KEY = 'site-access';
+
 interface SiteProtectionProps {
   children: React.ReactNode;
+  /** Whether the password gate is on (set in Sanity Studio → Site Password) */
+  enabled: boolean;
+  /**
+   * What a visitor must have stored to get in. Derived from the current
+   * password, so changing the password in Sanity signs everyone out.
+   */
+  accessKey: string | null;
 }
 
-export default function SiteProtection({ children }: SiteProtectionProps) {
-  const [hasAccess, setHasAccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+export default function SiteProtection({ children, enabled, accessKey }: SiteProtectionProps) {
+  const [hasAccess, setHasAccess] = useState(!enabled);
+  const [isLoading, setIsLoading] = useState(enabled);
 
   useEffect(() => {
-    const access = localStorage.getItem('site-access');
-    setHasAccess(access === 'granted');
+    if (!enabled) {
+      setHasAccess(true);
+      setIsLoading(false);
+      return;
+    }
+
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(ACCESS_STORAGE_KEY);
+    } catch {
+      // Storage blocked (private mode etc.) — just ask for the password
+    }
+    setHasAccess(!!accessKey && stored === accessKey);
     setIsLoading(false);
-  }, []);
+  }, [enabled, accessKey]);
 
   // When the gate hands off to the real site, the tall content mounts in one
   // shot and iOS Safari/Chrome can land the page a little scrolled down (you
@@ -27,7 +47,14 @@ export default function SiteProtection({ children }: SiteProtectionProps) {
     }
   }, [hasAccess, isLoading]);
 
-  const handlePasswordCorrect = () => {
+  const handlePasswordCorrect = (grantedKey: string | null) => {
+    if (grantedKey) {
+      try {
+        localStorage.setItem(ACCESS_STORAGE_KEY, grantedKey);
+      } catch {
+        // Access still lasts for this visit
+      }
+    }
     setHasAccess(true);
   };
 

@@ -9,6 +9,7 @@ import { fontSans, fontUDMincho } from "@/config/fonts";
 import { NEW_ARRIVALS_HOME_ACTIVE } from "@/config/homepage";
 import { Navbar } from "@/components/navbar";
 import SiteProtection from "@/components/site-protection";
+import { accessKeyFor, getSiteProtection } from "@/lib/site-protection";
 import { SkuProvider } from "@/lib/contexts/sku-context";
 import { JsonLd } from "@/components/json-ld";
 import {
@@ -112,11 +113,18 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Password gate is switched on/off and its password set in Sanity Studio
+  const siteProtection = await getSiteProtection();
+  const siteAccessKey =
+    siteProtection.enabled && siteProtection.password
+      ? accessKeyFor(siteProtection.password)
+      : null;
+
   return (
     <html suppressHydrationWarning lang="en">
       <head />
@@ -139,7 +147,7 @@ export default function RootLayout({
           }}
         >
           <SkuProvider>
-            <SiteProtection>
+            <SiteProtection accessKey={siteAccessKey} enabled={siteProtection.enabled}>
               <div className="relative flex flex-col h-screen">
                 <Navbar />
                   <div className="relative flex-1">
