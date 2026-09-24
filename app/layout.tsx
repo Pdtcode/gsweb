@@ -147,7 +147,7 @@ export default async function RootLayout({
           }}
         >
           <SkuProvider>
-            <SiteProtection accessKey={siteAccessKey} enabled={siteProtection.enabled}>
+            <SiteProtection enabled={siteProtection.enabled} requiredKey={siteAccessKey}>
               <div className="relative flex flex-col h-screen">
                 <Navbar />
                   <div className="relative flex-1">

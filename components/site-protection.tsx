@@ -13,10 +13,11 @@ interface SiteProtectionProps {
    * What a visitor must have stored to get in. Derived from the current
    * password, so changing the password in Sanity signs everyone out.
    */
-  accessKey: string | null;
+  // Not `accessKey`: that is a reserved HTML attribute and fails the a11y lint
+  requiredKey: string | null;
 }
 
-export default function SiteProtection({ children, enabled, accessKey }: SiteProtectionProps) {
+export default function SiteProtection({ children, enabled, requiredKey }: SiteProtectionProps) {
   const [hasAccess, setHasAccess] = useState(!enabled);
   const [isLoading, setIsLoading] = useState(enabled);
 
@@ -33,9 +34,9 @@ export default function SiteProtection({ children, enabled, accessKey }: SitePro
     } catch {
       // Storage blocked (private mode etc.) — just ask for the password
     }
-    setHasAccess(!!accessKey && stored === accessKey);
+    setHasAccess(!!requiredKey && stored === requiredKey);
     setIsLoading(false);
-  }, [enabled, accessKey]);
+  }, [enabled, requiredKey]);
 
   // When the gate hands off to the real site, the tall content mounts in one
   // shot and iOS Safari/Chrome can land the page a little scrolled down (you
