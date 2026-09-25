@@ -3,7 +3,11 @@ import type { MetadataRoute } from "next";
 import { client } from "@/sanity/lib/client";
 import { siteUrl } from "@/lib/seo";
 
-// Refresh the sitemap hourly so newly published products/posts appear.
+// Refresh the sitemap hourly so newly published products appear.
+//
+// /news is left out while the news section is shelved (no posts, hidden in
+// the Studio) so Google doesn't index an empty page. Add it and the post
+// routes back when news is relaunched.
 export const revalidate = 3600;
 
 interface SitemapEntity {
@@ -27,15 +31,12 @@ async function safeFetch(query: string): Promise<SitemapEntity[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, collections, posts, bundles] = await Promise.all([
+  const [products, collections, bundles] = await Promise.all([
     safeFetch(
       `*[_type == "product" && dropExclusive != true && isActive != false && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
     ),
     safeFetch(
       `*[_type == "collection" && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
-    ),
-    safeFetch(
-      `*[_type == "post" && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
     ),
     safeFetch(
       `*[_type == "bundleDeal" && isActive == true && count(items[product->isActive == false]) == 0 && defined(slug.current)]{ slug, "updatedAt": _updatedAt }`,
@@ -46,7 +47,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/`, changeFrequency: "daily", priority: 1 },
     { url: `${siteUrl}/store`, changeFrequency: "daily", priority: 0.9 },
     { url: `${siteUrl}/store/bundles`, changeFrequency: "daily", priority: 0.8 },
-    { url: `${siteUrl}/news`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${siteUrl}/contact`, changeFrequency: "yearly", priority: 0.4 },
   ];
 
@@ -71,18 +71,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const postRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
-    url: `${siteUrl}/news/${p.slug}`,
-    lastModified: p.updatedAt ? new Date(p.updatedAt) : undefined,
-    changeFrequency: "monthly",
-    priority: 0.6,
-  }));
-
   return [
     ...staticRoutes,
     ...productRoutes,
     ...collectionRoutes,
     ...bundleRoutes,
-    ...postRoutes,
   ];
 }
