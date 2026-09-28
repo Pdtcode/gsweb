@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 
 import prisma from "@/lib/prismaClient";
-import { mapNeonOrderToSanity } from "@/lib/mappers/orderMapper";
+import { mapNeonOrderToSanity, upsertOrderInSanity } from "@/lib/mappers/orderMapper";
 
 const sanityClient = createClient({
   projectId: "arbp7h2s",
@@ -111,8 +111,8 @@ export async function POST() {
           stats.created++;
         }
 
-        // Upsert to Sanity (idempotent)
-        await sanityClient.createOrReplace(sanityOrder);
+        // Upsert to Sanity (idempotent, keeps Studio-only fields)
+        await upsertOrderInSanity(sanityClient, sanityOrder);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error(`Error syncing order ${order.id} (${order.orderNumber}):`, errorMessage);

@@ -1,6 +1,6 @@
 import { createClient } from "@sanity/client";
 import prisma from "@/lib/prismaClient";
-import { mapNeonOrderToSanity, NeonOrderWithRelations } from "@/lib/mappers/orderMapper";
+import { mapNeonOrderToSanity, NeonOrderWithRelations, upsertOrderInSanity } from "@/lib/mappers/orderMapper";
 
 const sanityClient = createClient({
   projectId: "arbp7h2s",
@@ -196,8 +196,7 @@ export class DualSyncService {
    */
   private static async syncOrderToSanity(order: NeonOrderWithRelations) {
     try {
-      const sanityDoc = mapNeonOrderToSanity(order);
-      await sanityClient.createOrReplace(sanityDoc);
+      await upsertOrderInSanity(sanityClient, mapNeonOrderToSanity(order));
       console.log(`Order ${order.orderNumber} synced to Sanity`);
     } catch (error) {
       console.error(`Failed to sync order ${order.orderNumber} to Sanity:`, error);

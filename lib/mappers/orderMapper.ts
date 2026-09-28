@@ -5,6 +5,8 @@
  * Eliminates duplicate mapping code and null/empty-string pollution.
  */
 
+import type { SanityClient } from '@sanity/client';
+
 /**
  * Type representing a Neon order with all required relations loaded.
  * Matches the Prisma query shape used by both dualSyncService and sync-orders route.
@@ -150,4 +152,23 @@ export function mapNeonOrderToSanity(order: NeonOrderWithRelations) {
 
   // Filter out all nullish values before returning
   return filterNullishValues(doc);
+}
+
+/**
+ * Writes a mapped order to Sanity, creating it if needed.
+ *
+ * Only the mapped fields are set, so fields edited in the Studio that aren't
+ * in Neon (admin notes, shipping carrier/tracking) survive a re-sync.
+ * createOrReplace would wipe them.
+ */
+export async function upsertOrderInSanity(
+  client: SanityClient,
+  doc: ReturnType<typeof mapNeonOrderToSanity>
+) {
+  const { _id, _type, ...fields } = doc;
+  await client
+    .transaction()
+    .createIfNotExists({ _id, _type })
+    .patch(_id, (patch) => patch.set(fields))
+    .commit();
 }
