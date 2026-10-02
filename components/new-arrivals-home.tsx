@@ -5,6 +5,8 @@ import { groq } from "next-sanity";
 import { subtitle } from "@/components/primitives";
 import TextureOverlay from "@/components/texture-overlay";
 import ThemeInstagram from "@/components/theme-instagram";
+import BtdVideo from "@/components/btd-video";
+import SwipeCardStack from "@/components/swipe-card-stack";
 import { client } from "@/sanity/lib/client";
 import { urlForImage } from "@/sanity/lib/image";
 import { productImageUrl } from "@/lib/product-image";
@@ -16,6 +18,17 @@ const FEATURED_SLUGS = ["life-sucks-trucker-hat", "gs-x-han-jan-collab"];
 // Where the hero "Shop the Drop" button points. Set to a product slug
 // (e.g. "/store/products/life-sucks-tee") once the item is in the store.
 const HERO_CTA_HREF = "/store";
+
+// The "LIFE SUCKS" hero art + Shop/Follow CTA. Switched off while the GS x
+// Han Jan video + product panel leads the homepage; flip back to true to
+// restore it (the panel then drops back below it with the scroll hint).
+const SHOW_LIFE_SUCKS_HERO = false;
+
+// Vertical "behind the design" clip for the GS x Han Jan collab, shown beside
+// the featured products. Served from /public.
+const BTD_VIDEO_SRC = "/btd.mp4";
+// Frame grabbed at 5.0s — the "BEHIND THE DESIGN" title card.
+const BTD_POSTER_SRC = "/btd-poster.jpg";
 
 interface FeaturedProduct {
   _id: string;
@@ -73,7 +86,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
       className="group mx-auto block w-full max-w-[280px] sm:max-w-none"
       href={`/store/products/${product.slug}`}
     >
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-black/20 backdrop-blur-sm ring-1 ring-white/10">
+      <div className="relative aspect-square overflow-hidden bg-black/20 backdrop-blur-sm ring-1 ring-white/10">
         {imageUrl && (
           <Image
             fill
@@ -84,12 +97,12 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
           />
         )}
         {!product.inStock && (
-          <span className="absolute top-3 right-3 bg-black/80 text-white px-2 py-1 text-xs font-semibold rounded">
+          <span className="absolute top-3 right-3 bg-black/80 text-white px-2 py-1 text-xs font-semibold">
             Sold Out
           </span>
         )}
         <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <span className="mb-5 inline-block rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black">
+          <span className="mb-5 inline-block bg-white px-5 py-2 text-sm font-semibold text-black">
             Shop Now →
           </span>
         </div>
@@ -108,6 +121,17 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
           )}
         </div>
       </div>
+    </Link>
+  );
+}
+
+function ViewAllLink() {
+  return (
+    <Link
+      className="text-sm uppercase tracking-widest text-[#621600]/80 underline-offset-4 hover:underline"
+      href="/store"
+    >
+      View all products
     </Link>
   );
 }
@@ -432,128 +456,170 @@ export default async function NewArrivalsHome() {
 
       <section className="relative z-10 flex w-full max-w-full flex-col items-center overflow-x-hidden px-4 pb-10 pt-24 sm:pt-10">
 
-        {/* ── Layered "LIFE SUCKS" hero art ────────────────────── */}
-        {/* The maroon/pink art is drawn for light garments, so it sits on a
-            warm cream plate for contrast. Both PNGs share the same 1080²
-            canvas, so stacking them reconstructs the full composition while
-            each layer floats independently. */}
-        <div className="relative w-3/4 max-w-[520px] animate-fadeIn sm:w-full">
-          {/* Soft glow behind the plate */}
-          <div className="absolute inset-0 -z-10 scale-110 rounded-[2rem]  blur-3xl" />
+        {SHOW_LIFE_SUCKS_HERO && (
+          <>
+            {/* ── Layered "LIFE SUCKS" hero art ────────────────────── */}
+            {/* The maroon/pink art is drawn for light garments, so it sits on a
+                warm cream plate for contrast. Both PNGs share the same 1080²
+                canvas, so stacking them reconstructs the full composition while
+                each layer floats independently. */}
+            <div className="relative w-3/4 max-w-[520px] animate-fadeIn sm:w-full">
+              {/* Soft glow behind the plate */}
+              <div className="absolute inset-0 -z-10 scale-110 rounded-[2rem]  blur-3xl" />
 
-          {/* overflow-visible (not hidden): the lstext layer is translated up and
-              floats, so it must be free to render past the square's top edge —
-              otherwise its top clips at the peak of the float. No visible plate
-              bg here, so nothing needs the rounded clip. */}
-          <div className="relative aspect-square overflow-visible rounded-[2rem]  sm:p-10">
-            <div className="relative h-full w-full">
-              <Image
-                fill
-                priority
-                alt="Life Sucks Girl"
-                className=" object-contain"
-                sizes="(max-width: 640px) 68vw, 520px"
-                src="/new-arrivals/lsgirl.png"
-              />
-              {/* Wrapper carries the upward offset so the float animation on
-                  the image itself isn't overridden. Tune -translate-y-[…] to
-                  move the "life sucks" text higher/lower. */}
-              <div className="absolute inset-0 -translate-y-[29%] sm:-translate-y-[35%]">
-                <Image
-                  fill
-                  priority
-                  alt="LS Text"
-                  className="animate-float-slow object-contain"
-                  sizes="(max-width: 640px) 68vw, 520px"
-                  src="/new-arrivals/lstext.png"
-                />
+              {/* overflow-visible (not hidden): the lstext layer is translated up and
+                  floats, so it must be free to render past the square's top edge —
+                  otherwise its top clips at the peak of the float. No visible plate
+                  bg here, so nothing needs the rounded clip. */}
+              <div className="relative aspect-square overflow-visible rounded-[2rem]  sm:p-10">
+                <div className="relative h-full w-full">
+                  <Image
+                    fill
+                    priority
+                    alt="Life Sucks Girl"
+                    className=" object-contain"
+                    sizes="(max-width: 640px) 68vw, 520px"
+                    src="/new-arrivals/lsgirl.png"
+                  />
+                  {/* Wrapper carries the upward offset so the float animation on
+                      the image itself isn't overridden. Tune -translate-y-[…] to
+                      move the "life sucks" text higher/lower. */}
+                  <div className="absolute inset-0 -translate-y-[29%] sm:-translate-y-[35%]">
+                    <Image
+                      fill
+                      priority
+                      alt="LS Text"
+                      className="animate-float-slow object-contain"
+                      sizes="(max-width: 640px) 68vw, 520px"
+                      src="/new-arrivals/lstext.png"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Hero CTA */}
-        <div className="mt-4 flex flex-col items-center gap-4 text-center">
-          <p className={subtitle({ className: "!w-full max-w-md text-center" })}>
-            Life Sucks. Wear GS.
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link
-              className="inline-block rounded-lg bg-[#621600] px-8 py-3 font-semibold text-[#f3ede1] transition-transform hover:scale-105"
-              href={HERO_CTA_HREF}
-            >
-              Shop
-            </Link>
-            <Link
-              className="inline-block rounded-lg border border-foreground/30 px-8 py-3 font-semibold transition-colors hover:bg-foreground/10"
-              href="https://www.instagram.com/gsdesignresearch/"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Follow @gsdesignresearch
-            </Link>
-          </div>
-        </div>
+            {/* Hero CTA */}
+            <div className="mt-4 flex flex-col items-center gap-4 text-center">
+              <p className={subtitle({ className: "!w-full max-w-md text-center" })}>
+                Life Sucks. Wear GS.
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  className="inline-block rounded-lg bg-[#621600] px-8 py-3 font-semibold text-[#f3ede1] transition-transform hover:scale-105"
+                  href={HERO_CTA_HREF}
+                >
+                  Shop
+                </Link>
+                <Link
+                  className="inline-block rounded-lg border border-foreground/30 px-8 py-3 font-semibold transition-colors hover:bg-foreground/10"
+                  href="https://www.instagram.com/gsdesignresearch/"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Follow @gsdesignresearch
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
 
-        {/* ── Also new: two featured products ──────────────────── */}
+        {/* ── Featured products + behind-the-design video ──────── */}
         {products.length > 0 && (
-          <div className="mt-16 w-full max-w-4xl">
+          <div
+            className={`w-full max-w-6xl ${SHOW_LIFE_SUCKS_HERO ? "mt-16" : ""}`}
+          >
             {/* Subtle scroll prompt — a gently bobbing chevron hinting there's
                 more below. Sits over the scene, above the cream panel.
-                Decorative, so aria-hidden. */}
-            <div
-              aria-hidden
-              className="mb-16 flex justify-center text-foreground/50"
-            >
-              <svg
-                className="h-6 w-6 animate-scroll-hint"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
+                Decorative, so aria-hidden. Only meaningful under the Life
+                Sucks hero; with that hidden this panel IS the hero. */}
+            {SHOW_LIFE_SUCKS_HERO && (
+              <div
+                aria-hidden
+                className="mb-16 flex justify-center text-foreground/50"
               >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </div>
+                <svg
+                  className="h-6 w-6 animate-scroll-hint"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </div>
+            )}
 
             {/* Cream panel with a maroon top-border accent — a solid plate that
-                lifts the products off the dark scene. Full-bleed to the viewport
-                edges via w-screen + a centering margin (breaks out of the
-                max-w-4xl / px-4 container), with the products kept in a centered
-                max-width container inside. Fill + text colors are fixed (not
-                theme-driven) since the panel is always cream, so the dark text
-                stays legible in both light and dark mode. */}
-            <div className="ml-[calc(50%-50vw)] w-screen border-t-4 border-[#621600] bg-[#f3ede1] py-12 text-[#2a1810]">
-              <div className="mx-auto w-full max-w-4xl px-6 sm:px-10">
-                <h2 className="mb-8 text-center text-sm font-semibold uppercase tracking-[0.25em] text-[#621600]">
-                  Also New
-                </h2>
-                {/* A lone card would sit in the left cell of the 2-up grid and
-                    read as off-centre, which happens as soon as one of the two
-                    FEATURED_SLUGS products is switched off in the Studio. In
-                    that case drop the grid and centre a single card at roughly
-                    one column's width instead. */}
-                <div
-                  className={
-                    products.length === 1
-                      ? "mx-auto w-full max-w-[280px] sm:max-w-sm"
-                      : "grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8"
-                  }
-                >
-                  {products.map((product) => (
-                    <ProductCard key={product._id} product={product} />
-                  ))}
-                </div>
-
-                <div className="mt-10 text-center">
-                  <Link
-                    className="text-sm uppercase tracking-widest text-[#621600]/80 underline-offset-4 hover:underline"
-                    href="/store"
+                lifts the products off the dark scene. Contained, not
+                full-bleed: this section's overflow-x-hidden sits inside the
+                layout's padded container, so a w-screen breakout gets clipped
+                on both sides — the video lost its left edge and the products
+                centred on a half that was partly off-screen. Fill + text
+                colors are fixed (not theme-driven) since the panel is always
+                cream, so the dark text stays legible in both light and dark
+                mode. On mobile the panel styling switches off — there the
+                swipe deck below IS the section, and its front card carries
+                the cream + maroon border itself. */}
+            <div className="w-full text-[#2a1810] md:border-t-4 md:border-[#621600] md:bg-[#f3ede1]">
+              {/* Mobile: the whole section is a swipeable deck — the product
+                  panel on top, the behind-the-design video peeking out behind
+                  it at full section width. */}
+              <SwipeCardStack
+                className="md:hidden"
+                labels={[...products.map((p) => p.name), "Behind the Design"]}
+              >
+                {products.map((product) => (
+                  <div
+                    key={product._id}
+                    className="flex h-full w-full flex-col items-center justify-center border-t-4 border-[#621600] bg-[#f3ede1] px-8"
                   >
-                    View all products
-                  </Link>
+                    <ProductCard product={product} />
+                    <div className="mt-8 text-center">
+                      <ViewAllLink />
+                    </div>
+                  </div>
+                ))}
+                <BtdVideo
+                  className="h-full w-full"
+                  label="Behind the design: GS x Han Jan"
+                  poster={BTD_POSTER_SRC}
+                  src={BTD_VIDEO_SRC}
+                />
+              </SwipeCardStack>
+
+              {/* Desktop: split panel — the video on the left, edge to edge,
+                  the product(s) centred in the space to its right. The video
+                  column is sized to the clip's own 9:16 shape (height capped
+                  so the panel fits on screen, width derived from it), so the
+                  full frame shows with no crop and no black bars. */}
+              <div className="hidden md:grid md:h-[min(78svh,720px)] md:grid-cols-[auto_1fr]">
+                <BtdVideo
+                  className="aspect-[9/16] h-full"
+                  label="Behind the design: GS x Han Jan"
+                  poster={BTD_POSTER_SRC}
+                  src={BTD_VIDEO_SRC}
+                />
+
+                <div className="flex flex-col items-center justify-center px-10 py-12">
+                  {/* A lone card is centred at roughly one column's width;
+                      two (if the hat comes back) share a 2-up grid. */}
+                  <div
+                    className={
+                      products.length === 1
+                        ? "w-full max-w-sm"
+                        : "grid w-full max-w-xl grid-cols-2 gap-6"
+                    }
+                  >
+                    {products.map((product) => (
+                      <ProductCard key={product._id} product={product} />
+                    ))}
+                  </div>
+
+                  <div className="mt-10 text-center">
+                    <ViewAllLink />
+                  </div>
                 </div>
               </div>
             </div>
