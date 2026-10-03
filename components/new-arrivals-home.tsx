@@ -2,11 +2,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { groq } from "next-sanity";
 
-import { subtitle } from "@/components/primitives";
 import TextureOverlay from "@/components/texture-overlay";
 import ThemeInstagram from "@/components/theme-instagram";
 import BtdVideo from "@/components/btd-video";
 import SwipeCardStack from "@/components/swipe-card-stack";
+import {
+  BtdTimelineProvider,
+  TimelineImage,
+  TimelineSparks,
+} from "@/components/btd-timeline";
 import { client } from "@/sanity/lib/client";
 import { urlForImage } from "@/sanity/lib/image";
 import { productImageUrl } from "@/lib/product-image";
@@ -15,20 +19,26 @@ import { productImageUrl } from "@/lib/product-image";
 // feature different products — data (price/image/stock) is pulled live.
 const FEATURED_SLUGS = ["life-sucks-trucker-hat", "gs-x-han-jan-collab"];
 
-// Where the hero "Shop the Drop" button points. Set to a product slug
-// (e.g. "/store/products/life-sucks-tee") once the item is in the store.
-const HERO_CTA_HREF = "/store";
-
-// The "LIFE SUCKS" hero art + Shop/Follow CTA. Switched off while the GS x
-// Han Jan video + product panel leads the homepage; flip back to true to
-// restore it (the panel then drops back below it with the scroll hint).
-const SHOW_LIFE_SUCKS_HERO = false;
-
 // Vertical "behind the design" clip for the GS x Han Jan collab, shown beside
 // the featured products. Served from /public.
 const BTD_VIDEO_SRC = "/btd.mp4";
 // Frame grabbed at 5.0s — the "BEHIND THE DESIGN" title card.
 const BTD_POSTER_SRC = "/btd-poster.jpg";
+
+// Desktop only: while the video plays, this product's photo follows it —
+// front (main image) until the first cue, then its gallery images in order:
+// the shirt's back at 0:04 (as the "BEHIND THE DESIGN" title lands), the
+// artwork at 0:35. Back to the front when the video ends. The gallery order
+// in the Studio is what decides which photo shows at each cue.
+const BTD_PRODUCT_SLUG = "gs-x-han-jan-collab";
+
+// Which block leads the page. false: the GS x Han Jan video panel is the
+// hero and the "LIFE SUCKS" art sits below it as a Coming Soon teaser. true:
+// the "LIFE SUCKS" art is the hero again (no Coming Soon label) with the
+// panel below. Each block carries its own top spacing for when it leads, so
+// flipping this needs no other edits.
+const LEAD_WITH_LIFE_SUCKS = false;
+const BTD_PHOTO_CUES = [4, 35];
 
 interface FeaturedProduct {
   _id: string;
@@ -39,6 +49,7 @@ interface FeaturedProduct {
   inStock: boolean;
   mainImage?: any;
   imageDisplay?: any;
+  images?: any[];
 }
 
 // A product retired in the Studio drops out of the homepage too. The slugs
@@ -52,7 +63,8 @@ const featuredHomeProductsQuery = groq`*[_type == "product" && slug.current in $
   comparePrice,
   inStock,
   mainImage,
-  imageDisplay
+  imageDisplay,
+  images
 }`;
 
 async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
@@ -71,10 +83,28 @@ async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
   }
 }
 
-function ProductCard({ product }: { product: FeaturedProduct }) {
+function ProductCard({
+  product,
+  syncWithVideo = false,
+}: {
+  product: FeaturedProduct;
+  // Swap the photo in step with the behind-the-design video (desktop).
+  syncWithVideo?: boolean;
+}) {
   const imageUrl = product.mainImage
     ? productImageUrl(product.mainImage, 1000, product.imageDisplay)
     : null;
+  // Front first, then one gallery image per cue.
+  const syncedSrcs =
+    syncWithVideo && imageUrl
+      ? [
+          imageUrl,
+          ...(product.images ?? [])
+            .slice(0, BTD_PHOTO_CUES.length)
+            .map((img) => productImageUrl(img, 1000, product.imageDisplay))
+            .filter(Boolean),
+        ]
+      : null;
   const onSale =
     product.comparePrice != null && product.comparePrice > product.price;
 
@@ -86,8 +116,18 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
       className="group mx-auto block w-full max-w-[280px] sm:max-w-none"
       href={`/store/products/${product.slug}`}
     >
+      {/* Outer box is unclipped so the video-synced sparks can fly past the
+          photo's edges; the inner one clips the hover zoom. */}
+      <div className="relative">
       <div className="relative aspect-square overflow-hidden bg-black/20 backdrop-blur-sm ring-1 ring-white/10">
-        {imageUrl && (
+        {syncedSrcs && syncedSrcs.length > 1 ? (
+          <TimelineImage
+            alt={product.name}
+            className="object-cover group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, 40vw"
+            srcs={syncedSrcs}
+          />
+        ) : imageUrl && (
           <Image
             fill
             alt={product.name}
@@ -106,6 +146,8 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
             Shop Now →
           </span>
         </div>
+      </div>
+      {syncedSrcs && syncedSrcs.length > 1 && <TimelineSparks />}
       </div>
 
       <div className="mt-3 text-center">
@@ -454,103 +496,13 @@ export default async function NewArrivalsHome() {
         </div>
       </div>
 
-      <section className="relative z-10 flex w-full max-w-full flex-col items-center overflow-x-hidden px-4 pb-10 pt-24 sm:pt-10">
-
-        {SHOW_LIFE_SUCKS_HERO && (
-          <>
-            {/* ── Layered "LIFE SUCKS" hero art ────────────────────── */}
-            {/* The maroon/pink art is drawn for light garments, so it sits on a
-                warm cream plate for contrast. Both PNGs share the same 1080²
-                canvas, so stacking them reconstructs the full composition while
-                each layer floats independently. */}
-            <div className="relative w-3/4 max-w-[520px] animate-fadeIn sm:w-full">
-              {/* Soft glow behind the plate */}
-              <div className="absolute inset-0 -z-10 scale-110 rounded-[2rem]  blur-3xl" />
-
-              {/* overflow-visible (not hidden): the lstext layer is translated up and
-                  floats, so it must be free to render past the square's top edge —
-                  otherwise its top clips at the peak of the float. No visible plate
-                  bg here, so nothing needs the rounded clip. */}
-              <div className="relative aspect-square overflow-visible rounded-[2rem]  sm:p-10">
-                <div className="relative h-full w-full">
-                  <Image
-                    fill
-                    priority
-                    alt="Life Sucks Girl"
-                    className=" object-contain"
-                    sizes="(max-width: 640px) 68vw, 520px"
-                    src="/new-arrivals/lsgirl.png"
-                  />
-                  {/* Wrapper carries the upward offset so the float animation on
-                      the image itself isn't overridden. Tune -translate-y-[…] to
-                      move the "life sucks" text higher/lower. */}
-                  <div className="absolute inset-0 -translate-y-[29%] sm:-translate-y-[35%]">
-                    <Image
-                      fill
-                      priority
-                      alt="LS Text"
-                      className="animate-float-slow object-contain"
-                      sizes="(max-width: 640px) 68vw, 520px"
-                      src="/new-arrivals/lstext.png"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Hero CTA */}
-            <div className="mt-4 flex flex-col items-center gap-4 text-center">
-              <p className={subtitle({ className: "!w-full max-w-md text-center" })}>
-                Life Sucks. Wear GS.
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Link
-                  className="inline-block rounded-lg bg-[#621600] px-8 py-3 font-semibold text-[#f3ede1] transition-transform hover:scale-105"
-                  href={HERO_CTA_HREF}
-                >
-                  Shop
-                </Link>
-                <Link
-                  className="inline-block rounded-lg border border-foreground/30 px-8 py-3 font-semibold transition-colors hover:bg-foreground/10"
-                  href="https://www.instagram.com/gsdesignresearch/"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Follow @gsdesignresearch
-                </Link>
-              </div>
-            </div>
-          </>
-        )}
+      <section className="relative z-10 flex w-full max-w-full flex-col items-center overflow-x-hidden px-4 pb-10">
 
         {/* ── Featured products + behind-the-design video ──────── */}
         {products.length > 0 && (
           <div
-            className={`w-full max-w-6xl ${SHOW_LIFE_SUCKS_HERO ? "mt-16" : ""}`}
+            className={`w-full max-w-6xl ${LEAD_WITH_LIFE_SUCKS ? "mt-16" : "pt-8 sm:pt-10"}`}
           >
-            {/* Subtle scroll prompt — a gently bobbing chevron hinting there's
-                more below. Sits over the scene, above the cream panel.
-                Decorative, so aria-hidden. Only meaningful under the Life
-                Sucks hero; with that hidden this panel IS the hero. */}
-            {SHOW_LIFE_SUCKS_HERO && (
-              <div
-                aria-hidden
-                className="mb-16 flex justify-center text-foreground/50"
-              >
-                <svg
-                  className="h-6 w-6 animate-scroll-hint"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </div>
-            )}
-
             {/* Cream panel with a maroon top-border accent — a solid plate that
                 lifts the products off the dark scene. Contained, not
                 full-bleed: this section's overflow-x-hidden sits inside the
@@ -594,6 +546,7 @@ export default async function NewArrivalsHome() {
                   column is sized to the clip's own 9:16 shape (height capped
                   so the panel fits on screen, width derived from it), so the
                   full frame shows with no crop and no black bars. */}
+              <BtdTimelineProvider cues={BTD_PHOTO_CUES}>
               <div className="hidden md:grid md:h-[min(78svh,720px)] md:grid-cols-[auto_1fr]">
                 <BtdVideo
                   className="aspect-[9/16] h-full"
@@ -613,7 +566,11 @@ export default async function NewArrivalsHome() {
                     }
                   >
                     {products.map((product) => (
-                      <ProductCard key={product._id} product={product} />
+                      <ProductCard
+                        key={product._id}
+                        product={product}
+                        syncWithVideo={product.slug === BTD_PRODUCT_SLUG}
+                      />
                     ))}
                   </div>
 
@@ -622,9 +579,64 @@ export default async function NewArrivalsHome() {
                   </div>
                 </div>
               </div>
+              </BtdTimelineProvider>
             </div>
           </div>
         )}
+
+        {/* ── Coming soon: "LIFE SUCKS" ─────────────────────────── */}
+        {/* The former hero, now a teaser below the featured panel — the art
+            only, no Shop/Follow buttons. Both PNGs share the same 1080²
+            canvas, so stacking them reconstructs the full composition while
+            each layer floats independently. Not `priority` any more: it's
+            below the fold, so it shouldn't compete with the panel above. */}
+        <div
+          className={`flex w-full flex-col items-center ${
+            LEAD_WITH_LIFE_SUCKS
+              ? // Leading: the original hero spacing. The big mobile top
+                // gap is what keeps the floating "life sucks" text (pulled
+                // up ~29% out of its box) clear of the navbar.
+                "order-first pt-24 sm:pt-10"
+              : "mt-24"
+          }`}
+        >
+          {!LEAD_WITH_LIFE_SUCKS && (
+            // Extra bottom margin: the "life sucks" text floats up out of
+            // its box and would otherwise brush the label at its peak.
+            <p className="mb-12 text-sm font-semibold uppercase tracking-[0.35em] text-foreground/70 sm:mb-6">
+              Coming Soon
+            </p>
+          )}
+
+          <div className="relative w-3/4 max-w-[520px] sm:w-full">
+            {/* overflow-visible: the lstext layer is translated up and floats,
+                so it must be free to render past the square's top edge —
+                otherwise its top clips at the peak of the float. */}
+            <div className="relative aspect-square overflow-visible sm:p-10">
+              <div className="relative h-full w-full">
+                <Image
+                  fill
+                  alt="Life Sucks Girl"
+                  className="object-contain"
+                  sizes="(max-width: 640px) 68vw, 520px"
+                  src="/new-arrivals/lsgirl.png"
+                />
+                {/* Wrapper carries the upward offset so the float animation
+                    on the image itself isn't overridden. Tune
+                    -translate-y-[…] to move the "life sucks" text. */}
+                <div className="absolute inset-0 -translate-y-[29%] sm:-translate-y-[35%]">
+                  <Image
+                    fill
+                    alt="LS Text"
+                    className="animate-float-slow object-contain"
+                    sizes="(max-width: 640px) 68vw, 520px"
+                    src="/new-arrivals/lstext.png"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Instagram Link */}
         <div className="mt-28 bottom-4">

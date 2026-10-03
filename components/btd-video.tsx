@@ -2,6 +2,7 @@
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
+import { useReportBtdTime } from "@/components/btd-timeline";
 import { CardActiveContext } from "@/components/swipe-card-stack";
 
 interface BtdVideoProps {
@@ -58,6 +59,9 @@ export default function BtdVideo({
       }
     }, CONTROLS_HIDE_MS);
   }, []);
+
+  // Drives the synced product photos on desktop; undefined elsewhere.
+  const reportTime = useReportBtdTime();
 
   // Swiped to the back of a card stack: stop talking.
   const isFrontCard = useContext(CardActiveContext);
@@ -176,6 +180,7 @@ export default function BtdVideo({
           setStarted(false);
           setPlaying(false);
           setCurrent(0);
+          reportTime?.(0);
           videoRef.current?.load();
         }}
         onPause={() => {
@@ -184,6 +189,9 @@ export default function BtdVideo({
         }}
         onPlay={() => setPlaying(true)}
         onTimeUpdate={(e) => {
+          // Seeks fire timeupdate too, so scrubbing keeps the synced
+          // photos in step even while the progress UI is held.
+          reportTime?.(e.currentTarget.currentTime);
           if (!scrubbing) setCurrent(e.currentTarget.currentTime);
         }}
       />
