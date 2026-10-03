@@ -129,6 +129,12 @@ export default async function RootLayout({
     siteProtection.enabled && siteProtection.password
       ? accessKeyFor(siteProtection.password)
       : null;
+  // `next dev` skips the gate so local work isn't stuck behind the live
+  // password (dev reads the production dataset, so it would otherwise follow
+  // the Studio toggle). NODE_ENV is fixed at build time, so `next build` —
+  // and therefore Netlify — always honours the Sanity setting.
+  const siteGateEnabled =
+    siteProtection.enabled && process.env.NODE_ENV !== "development";
 
   return (
     <html suppressHydrationWarning lang="en">
@@ -152,7 +158,7 @@ export default async function RootLayout({
           }}
         >
           <SkuProvider>
-            <SiteProtection enabled={siteProtection.enabled} requiredKey={siteAccessKey}>
+            <SiteProtection enabled={siteGateEnabled} requiredKey={siteAccessKey}>
               <div className="relative flex flex-col h-screen">
                 {spendCampaign && spendCampaign.showBanner !== false && (
                   <SpendCampaignBanner campaign={spendCampaign} />
