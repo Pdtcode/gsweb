@@ -519,13 +519,17 @@ export default async function NewArrivalsHome() {
                   panel on top, the behind-the-design video peeking out behind
                   it at full section width. */}
               <SwipeCardStack
-                className="md:hidden"
+                // Height-aware width: the 9:16 deck is capped at (viewport
+                // height − ~290px) tall, so on any phone the dots, hint and
+                // the "Coming Soon" label below still land on the first
+                // screen without scrolling. Tall phones barely change.
+                className="mx-auto w-full max-w-[calc((100svh-290px)*9/16)] md:hidden"
                 labels={[...products.map((p) => p.name), "Behind the Design"]}
               >
                 {products.map((product) => (
                   <div
                     key={product._id}
-                    className="flex h-full w-full flex-col items-center justify-center border-t-4 border-[#621600] bg-[#f3ede1] px-8"
+                    className="flex h-full w-full flex-col items-center justify-center border-t-4 border-[#621600] bg-[#f3ede1] px-4 min-[380px]:px-8"
                   >
                     <ProductCard product={product} />
                     <div className="mt-8 text-center">
@@ -597,7 +601,8 @@ export default async function NewArrivalsHome() {
                 // gap is what keeps the floating "life sucks" text (pulled
                 // up ~29% out of its box) clear of the navbar.
                 "order-first pt-24 sm:pt-10"
-              : "mt-24"
+              : // Tight on mobile so the label is visible on first load.
+                "mt-10 sm:mt-24"
           }`}
         >
           {!LEAD_WITH_LIFE_SUCKS && (

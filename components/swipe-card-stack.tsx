@@ -141,7 +141,7 @@ export default function SwipeCardStack({
       {/* Square dots + a hint naming what's behind the current card. Dots
           are real buttons, so the deck works without swiping too. They sit
           on the page background, so they follow the theme foreground. */}
-      <div className="mt-8 flex flex-col items-center gap-3">
+      <div className="mt-6 flex flex-col items-center gap-3">
         <div className="flex gap-2">
           {cards.map((_, i) => (
             <button
