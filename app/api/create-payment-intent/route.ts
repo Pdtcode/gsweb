@@ -14,6 +14,38 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// Shown on the customer's bank statement.
+const STATEMENT_DESCRIPTOR = "GS Design Research";
+
+// Stripe is retiring `statement_descriptor` for card payments. The live account
+// (2023) is still allowed it, and it shows exactly "GS DESIGN RESEARCH". Newer
+// accounts — including the test sandbox used by preview deploys — reject it, so
+// fall back to `statement_descriptor_suffix`, which Stripe renders after the
+// account's prefix ("PTRINH* ..."). Trying the full descriptor first keeps live
+// statements unchanged until Stripe retires it there too. The rejection has no
+// error code or param, so it can only be recognised by its message.
+async function createPaymentIntent(params: Stripe.PaymentIntentCreateParams) {
+  try {
+    return await stripe.paymentIntents.create({
+      ...params,
+      statement_descriptor: STATEMENT_DESCRIPTOR,
+    });
+  } catch (error) {
+    const unsupported =
+      error instanceof Stripe.errors.StripeInvalidRequestError &&
+      /statement_descriptor parameter is not supported/.test(error.message);
+
+    if (!unsupported) throw error;
+
+    console.log("statement_descriptor rejected by this Stripe account - retrying with statement_descriptor_suffix");
+
+    return stripe.paymentIntents.create({
+      ...params,
+      statement_descriptor_suffix: STATEMENT_DESCRIPTOR,
+    });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     console.log("=== Payment Intent Request Started ===");
@@ -385,7 +417,7 @@ export async function POST(request: Request) {
       description: `Order for ${customerName || "Customer"}`,
       // receipt_email removed - using custom email service instead of Stripe receipts
       payment_method_types: ["card"],
-      statement_descriptor: "GS Design Research",
+      // statement descriptor is added by createPaymentIntent()
       shipping: effectiveShippingAddressData
         ? {
             name: customerName,
@@ -405,7 +437,7 @@ export async function POST(request: Request) {
     }
 
     // Create the payment intent
-    const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
+    const paymentIntent = await createPaymentIntent(paymentIntentParams);
 
     // Create order in the database
     try {
