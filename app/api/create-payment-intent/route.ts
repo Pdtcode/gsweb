@@ -6,6 +6,9 @@ import { client as sanityClient } from "@/sanity/lib/client";
 import { validateAndExpandBundle, type BundleExpansion } from "@/lib/bundles";
 import { getSpendDiscount } from "@/lib/spend-campaign";
 import { getSpendCampaign } from "@/lib/spend-campaign-server";
+import { getProductPrices, getPromoCode } from "@/lib/checkout-pricing-server";
+import { evaluatePromo } from "@/lib/promo";
+import { calculateServiceFee, getServiceFeePercentage } from "@/lib/service-fee";
 
 // Make sure the Stripe secret key is defined
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -51,13 +54,26 @@ export async function POST(request: Request) {
     console.log("=== Payment Intent Request Started ===");
     const requestBody = await request.json();
     console.log("Request body:", JSON.stringify(requestBody, null, 2));
-    const { items, shipping, metadata, discount, serviceFee } = requestBody;
+    // Only the promo CODE is read from `discount`, and `serviceFee` is ignored:
+    // every amount below is worked out here. `expectedTotal` is what the
+    // checkout page showed — used only to stop before charging a different one.
+    const { items, shipping, metadata, discount, expectedTotal } = requestBody;
     const { deliveryMethod, pickupLocationId, pickupLocationName, shippingApartment } = requestBody;
 
-    if (!items || !items.length) {
+    if (!Array.isArray(items) || !items.length) {
       console.error("No items provided in request");
       return NextResponse.json(
         { error: "Items are required" },
+        { status: 400 },
+      );
+    }
+
+    // Quantities come from the client too. A zero, fractional or negative one
+    // would shrink the subtotal (and the fee) without touching stock.
+    if (!items.every((item: any) => Number.isInteger(item?.quantity) && item.quantity >= 1)) {
+      console.error("Invalid item quantity in request");
+      return NextResponse.json(
+        { error: "Every item needs a quantity of at least 1" },
         { status: 400 },
       );
     }
@@ -172,6 +188,37 @@ export async function POST(request: Request) {
       console.log(
         `✅ Bundle "${item.name}" verified at $${item.price} → ${result.expansion.lines.length} component row(s)`,
       );
+    }
+
+    // --- Product prices ---------------------------------------------------
+    // Plain lines are re-priced from Sanity the same way bundles are above.
+    // The cart's price is whatever was current when the item was added (or
+    // whatever someone typed into the request), so it is never charged.
+    // A line with no id has nothing to look up and is rejected, not trusted.
+    const prices =
+      plainProductIds.length > 0 ? await getProductPrices(plainProductIds) : new Map<string, number>();
+
+    for (const item of items) {
+      if (item.bundle) continue;
+
+      const price = item.id ? prices.get(item.id) : undefined;
+
+      if (price === undefined) {
+        console.error(`❌ CHECKOUT BLOCKED - no Sanity price for cart item "${item.name}" (${item.id})`);
+
+        return NextResponse.json(
+          {
+            error: `${item.name || "An item in your cart"} is no longer available. Please remove it from your cart.`,
+          },
+          { status: 400 },
+        );
+      }
+
+      if (price !== item.price) {
+        console.log(`💲 "${item.name}" re-priced from $${item.price} (cart) to $${price} (Sanity)`);
+      }
+
+      item.price = price;
     }
 
     // Validate inventory before processing payment
@@ -343,8 +390,31 @@ export async function POST(request: Request) {
       0,
     );
 
-    // Apply discount if provided
-    const discountAmount = discount?.amount || 0;
+    // Promo code: the client names the code; the code is re-read from Sanity
+    // and its discount (items and service fee) worked out here, by the same
+    // rules /api/validate-promo previews with. A code that has stopped
+    // applying since it was entered fails the checkout rather than being
+    // silently dropped, so the customer is never charged more than they saw
+    // without being told.
+    const promoCode = typeof discount?.code === "string" ? discount.code.trim() : "";
+    let discountAmount = 0;
+    let promoServiceFeeDiscount = null;
+
+    if (promoCode) {
+      const promo = evaluatePromo(await getPromoCode(promoCode), subtotal);
+
+      if (!promo.ok) {
+        console.log(`❌ CHECKOUT BLOCKED - promo "${promoCode}": ${promo.error}`);
+
+        return NextResponse.json(
+          { error: `${promo.error}. Please remove the code and try again.` },
+          { status: 400 },
+        );
+      }
+
+      discountAmount = promo.discountAmount;
+      promoServiceFeeDiscount = promo.serviceFeeDiscount;
+    }
 
     // Site-wide Spend & Save campaign: worked out here from the items subtotal
     // (bundles already re-priced above), never taken from the client. It
@@ -355,12 +425,37 @@ export async function POST(request: Request) {
 
     const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount - campaignDiscount);
 
-    // Apply service fee calculations
-    const serviceFeeAmount = serviceFee?.finalServiceFee || 0;
-    const baseServiceFee = serviceFee?.baseServiceFee || 0;
-    const serviceFeeDiscount = serviceFee?.serviceFeeDiscount || 0;
+    // Service fee: on the pre-discount subtotal (§5 of CLAUDE.md), less any
+    // fee discount the promo code grants. Never from the client — it is also
+    // the amount the platform keeps via application_fee_amount.
+    const {
+      baseServiceFee,
+      serviceFeeDiscount,
+      finalServiceFee: serviceFeeAmount,
+    } = calculateServiceFee(subtotal, promoServiceFeeDiscount ?? undefined);
 
     const total = subtotalAfterDiscount + serviceFeeAmount;
+
+    // The checkout page sends the total it showed. If a price, promo code or
+    // the Spend & Save offer changed since then, stop BEFORE creating the
+    // payment or the order and hand back the real figures so the page can
+    // update and let the customer decide.
+    if (typeof expectedTotal === "number" && Math.abs(expectedTotal - total) >= 0.01) {
+      console.log(`⚠️ Total changed: page showed $${expectedTotal.toFixed(2)}, server computes $${total.toFixed(2)}`);
+
+      return NextResponse.json(
+        {
+          error: "Your total has changed",
+          totalChanged: true,
+          total,
+          discountAmount,
+          campaignDiscount,
+          // In cart order, so the page can update each line's price
+          prices: items.map((item: any) => ({ id: item.id, price: item.price })),
+        },
+        { status: 409 },
+      );
+    }
 
     // Shipping cost (optional, could be zero)
     const shippingCost = shipping?.cost || 0;
@@ -389,13 +484,13 @@ export async function POST(request: Request) {
         ...metadata,
         subtotal: subtotal.toString(),
         discount_amount: discountAmount.toString(),
-        discount_code: discount?.code || "",
+        discount_code: promoCode,
         campaign_discount: campaignDiscount.toString(),
         campaign_name: campaignName || "",
         service_fee_base: baseServiceFee.toString(),
         service_fee_discount: serviceFeeDiscount.toString(),
         service_fee_final: serviceFeeAmount.toString(),
-        service_fee_percentage: serviceFee?.percentage?.toString() || "5",
+        service_fee_percentage: getServiceFeePercentage().toString(),
         total: total.toString(),
         shipping_cost: shippingCost.toString(),
         item_count: items.length.toString(),

@@ -38,7 +38,7 @@ interface ServiceFeeDiscount {
 }
 
 export default function CheckoutPage() {
-  const { cart, clearCart, getCartTotal } = useCart();
+  const { cart, clearCart, getCartTotal, applyServerPrices } = useCart();
   const { user } = useAuth();
   const [stripe, setStripe] = useState<any>(null);
   const [elements, setElements] = useState<any>(null);
@@ -175,7 +175,8 @@ export default function CheckoutPage() {
     const subtotal = getCartTotal();
     const discount = calculateDiscount();
     const serviceFeeCalc = getServiceFeeCalculation();
-    return Math.max(0, (subtotal - discount - getCampaignDiscount()) + serviceFeeCalc.finalServiceFee);
+    // Discounts reduce the items only, never the fee — same as the server.
+    return Math.max(0, subtotal - discount - getCampaignDiscount()) + serviceFeeCalc.finalServiceFee;
   };
 
   const handlePayment = async () => {
@@ -272,20 +273,11 @@ export default function CheckoutPage() {
           shipping: {
             cost: 0,
           },
-          discount: appliedDiscount ? {
-            code: appliedDiscount.code,
-            type: appliedDiscount.type,
-            value: appliedDiscount.value,
-            amount: calculateDiscount(),
-          } : undefined,
-          serviceFee: {
-            percentage: getServiceFeePercentage(),
-            ...getServiceFeeCalculation(),
-            discountApplied: serviceFeeDiscount ? {
-              type: serviceFeeDiscount.type,
-              value: serviceFeeDiscount.value
-            } : undefined
-          },
+          // The server prices everything itself — item prices, the promo
+          // discount and the service fee. It only needs the code, plus the
+          // total shown here so it can refuse to charge a different one.
+          discount: appliedDiscount ? { code: appliedDiscount.code } : undefined,
+          expectedTotal: getDiscountedTotal(),
           deliveryMethod,
           pickupLocationId: deliveryMethod === "pickup" ? selectedPickupLocationId : undefined,
           pickupLocationName: deliveryMethod === "pickup"
@@ -307,30 +299,38 @@ export default function CheckoutPage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to create payment intent: ${response.statusText}`,
-        );
-      }
+      const result = await response.json().catch(() => null);
 
-      const { clientSecret, total: chargedTotal } = await response.json();
+      // A price, the promo code or the Spend & Save offer changed since this
+      // page was rendered. Nothing has been charged or ordered yet: pull in
+      // the real figures so the summary matches, and let the customer decide.
+      if (response.status === 409 && result?.totalChanged) {
+        if (Array.isArray(result.prices)) applyServerPrices(result.prices);
 
-      // The server applies the Spend & Save discount as it stands right now.
-      // If that differs from what the customer was shown (the offer just
-      // started or ended), stop and show the real figure instead of charging it.
-      const shownTotal = getDiscountedTotal();
+        if (appliedDiscount && typeof result.discountAmount === "number") {
+          setAppliedDiscount({ ...appliedDiscount, discountAmount: result.discountAmount });
+        }
 
-      if (typeof chargedTotal === "number" && Math.abs(chargedTotal - shownTotal) >= 0.01) {
         const res = await fetch("/api/spend-campaign").catch(() => null);
         const data = res ? await res.json().catch(() => null) : null;
 
         setSpendCampaign(data?.campaign ?? null);
         setPaymentError(
-          `Your total has changed to $${chargedTotal.toFixed(2)} because the Spend & Save offer changed. Please review your order and pay again.`,
+          `Your total has changed to $${Number(result.total).toFixed(2)} because a price or offer changed. Please review your order and pay again.`,
         );
 
         return;
       }
+
+      if (!response.ok || !result?.clientSecret) {
+        // Server messages here are written for the customer (out of stock,
+        // retired product, promo code no longer valid).
+        setPaymentError(result?.error || "We couldn't start your payment. Please try again.");
+
+        return;
+      }
+
+      const { clientSecret } = result;
 
       // Confirm payment
       const { error, paymentIntent } = await stripe.confirmCardPayment(

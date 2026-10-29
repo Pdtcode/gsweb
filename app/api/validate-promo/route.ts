@@ -2,29 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { client } from "@/sanity/lib/client";
 import { promoCodeByCodeQuery } from "@/lib/queries";
 import { rateLimiter, getRealIP, createSecureIdentifier, validatePromoCodeFormat } from "@/lib/rate-limit";
-
-interface PromoCode {
-  _id: string;
-  code: string;
-  title: string;
-  description: string;
-  type: "percentage" | "fixed" | "freeShipping";
-  value: number;
-  isActive: boolean;
-  validFrom?: string;
-  validUntil?: string;
-  minOrderAmount?: number;
-  maxDiscount?: number;
-  usageLimit?: number;
-  usedCount?: number;
-  customerLimit?: number;
-  applicableProducts?: Array<{ _id: string; name: string; slug: string }>;
-  applicableCategories?: Array<{ _id: string; title: string; slug: string }>;
-  discountsServiceFee?: boolean;
-  serviceFeeDiscountType?: "percentage" | "fixed";
-  serviceFeeDiscountValue?: number;
-  notes?: string;
-}
+import { evaluatePromo, type PromoCode } from "@/lib/promo";
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,70 +60,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch promo code from Sanity
-    const promo: PromoCode = await client.fetch(promoCodeByCodeQuery, {
+    const promo: PromoCode | null = await client.fetch(promoCodeByCodeQuery, {
       code: code.toUpperCase()
     });
 
-    if (!promo) {
+    // Same rules checkout charges by (lib/promo.ts)
+    const evaluation = evaluatePromo(promo, orderTotal);
+
+    if (!promo || !evaluation.ok) {
       return NextResponse.json(
-        { error: "Invalid promo code" },
-        { status: 404 }
+        { error: evaluation.ok ? "Invalid promo code" : evaluation.error },
+        { status: promo ? 400 : 404 }
       );
     }
 
-    if (!promo.isActive) {
-      return NextResponse.json(
-        { error: "This promo code is no longer active" },
-        { status: 400 }
-      );
-    }
-
-    // Check if promo code is still valid based on dates
-    if (promo.validFrom && new Date() < new Date(promo.validFrom)) {
-      return NextResponse.json(
-        { error: "This promo code is not yet active" },
-        { status: 400 }
-      );
-    }
-
-    if (promo.validUntil && new Date() > new Date(promo.validUntil)) {
-      return NextResponse.json(
-        { error: "This promo code has expired" },
-        { status: 400 }
-      );
-    }
-
-    // Check minimum order amount
-    if (promo.minOrderAmount && orderTotal < promo.minOrderAmount) {
-      return NextResponse.json(
-        {
-          error: `Minimum order amount of $${promo.minOrderAmount} required for this promo code`
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check usage limits
-    if (promo.usageLimit && promo.usedCount && promo.usedCount >= promo.usageLimit) {
-      return NextResponse.json(
-        { error: "This promo code has reached its usage limit" },
-        { status: 400 }
-      );
-    }
-
-    // Calculate discount
-    let discountAmount = 0;
-    if (promo.type === "percentage") {
-      discountAmount = (orderTotal * promo.value) / 100;
-      if (promo.maxDiscount) {
-        discountAmount = Math.min(discountAmount, promo.maxDiscount);
-      }
-    } else if (promo.type === "fixed") {
-      discountAmount = promo.value;
-    } else if (promo.type === "freeShipping") {
-      // Free shipping - in this case, you might want to handle shipping costs
-      discountAmount = 0; // or whatever your shipping cost is
-    }
+    const { discountAmount, serviceFeeDiscount } = evaluation;
 
     // Reset brute force counter on successful validation
     rateLimiter.checkBruteForce(identifier, true);
@@ -175,15 +104,6 @@ export async function POST(request: NextRequest) {
     } catch (auditError) {
       // Don't fail the validation if audit logging fails
       console.error('Failed to create promo usage record:', auditError);
-    }
-
-    // Prepare service fee discount info if applicable
-    let serviceFeeDiscount = null;
-    if (promo.discountsServiceFee && promo.serviceFeeDiscountType && promo.serviceFeeDiscountValue !== undefined) {
-      serviceFeeDiscount = {
-        type: promo.serviceFeeDiscountType,
-        value: promo.serviceFeeDiscountValue
-      };
     }
 
     return NextResponse.json({

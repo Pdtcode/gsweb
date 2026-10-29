@@ -79,6 +79,7 @@ interface CartContextType {
   removeFromCart: (productId: string, variantKey?: string) => void;
   updateQuantity: (productId: string, quantity: number, variantKey?: string) => void;
   clearCart: () => void;
+  applyServerPrices: (prices: Array<{ id: string; price: number }>) => void;
   getCartTotal: () => number;
   getCartItemsCount: () => number;
 }
@@ -328,6 +329,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCart([]);
   };
 
+  // Checkout re-prices every line from Sanity and, if the total moved, sends
+  // the real prices back in cart order. Write them over the remembered ones so
+  // the cart shows what will actually be charged. A line is only touched when
+  // its id still matches, in case the cart changed while the request was out.
+  const applyServerPrices = (prices: Array<{ id: string; price: number }>) => {
+    setCart((prevCart) =>
+      prevCart.map((item, index) => {
+        const server = prices[index];
+
+        if (!server || server.id !== item.product._id || server.price === item.product.price) {
+          return item;
+        }
+
+        const product = { ...item.product, price: server.price };
+
+        return item.bundle
+          ? { ...item, product, bundle: { ...item.bundle, bundlePrice: server.price } }
+          : { ...item, product };
+      }),
+    );
+  };
+
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
       return total + item.product.price * item.quantity;
@@ -347,6 +370,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removeFromCart,
         updateQuantity,
         clearCart,
+        applyServerPrices,
         getCartTotal,
         getCartItemsCount,
       }}
