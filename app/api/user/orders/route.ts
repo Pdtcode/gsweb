@@ -1,27 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getUserOrders } from "@/app/actions/orderActions";
-import prisma from "@/lib/prismaClient";
+import { findUserForToken, verifyFirebaseRequest } from "@/lib/auth/verify-request";
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the user email from the query parameter
-    const { searchParams } = new URL(request.url);
-    const email = searchParams.get("email");
+    // The customer is identified by their verified login token only. This
+    // route used to trust an ?email= parameter, which let anyone read any
+    // customer's orders (name, phone, address) by typing their email.
+    const token = await verifyFirebaseRequest(request);
 
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
+    const user = await findUserForToken(token);
 
+    // No orders yet, or an unverified email that can't claim guest orders
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ orders: [] });
     }
 
     // Get ONLY this user's orders

@@ -19,6 +19,7 @@ import {
   signInWithRedirect,
   getRedirectResult,
   getIdToken,
+  sendEmailVerification,
 } from "firebase/auth";
 
 import { auth } from "@/lib/firebase";
@@ -138,6 +139,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
+
+    // Orders placed as a guest under this email only show up once the address
+    // is verified (lib/auth/verify-request.ts). A failed send must not block
+    // sign-up — the orders page offers a resend.
+    try {
+      await sendEmailVerification(result.user);
+    } catch (error) {
+      console.warn(
+        "Could not send verification email:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
 
     // Sync new user with database
     await syncUser(result.user);

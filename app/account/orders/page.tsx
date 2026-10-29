@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { sendEmailVerification } from "firebase/auth";
 
 import { useAuth } from "@/context/AuthContext";
 import { formatOrderDate, getOrderStatusText } from "@/lib/orderUtils";
@@ -29,10 +30,52 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  const { user } = useAuth();
+  const { user, syncUser } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Bumped after the user verifies their email, to refetch with a fresh token
+  const [reloadKey, setReloadKey] = useState(0);
+  const [emailVerified, setEmailVerified] = useState(true);
+  const [verifyMessage, setVerifyMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEmailVerified(user?.emailVerified ?? true);
+  }, [user]);
+
+  // Guest orders under this email are hidden until the email is verified
+  // (lib/auth/verify-request.ts), so say so instead of "no orders yet".
+  const resendVerification = async () => {
+    if (!user) return;
+
+    try {
+      await sendEmailVerification(user);
+      setVerifyMessage(`Verification email sent to ${user.email}.`);
+    } catch {
+      setVerifyMessage("Couldn't send the email. Please try again in a few minutes.");
+    }
+  };
+
+  const checkVerified = async () => {
+    if (!user) return;
+
+    await user.reload();
+
+    if (!user.emailVerified) {
+      setVerifyMessage("Your email isn't verified yet. Check your inbox for the link.");
+
+      return;
+    }
+
+    // The old token still says email_verified: false — force a new one, then
+    // let /api/user link the guest orders to this login
+    await user.getIdToken(true);
+    await syncUser(user);
+    setEmailVerified(true);
+    setVerifyMessage(null);
+    setLoading(true);
+    setReloadKey((key) => key + 1);
+  };
 
   useEffect(() => {
     async function fetchOrders() {
@@ -51,7 +94,7 @@ export default function OrdersPage() {
 
         const token = await user.getIdToken();
         const response = await fetch(
-          `/api/user/orders?email=${encodeURIComponent(email)}`,
+          "/api/user/orders",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -79,7 +122,7 @@ export default function OrdersPage() {
     if (user) {
       fetchOrders();
     }
-  }, [user]);
+  }, [user, reloadKey]);
 
   // If user is not authenticated, show login message
   if (!user && !loading) {
@@ -96,6 +139,24 @@ export default function OrdersPage() {
   return (
     <div className=" shadow rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-6">My Orders</h2>
+
+      {!emailVerified && (
+        <div className="mb-6 border rounded-lg p-4 text-sm">
+          <p>
+            Verify <span className="font-medium">{user?.email}</span> to see
+            orders you placed as a guest with that address.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-4">
+            <button className="underline" type="button" onClick={resendVerification}>
+              Resend email
+            </button>
+            <button className="underline" type="button" onClick={checkVerified}>
+              I&apos;ve verified it
+            </button>
+          </div>
+          {verifyMessage && <p className="mt-3 text-gray-500">{verifyMessage}</p>}
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-12">

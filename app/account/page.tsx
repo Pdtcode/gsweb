@@ -31,18 +31,14 @@ export default function AccountPage() {
   }, [user]);
 
   const fetchContactInfo = async () => {
-    if (!user?.uid) return;
+    if (!user) return;
 
     try {
-      // First find the user by Firebase UID
-      const userResponse = await fetch(`/api/user?firebaseUid=${user.uid}`);
-      if (!userResponse.ok) return;
-
-      const userData = await userResponse.json();
-      if (!userData.success || !userData.user) return;
-
-      // Then fetch contact info
-      const contactResponse = await fetch(`/api/user/contact?userId=${userData.user.id}`);
+      // The API identifies the user from the login token
+      const token = await user.getIdToken();
+      const contactResponse = await fetch("/api/user/contact", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (contactResponse.ok) {
         const contactData = await contactResponse.json();
         if (contactData.success) {
@@ -65,17 +61,18 @@ export default function AccountPage() {
 
   const handleUpdateContact = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userContactInfo?.id) return;
+    if (!user || !userContactInfo?.id) return;
 
     setLoading(true);
     try {
+      const token = await user.getIdToken();
       const response = await fetch("/api/user/contact", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: userContactInfo.id,
           phoneNumber: phoneNumber.trim() || null,
           instagramHandle: instagramHandle.trim() || null,
         }),

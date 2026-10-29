@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Verify the Firebase token
     const decodedToken = await auth().verifyIdToken(token);
-    const { uid, email, name } = decodedToken;
+    const { uid, email, name, email_verified } = decodedToken;
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -36,6 +36,20 @@ export async function POST(request: NextRequest) {
     });
 
     if (user) {
+      // An existing row is usually a guest created at checkout, with that
+      // customer's orders. Only a login whose email Firebase has verified may
+      // claim it: email/password sign-up does not verify, so otherwise anyone
+      // could sign up with a customer's address and inherit their orders.
+      const claimable =
+        user.firebaseUid === uid || (!user.firebaseUid && email_verified);
+
+      if (!claimable) {
+        return NextResponse.json(
+          { error: "Verify your email address to link your previous orders" },
+          { status: 403 },
+        );
+      }
+
       // If user exists but doesn't have Firebase UID, update it
       if (!user.firebaseUid) {
         user = await prisma.user.update({
