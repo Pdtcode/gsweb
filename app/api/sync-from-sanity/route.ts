@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 
 import prisma from "@/lib/prismaClient";
+import { rejectWithoutSyncKey } from "@/lib/auth/sync-key";
 
 const sanityClient = createClient({
   projectId: "arbp7h2s",
@@ -29,7 +30,10 @@ export async function OPTIONS() {
   });
 }
 
-export async function POST() {
+export async function POST(request: Request) {
+  const denied = rejectWithoutSyncKey(request);
+  if (denied) return denied;
+
   console.log('=== SYNC FROM SANITY START ===');
   console.log('Timestamp:', new Date().toISOString());
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { syncOrderToSanity } from "@/app/actions/orderActions";
+import { rejectWithoutSyncKey } from "@/lib/auth/sync-key";
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -13,6 +14,9 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: Request) {
+  const denied = rejectWithoutSyncKey(request);
+  if (denied) return denied;
+
   try {
     const { orderId } = await request.json();
 
