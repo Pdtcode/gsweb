@@ -9,6 +9,7 @@ import { getSpendCampaign } from "@/lib/spend-campaign-server";
 import { getProductPrices, getPromoCode } from "@/lib/checkout-pricing-server";
 import { evaluatePromo } from "@/lib/promo";
 import { calculateServiceFee, getServiceFeePercentage } from "@/lib/service-fee";
+import { connectSplitParams } from "@/lib/connect-split";
 
 // Make sure the Stripe secret key is defined
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -522,14 +523,11 @@ export async function POST(request: Request) {
       capture_method: "automatic",
     };
 
-    // Add Stripe Connect parameters if connected account is set up
-    if (connectedAccountId && platformFeeAmount > 0) {
-      console.log(`🔗 Stripe Connect enabled - routing payment to connected account ${connectedAccountId}`);
-      paymentIntentParams.application_fee_amount = platformFeeAmount;
-      paymentIntentParams.transfer_data = {
-        destination: connectedAccountId,
-      };
-    }
+    // Route the payment to the client's connected account, if one is set up
+    Object.assign(
+      paymentIntentParams,
+      connectSplitParams(connectedAccountId, platformFeeAmount),
+    );
 
     // Create the payment intent
     const paymentIntent = await createPaymentIntent(paymentIntentParams);
