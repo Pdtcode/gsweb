@@ -139,10 +139,15 @@ body:has(.grails) {
   color: #f3ede1;
 }
 
+/* Sized to the screen with the browser's address bar hidden, which is how it is
+   while scrolling down, so the next chapter never peeks in. lvh stays fixed as
+   the bar slides in and out, so nothing jumps. */
 .grail-opener,
 .grail-chapter {
+  --toolbar-room: calc(100lvh - 100svh);
   position: relative;
-  min-height: 100svh;
+  min-height: 100vh;
+  min-height: 100lvh;
   overflow: hidden;
 }
 
@@ -165,6 +170,8 @@ body:has(.grails) {
 .grail-opener-copy {
   position: relative;
   padding: 1.5rem;
+  /* Centres the words in the part that's visible when the bar is showing */
+  margin-bottom: var(--toolbar-room);
 }
 
 .grail-opener-statement {
@@ -345,8 +352,10 @@ body:has(.grails) {
   opacity: 1;
 }
 
+/* The bottom padding keeps the words clear of the address bar when it's showing */
 .grail-copy {
   padding: 1.5rem;
+  padding-bottom: calc(1.5rem + var(--toolbar-room));
 }
 
 .grail-backdrop {
@@ -502,7 +511,7 @@ body:has(.grails) {
    at full height, so nothing is cropped or letterboxed */
 @media (orientation: landscape) {
   .grail-chapter {
-    --media-width: min(calc(100svh * var(--ratio)), 58vw);
+    --media-width: min(calc(100lvh * var(--ratio)), 58vw);
     display: grid;
     grid-template-columns: var(--media-width) 1fr;
     align-items: center;
@@ -526,6 +535,7 @@ body:has(.grails) {
 
   .grail-copy {
     padding: clamp(1.5rem, 5vw, 5rem);
+    padding-bottom: calc(clamp(1.5rem, 5vw, 5rem) + var(--toolbar-room));
   }
 
   .grail-headline {
