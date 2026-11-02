@@ -3,8 +3,8 @@ import Image from "next/image";
 import { groq } from "next-sanity";
 
 import TextureOverlay from "@/components/texture-overlay";
-import ThemeInstagram from "@/components/theme-instagram";
 import BtdVideo from "@/components/btd-video";
+import GrailsSection from "@/components/grails-section";
 import SwipeCardStack from "@/components/swipe-card-stack";
 import {
   BtdTimelineProvider,
@@ -13,7 +13,6 @@ import {
 } from "@/components/btd-timeline";
 import { client } from "@/sanity/lib/client";
 import { urlForImage } from "@/sanity/lib/image";
-import { productImageUrl } from "@/lib/product-image";
 
 // The two products to spotlight beneath the hero. Change these slugs to
 // feature different products — data (price/image/stock) is pulled live.
@@ -32,18 +31,13 @@ const BTD_POSTER_SRC = "/btd-poster.jpg";
 // in the Studio is what decides which photo shows at each cue.
 const BTD_PRODUCT_SLUG = "gs-x-han-jan-collab";
 
-// Which block leads the page. false: the GS x Han Jan video panel is the
-// hero and the "LIFE SUCKS" art sits below it as a Coming Soon teaser. true:
-// the "LIFE SUCKS" art is the hero again (no Coming Soon label) with the
-// panel below. Each block carries its own top spacing for when it leads, so
-// flipping this needs no other edits.
-const LEAD_WITH_LIFE_SUCKS = false;
 const BTD_PHOTO_CUES = [4, 35];
 
 interface FeaturedProduct {
   _id: string;
   name: string;
   slug: string;
+  description?: string;
   price: number;
   comparePrice?: number;
   inStock: boolean;
@@ -61,6 +55,7 @@ const featuredHomeProductsQuery = groq`*[_type == "product" && slug.current in $
   "slug": slug.current,
   price,
   comparePrice,
+  description,
   inStock,
   mainImage,
   imageDisplay,
@@ -83,94 +78,13 @@ async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
   }
 }
 
-function ProductCard({
-  product,
-  syncWithVideo = false,
-}: {
-  product: FeaturedProduct;
-  // Swap the photo in step with the behind-the-design video (desktop).
-  syncWithVideo?: boolean;
-}) {
-  const imageUrl = product.mainImage
-    ? productImageUrl(product.mainImage, 1000, product.imageDisplay)
-    : null;
-  // Front first, then one gallery image per cue.
-  const syncedSrcs =
-    syncWithVideo && imageUrl
-      ? [
-          imageUrl,
-          ...(product.images ?? [])
-            .slice(0, BTD_PHOTO_CUES.length)
-            .map((img) => productImageUrl(img, 1000, product.imageDisplay))
-            .filter(Boolean),
-        ]
-      : null;
-  const onSale =
-    product.comparePrice != null && product.comparePrice > product.price;
-
-  return (
-    <Link
-      // Cap + center the card on mobile so the square image doesn't fill the
-      // full column width (looked too big) and cream shows around it. On sm+
-      // it fills its grid cell as before.
-      className="group mx-auto block w-full max-w-[280px] sm:max-w-none"
-      href={`/store/products/${product.slug}`}
-    >
-      {/* Outer box is unclipped so the video-synced sparks can fly past the
-          photo's edges; the inner one clips the hover zoom. */}
-      <div className="relative">
-      <div className="relative aspect-square overflow-hidden bg-black/20 backdrop-blur-sm ring-1 ring-white/10">
-        {syncedSrcs && syncedSrcs.length > 1 ? (
-          <TimelineImage
-            alt={product.name}
-            className="object-cover group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 40vw"
-            srcs={syncedSrcs}
-          />
-        ) : imageUrl && (
-          <Image
-            fill
-            alt={product.name}
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 40vw"
-            src={imageUrl}
-          />
-        )}
-        {!product.inStock && (
-          <span className="absolute top-3 right-3 bg-black/80 text-white px-2 py-1 text-xs font-semibold">
-            Sold Out
-          </span>
-        )}
-        <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <span className="mb-5 inline-block bg-white px-5 py-2 text-sm font-semibold text-black">
-            Shop Now →
-          </span>
-        </div>
-      </div>
-      {syncedSrcs && syncedSrcs.length > 1 && <TimelineSparks />}
-      </div>
-
-      <div className="mt-3 text-center">
-        <h3 className="text-lg font-semibold group-hover:underline">
-          {product.name}
-        </h3>
-        <div className="flex items-center justify-center gap-2">
-          <span className="font-bold">${product.price}</span>
-          {onSale && (
-            <span className="text-sm text-gray-400 line-through">
-              ${product.comparePrice}
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
-}
+const heroPrimaryButton =
+  "inline-block bg-[#621600] px-7 py-3.5 text-center text-sm font-semibold uppercase tracking-widest text-[#f3ede1] transition-opacity hover:opacity-85";
 
 function ViewAllLink() {
   return (
     <Link
-      className="text-sm uppercase tracking-widest text-[#621600]/80 underline-offset-4 hover:underline"
+      className="text-sm uppercase tracking-widest text-[#621600] underline underline-offset-4 hover:opacity-70 dark:text-[#f3ede1]"
       href="/store"
     >
       View all products
@@ -178,8 +92,118 @@ function ViewAllLink() {
   );
 }
 
+// Homepage-only cutouts of the collab shirt, so it sits on the site's own
+// background. The store and product pages keep the Studio's photos. Front first,
+// then one image per BTD_PHOTO_CUES cue.
+const HERO_CUTOUTS = [
+  "/grails/collab-front.webp",
+  "/grails/collab-back.webp",
+  "/grails/collab-art.webp",
+];
+
+function HeroPhoto({
+  product,
+  syncWithVideo = false,
+  className = "",
+}: {
+  product: FeaturedProduct;
+  // Swap the photo in step with the behind-the-design video (desktop).
+  syncWithVideo?: boolean;
+  className?: string;
+}) {
+  return (
+    <Link
+      className={`group relative block ${className}`}
+      href={`/store/products/${product.slug}`}
+    >
+      {/* Outer box is unclipped so the video-synced sparks can fly past the
+          photo's edges; the inner one clips the hover zoom. */}
+      <div className="absolute inset-3 overflow-hidden md:inset-6">
+        {syncWithVideo ? (
+          <TimelineImage
+            alt={product.name}
+            className="object-contain group-hover:scale-105"
+            sizes="(max-width: 1024px) 60vw, 40vw"
+            srcs={HERO_CUTOUTS}
+          />
+        ) : (
+          <Image
+            fill
+            priority
+            alt={product.name}
+            className="object-contain transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 80vw, 40vw"
+            src={HERO_CUTOUTS[0]}
+          />
+        )}
+      </div>
+      {!product.inStock && (
+        <span className="absolute right-3 top-3 bg-black/80 px-2 py-1 text-xs font-semibold text-white">
+          Sold Out
+        </span>
+      )}
+      {syncWithVideo && <TimelineSparks />}
+    </Link>
+  );
+}
+
+// The call to action. Follows the theme, like the stage behind it.
+function HeroCopy({
+  product,
+  compact = false,
+}: {
+  product: FeaturedProduct;
+  // The swipe deck's card is small: no description, and centered.
+  compact?: boolean;
+}) {
+  const onSale =
+    product.comparePrice != null && product.comparePrice > product.price;
+
+  return (
+    <div className={compact ? "text-center" : ""}>
+      {product.inStock && (
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#621600] dark:text-[#f3ede1]">
+          Featured
+        </p>
+      )}
+      <h2
+        className={`mt-2 font-udmincho font-semibold uppercase leading-[1.05] ${
+          compact ? "text-2xl" : "text-3xl lg:text-5xl"
+        }`}
+      >
+        {product.name}
+      </h2>
+      {!compact && product.description && (
+        <p className="hero-description mt-3 leading-relaxed">
+          {product.description}
+        </p>
+      )}
+      <p className={`font-bold ${compact ? "mt-1 text-lg" : "mt-3 text-2xl"}`}>
+        ${product.price}
+        {onSale && (
+          <span className="ml-2 text-base font-normal line-through opacity-60">
+            ${product.comparePrice}
+          </span>
+        )}
+      </p>
+      <Link
+        className={`${heroPrimaryButton} ${compact ? "mt-3 w-full" : "mt-5"}`}
+        href={`/store/products/${product.slug}`}
+      >
+        {product.inStock ? "Buy the shirt so I can afford a gf" : "See the collab"}
+      </Link>
+      <div className={compact ? "mt-3" : "mt-5"}>
+        <ViewAllLink />
+      </div>
+    </div>
+  );
+}
+
 export default async function NewArrivalsHome() {
   const products = await getFeaturedProducts();
+  // The hero sells one shirt: the collab, while it's live.
+  const heroProduct =
+    products.find((p) => p.slug === BTD_PRODUCT_SLUG) ?? products[0];
 
   return (
     <>
@@ -496,62 +520,44 @@ export default async function NewArrivalsHome() {
         </div>
       </div>
 
-      <section className="relative z-10 flex w-full max-w-full flex-col items-center overflow-x-hidden px-4 pb-10">
+      {/* Phones: the swipe deck on the page's scene. Larger screens: a full-width
+          stage. The body clips the 100vw overflow (see .grails in globals.css). */}
+      <section className="relative z-10 flex w-full max-w-full flex-col items-center overflow-x-hidden px-4 pb-10 md:-mt-4 md:ml-[calc(50%-50vw)] md:w-screen md:max-w-none md:overflow-visible md:p-0">
+        {/* Visually hidden: the page is image-led, so this is its heading for
+            search engines and screen readers */}
+        <h1 className="sr-only">
+          Grail Seekers: Limited-Edition Streetwear by GS Design Research
+        </h1>
 
-        {/* ── Featured products + behind-the-design video ──────── */}
-        {products.length > 0 && (
-          <div
-            className={`w-full max-w-6xl ${LEAD_WITH_LIFE_SUCKS ? "mt-16" : "pt-8 sm:pt-10"}`}
-          >
-            {/* Cream panel with a maroon top-border accent — a solid plate that
-                lifts the products off the dark scene. Contained, not
-                full-bleed: this section's overflow-x-hidden sits inside the
-                layout's padded container, so a w-screen breakout gets clipped
-                on both sides — the video lost its left edge and the products
-                centred on a half that was partly off-screen. Fill + text
-                colors are fixed (not theme-driven) since the panel is always
-                cream, so the dark text stays legible in both light and dark
-                mode. On mobile the panel styling switches off — there the
-                swipe deck below IS the section, and its front card carries
-                the cream + maroon border itself. */}
-            <div className="w-full text-[#2a1810] md:border-t-4 md:border-[#621600] md:bg-[#f3ede1]">
-              {/* Mobile: the whole section is a swipeable deck — the product
-                  panel on top, the behind-the-design video peeking out behind
-                  it at full section width. */}
-              <SwipeCardStack
-                // Height-aware width: the 9:16 deck is capped at (viewport
-                // height − ~290px) tall, so on any phone the dots, hint and
-                // the "Coming Soon" label below still land on the first
-                // screen without scrolling. Tall phones barely change.
-                className="mx-auto w-full max-w-[calc((100svh-290px)*9/16)] md:hidden"
-                labels={[...products.map((p) => p.name), "Behind the Design"]}
-              >
-                {products.map((product) => (
-                  <div
-                    key={product._id}
-                    className="flex h-full w-full flex-col items-center justify-center border-t-4 border-[#621600] bg-[#f3ede1] px-4 min-[380px]:px-8"
-                  >
-                    <ProductCard product={product} />
-                    <div className="mt-8 text-center">
-                      <ViewAllLink />
-                    </div>
-                  </div>
-                ))}
-                <BtdVideo
-                  className="h-full w-full"
-                  label="Behind the design: GS x Han Jan"
-                  poster={BTD_POSTER_SRC}
-                  src={BTD_VIDEO_SRC}
-                />
-              </SwipeCardStack>
+        {heroProduct && (
+          <div className="w-full max-w-6xl pt-8 text-[#2a1810] sm:pt-10 md:max-w-none md:bg-[#f3ede1] md:pt-0 dark:text-[#f3ede1] md:dark:bg-[#160c08]">
+            {/* Phones: a swipeable deck, the shirt on top and the
+                behind-the-design video peeking out behind it. Height-aware
+                width: capped at (viewport height − ~290px) tall, so the dots
+                and hint land on the first screen, with a floor so short
+                screens stay usable. */}
+            <SwipeCardStack
+              className="mx-auto w-full max-w-[max(280px,calc((100svh-290px)*9/16))] md:hidden"
+              labels={[heroProduct.name, "Behind the Design"]}
+            >
+              <div className="flex h-full w-full flex-col overflow-hidden border-t-4 border-[#621600] bg-[#f3ede1] dark:bg-[#160c08]">
+                <HeroPhoto className="min-h-0 flex-1" product={heroProduct} />
+                <div className="p-4">
+                  <HeroCopy compact product={heroProduct} />
+                </div>
+              </div>
+              <BtdVideo
+                className="h-full w-full"
+                label="Behind the design: GS x Han Jan"
+                poster={BTD_POSTER_SRC}
+                src={BTD_VIDEO_SRC}
+              />
+            </SwipeCardStack>
 
-              {/* Desktop: split panel — the video on the left, edge to edge,
-                  the product(s) centred in the space to its right. The video
-                  column is sized to the clip's own 9:16 shape (height capped
-                  so the panel fits on screen, width derived from it), so the
-                  full frame shows with no crop and no black bars. */}
-              <BtdTimelineProvider cues={BTD_PHOTO_CUES}>
-              <div className="hidden md:grid md:h-[min(78svh,720px)] md:grid-cols-[auto_1fr]">
+            {/* Larger screens: the video at its own 9:16 shape, then the shirt,
+                then the call to action, filling the first screen. */}
+            <BtdTimelineProvider cues={BTD_PHOTO_CUES}>
+              <div className="hidden md:grid md:h-[clamp(440px,calc(100svh-4rem),860px)] md:grid-cols-[auto_1fr]">
                 <BtdVideo
                   className="aspect-[9/16] h-full"
                   label="Behind the design: GS x Han Jan"
@@ -559,103 +565,24 @@ export default async function NewArrivalsHome() {
                   src={BTD_VIDEO_SRC}
                 />
 
-                <div className="flex flex-col items-center justify-center px-10 py-12">
-                  {/* A lone card is centred at roughly one column's width;
-                      two (if the hat comes back) share a 2-up grid. */}
-                  <div
-                    className={
-                      products.length === 1
-                        ? "w-full max-w-sm"
-                        : "grid w-full max-w-xl grid-cols-2 gap-6"
-                    }
-                  >
-                    {products.map((product) => (
-                      <ProductCard
-                        key={product._id}
-                        product={product}
-                        syncWithVideo={product.slug === BTD_PRODUCT_SLUG}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="mt-10 text-center">
-                    <ViewAllLink />
+                <div className="hero-stage flex min-h-0 min-w-0 flex-col">
+                  <HeroPhoto
+                    syncWithVideo
+                    className="min-h-0 flex-1"
+                    product={heroProduct}
+                  />
+                  <div className="hero-cta flex items-center p-6 lg:p-10">
+                    <HeroCopy product={heroProduct} />
                   </div>
                 </div>
               </div>
-              </BtdTimelineProvider>
-            </div>
+            </BtdTimelineProvider>
           </div>
         )}
-
-        {/* ── Coming soon: "LIFE SUCKS" ─────────────────────────── */}
-        {/* The former hero, now a teaser below the featured panel — the art
-            only, no Shop/Follow buttons. Both PNGs share the same 1080²
-            canvas, so stacking them reconstructs the full composition while
-            each layer floats independently. Not `priority` any more: it's
-            below the fold, so it shouldn't compete with the panel above. */}
-        <div
-          className={`flex w-full flex-col items-center ${
-            LEAD_WITH_LIFE_SUCKS
-              ? // Leading: the original hero spacing. The big mobile top
-                // gap is what keeps the floating "life sucks" text (pulled
-                // up ~29% out of its box) clear of the navbar.
-                "order-first pt-24 sm:pt-10"
-              : // Tight on mobile so the label is visible on first load.
-                "mt-10 sm:mt-24"
-          }`}
-        >
-          {!LEAD_WITH_LIFE_SUCKS && (
-            // Extra bottom margin: the "life sucks" text floats up out of
-            // its box and would otherwise brush the label at its peak.
-            <p className="mb-12 text-sm font-semibold uppercase tracking-[0.35em] text-foreground/70 sm:mb-6">
-              Coming Soon
-            </p>
-          )}
-
-          <div className="relative w-3/4 max-w-[520px] sm:w-full">
-            {/* overflow-visible: the lstext layer is translated up and floats,
-                so it must be free to render past the square's top edge —
-                otherwise its top clips at the peak of the float. */}
-            <div className="relative aspect-square overflow-visible sm:p-10">
-              <div className="relative h-full w-full">
-                <Image
-                  fill
-                  alt="Life Sucks Girl"
-                  className="object-contain"
-                  sizes="(max-width: 640px) 68vw, 520px"
-                  src="/new-arrivals/lsgirl.png"
-                />
-                {/* Wrapper carries the upward offset so the float animation
-                    on the image itself isn't overridden. Tune
-                    -translate-y-[…] to move the "life sucks" text. */}
-                <div className="absolute inset-0 -translate-y-[29%] sm:-translate-y-[35%]">
-                  <Image
-                    fill
-                    alt="LS Text"
-                    className="animate-float-slow object-contain"
-                    sizes="(max-width: 640px) 68vw, 520px"
-                    src="/new-arrivals/lstext.png"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Instagram Link */}
-        <div className="mt-28 bottom-4">
-          <Link
-            aria-label="Follow us on Instagram"
-            className="p-2 rounded-full transition-colors hover:bg-foreground/10 flex items-center justify-center"
-            href="https://www.instagram.com/gsdesignresearch/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <ThemeInstagram size={24} />
-          </Link>
-        </div>
       </section>
+
+      {/* The story, ending on what's coming next. Full bleed, so outside the section */}
+      <GrailsSection />
     </>
   );
 }

@@ -70,7 +70,7 @@ export const Navbar = () => {
             <ThemeLogo />
           </NextLink>
         </NavbarBrand>
-        <ul className="hidden lg:flex gap-8 justify-start ml-4">
+        <ul className="hidden sm:flex gap-8 justify-start ml-4">
           {siteConfig.navItems.map((item) => (
             <NavbarItem key={item.href}>
               <NextLink
@@ -101,10 +101,12 @@ export const Navbar = () => {
             }
           />
         </NavbarItem>
-        <NavbarItem className="hidden md:flex">
+        {/* Same `sm` breakpoint as the mobile toggle below, so no width is left
+            without the cart, login and store links. */}
+        <NavbarItem className="hidden sm:flex">
           <CartButton />
         </NavbarItem>
-        <NavbarItem className="hidden md:flex">
+        <NavbarItem className="hidden sm:flex">
           <LoginButton />
         </NavbarItem>
       </NavbarContent>

@@ -9,7 +9,12 @@ import { RealTimeProduct } from "@/components/real-time-product";
 import { Product } from "@/types";
 import { urlForImage } from "@/sanity/lib/image";
 import { JsonLd } from "@/components/json-ld";
-import { absoluteUrl, buildMetadata, siteConfig } from "@/lib/seo";
+import {
+  absoluteUrl,
+  buildMetadata,
+  productMetaDescription,
+  siteConfig,
+} from "@/lib/seo";
 
 // Product copy, pricing and imagery change rarely, so the page is prerendered
 // and refreshed in the background once a minute rather than re-rendered per
@@ -71,9 +76,11 @@ export async function generateMetadata({
     });
   }
 
-  const description =
-    product.description?.slice(0, 160) ||
-    `Shop ${product.name} at ${siteConfig.name}. Limited-edition streetwear with fast shipping or local pickup.`;
+  const description = productMetaDescription(
+    product.name,
+    product.description,
+    product.price,
+  );
 
   return buildMetadata({
     title: product.name,
@@ -127,9 +134,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
     },
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Store", item: absoluteUrl("/store") },
+      { "@type": "ListItem", position: 3, name: product.name, item: url },
+    ],
+  };
+
   return (
     <>
       <JsonLd data={productLd} />
+      <JsonLd data={breadcrumbLd} />
       <RealTimeProduct initialProduct={product} slug={slug} />
     </>
   );

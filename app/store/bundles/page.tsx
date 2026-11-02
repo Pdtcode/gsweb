@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { cache } from "react";
 import Link from "next/link";
 
 import { getActiveBundles } from "@/lib/bundles";
@@ -10,15 +11,23 @@ import { title } from "@/components/primitives";
 // Bundle availability is derived from live Neon stock, so render per request
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Bundle Deals",
-  description:
-    "Save when you buy together — curated Grail Seekers bundles at a lower price than buying each piece separately.",
-  path: "/store/bundles",
-});
+const getBundles = cache(() => getActiveBundles());
+
+export async function generateMetadata(): Promise<Metadata> {
+  const bundles = await getBundles();
+
+  return buildMetadata({
+    title: "Bundle Deals",
+    description:
+      "Save when you buy together: curated Grail Seekers bundles at a lower price than buying each piece separately.",
+    path: "/store/bundles",
+    // An empty page shouldn't be indexed
+    noindex: bundles.length === 0,
+  });
+}
 
 export default async function BundlesPage() {
-  const bundles = await getActiveBundles();
+  const bundles = await getBundles();
 
   return (
     <div className="container mx-auto max-w-7xl px-6 py-12">

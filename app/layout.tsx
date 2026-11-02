@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { fontSans, fontUDMincho } from "@/config/fonts";
 import { NEW_ARRIVALS_HOME_ACTIVE } from "@/config/homepage";
+import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import SiteProtection from "@/components/site-protection";
 import { accessKeyFor, getSiteProtection } from "@/lib/site-protection";
@@ -16,7 +17,9 @@ import { SkuProvider } from "@/lib/contexts/sku-context";
 import { JsonLd } from "@/components/json-ld";
 import {
   absoluteUrl,
+  brandDescription,
   defaultOgImage,
+  defaultOgImageSize,
   siteKeywords,
   siteUrl,
 } from "@/lib/seo";
@@ -24,11 +27,10 @@ import {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${siteConfig.name} — ${siteConfig.description}`,
+    default: `${siteConfig.name} (GS Design Research) | Streetwear Drops`,
     template: `%s - ${siteConfig.name}`,
   },
-  description:
-    "Grail Seekers is a streetwear brand built around limited-edition drops and curated collections. Shop exclusive apparel — hoodies, tees, and accessories — with fast shipping or local pickup.",
+  description: brandDescription,
   applicationName: siteConfig.name,
   keywords: siteKeywords,
   authors: [{ name: siteConfig.name }],
@@ -55,12 +57,11 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: `${siteConfig.name} — ${siteConfig.description}`,
     description:
-      "Limited-edition streetwear drops and curated collections. Seek until you find.",
+      "Limited-edition streetwear from Oklahoma City. Seek until you find.",
     images: [
       {
         url: defaultOgImage,
-        width: 1200,
-        height: 630,
+        ...defaultOgImageSize,
         alt: siteConfig.name,
       },
     ],
@@ -69,7 +70,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteConfig.name} — ${siteConfig.description}`,
     description:
-      "Limited-edition streetwear drops and curated collections. Seek until you find.",
+      "Limited-edition streetwear from Oklahoma City. Seek until you find.",
     images: [defaultOgImage],
   },
   icons: {
@@ -81,10 +82,17 @@ const organizationLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: siteConfig.name,
+  alternateName: "GS Design Research",
   url: siteUrl,
   logo: absoluteUrl("/logo-light.svg"),
-  description: siteConfig.description,
+  description: brandDescription,
   slogan: siteConfig.description,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Oklahoma City",
+    addressRegion: "OK",
+    addressCountry: "US",
+  },
   sameAs: ["https://www.instagram.com/gsdesignresearch/"],
 };
 
@@ -92,15 +100,8 @@ const websiteLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: siteConfig.name,
+  alternateName: "GS Design Research",
   url: siteUrl,
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: `${siteUrl}/store?q={search_term_string}`,
-    },
-    "query-input": "required name=search_term_string",
-  },
 };
 
 export const viewport: Viewport = {
@@ -164,10 +165,11 @@ export default async function RootLayout({
                   <SpendCampaignBanner campaign={spendCampaign} />
                 )}
                 <Navbar />
-                  <div className="relative flex-1">
+                  <div className="relative flex flex-1 flex-col">
                     <main className="container mx-auto max-w-7xl pt-4 px-6 flex-grow">
                       {children}
                     </main>
+                    <Footer />
                   </div>
               </div>
             </SiteProtection>

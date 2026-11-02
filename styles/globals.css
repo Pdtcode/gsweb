@@ -94,3 +94,639 @@ body {
   transition-timing-function: cubic-bezier(0.5, 0, 0.9, 0.4);
   transition-delay: 2s;
 }
+
+/* Hero stage: shirt beside the call to action on wide screens and on short ones
+   (sideways phones), where stacking would push the button off the first screen */
+@media (min-width: 1024px), (max-height: 500px) {
+  .hero-stage {
+    display: grid;
+    grid-template-columns: 1fr minmax(18rem, 26rem);
+  }
+}
+
+@media (max-height: 500px) {
+  .hero-description {
+    display: none;
+  }
+
+  .hero-cta {
+    padding: 1rem 1.5rem;
+  }
+}
+
+/* ── Grails chapters (components/grails-section.tsx) ─────────────────────
+   One continuous dark sequence.
+   Phones: tall media fills the screen with the words over a fade; wide media
+   sits above the words so its sides aren't cropped.
+   Larger screens: tall media splits side by side with the words; wide media
+   fills the whole screen, the reverse of phones. */
+/* The section is 100vw wide, which includes any classic scrollbar */
+body:has(.grails) {
+  overflow-x: clip;
+}
+
+.grails {
+  position: relative;
+  z-index: 10;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  background: #f3ede1;
+  color: #2a1810;
+}
+
+.dark .grails {
+  background: #160c08;
+  color: #f3ede1;
+}
+
+.grail-opener,
+.grail-chapter {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+/* On footage, so dark in both themes */
+.grail-opener {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #160c08;
+  color: #f3ede1;
+  text-align: center;
+}
+
+.grail-opener-video {
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+}
+
+.grail-opener-copy {
+  position: relative;
+  padding: 1.5rem;
+}
+
+.grail-opener-statement {
+  font-family: var(--font-udmincho), serif;
+  font-size: clamp(2.75rem, 11vw, 9rem);
+  font-weight: 600;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+
+.grail-opener-line {
+  margin-top: 1rem;
+  font-size: clamp(1rem, 2vw, 1.375rem);
+}
+
+.grail-header {
+  padding: clamp(3rem, 8vw, 6rem) 1.5rem;
+  background: #621600;
+  color: #f3ede1;
+  font-family: var(--font-udmincho), serif;
+  font-size: clamp(2.75rem, 8vw, 6.5rem);
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* The last chapter. Cream, because the maroon art needs a light background */
+.grail-next {
+  --art: min(68vw, 50svh, 480px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 0 clamp(3rem, 7vw, 5rem);
+  background: #f3ede1;
+  color: #621600;
+  text-align: center;
+}
+
+/* Marks the end of the story so far, then hands over to the art */
+.grail-end-line {
+  width: 100%;
+  height: 4px;
+  background: #621600;
+  transform-origin: left;
+}
+
+.grail-end-label {
+  margin-top: 0.875rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.grail-next-label {
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+}
+
+/* After Coming Soon: dark in both themes, between the cream and the maroon footer */
+.grail-join {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(4rem, 10vw, 7rem) 1.5rem clamp(2.5rem, 5vw, 3.5rem);
+  background: #160c08;
+  color: #f3ede1;
+  text-align: center;
+}
+
+.grail-join-headline {
+  font-family: var(--font-udmincho), serif;
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  font-weight: 600;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.grail-join-line {
+  max-width: 30rem;
+  margin-top: 1rem;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.5;
+}
+
+.grail-join-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-top: 1.75rem;
+  padding: 0.875rem 1.75rem;
+  background: #621600;
+  color: #f3ede1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: opacity 0.2s ease;
+}
+
+.grail-join-button:hover {
+  opacity: 0.85;
+}
+
+.grail-to-top {
+  margin-top: 2.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+/* The words float up out of the art's box, so leave them room above it */
+.grail-next-art {
+  position: relative;
+  width: var(--art);
+  aspect-ratio: 1;
+}
+
+/* Room above the art for the words, which float up out of its box */
+.grail-end-label + .grail-next-art {
+  margin-top: calc(var(--art) * 0.42);
+}
+
+.grail-next-words {
+  position: absolute;
+  inset: 0;
+  transform: translateY(-31%);
+}
+
+/* Absolute, so a video's own size can't stretch its chapter */
+.grail-video {
+  position: absolute;
+  inset: 0;
+}
+
+.grail-video video {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Upright screens: the whole picture at its own shape, words beneath it */
+.grail-chapter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-top: 1px solid color-mix(in srgb, currentcolor 14%, transparent);
+}
+
+.grail-media {
+  position: relative;
+  flex: none;
+  width: min(100%, calc(70svh * var(--ratio)));
+  margin-inline: auto;
+  aspect-ratio: var(--ratio);
+  overflow: hidden;
+}
+
+/* Stacked, and crossfaded as the chapter rotates through them */
+.grail-media > .grail-photo {
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.grail-media > .grail-photo.is-active {
+  opacity: 1;
+}
+
+.grail-copy {
+  padding: 1.5rem;
+}
+
+.grail-backdrop {
+  display: none;
+}
+
+.grail-headline {
+  font-family: var(--font-udmincho), serif;
+  font-size: clamp(2rem, 9.5vw, 3rem);
+  font-weight: 600;
+  line-height: 1.06;
+  text-transform: uppercase;
+}
+
+.grail-quote {
+  margin-top: 0.75rem;
+  font-size: 1.125rem;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.grail-intro {
+  max-width: 34rem;
+  margin-top: 0.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.grail-link {
+  display: inline-block;
+  margin-top: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Upright screens are immersive: each chapter is its own full screen of colour.
+   Settles gently on each chapter, without locking the scroll. */
+@media (orientation: portrait) {
+  :root:has(.grails) {
+    scroll-snap-type: y proximity;
+  }
+
+  .grail-opener,
+  .grail-chapter {
+    scroll-snap-align: start;
+  }
+
+  /* No snap points from Coming Soon down, so it and the footer scroll freely */
+
+  .grail-chapter {
+    justify-content: flex-start;
+    border-top: 0;
+    background: #160c08;
+    color: #f3ede1;
+  }
+
+  /* Photos cover the screen, so the words are cream in both themes. Blurred and
+     dimmed, darkest behind the words. */
+  .grail-backdrop {
+    display: block;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .grail-backdrop img {
+    object-fit: cover;
+    filter: blur(32px) saturate(1.15);
+    transform: scale(1.25);
+    opacity: 0;
+    transition: opacity 0.7s ease;
+  }
+
+  .grail-backdrop img.is-active {
+    opacity: 1;
+  }
+
+  .grail-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgb(22 12 8 / 0.2),
+      rgb(22 12 8 / 0.55) 55%,
+      rgb(22 12 8 / 0.9)
+    );
+  }
+
+  /* The picture melts into the backdrop instead of ending in a hard edge */
+  .grail-media {
+    z-index: 1;
+    -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent);
+    mask-image: linear-gradient(to bottom, #000 82%, transparent);
+  }
+
+  .grail-copy {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+    padding-top: 0;
+    text-shadow: 0 1px 12px rgb(0 0 0 / 0.45);
+  }
+
+  /* Wide video floats in the middle, words below it */
+  .grail-chapter--wide {
+    justify-content: center;
+  }
+
+  .grail-chapter--wide .grail-media {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 7%,
+      #000 93%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 7%,
+      #000 93%,
+      transparent
+    );
+  }
+
+  .grail-chapter--wide .grail-copy {
+    margin-top: 0.5rem;
+  }
+
+  /* Tall video fills the whole screen, words over a fade */
+  .grail-chapter--tall .grail-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    aspect-ratio: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .grail-chapter--tall .grail-media::after {
+    content: "";
+    position: absolute;
+    inset: 50% 0 0;
+    background: linear-gradient(to top, rgb(22 12 8 / 0.92) 12%, transparent);
+    pointer-events: none;
+  }
+}
+
+/* Wider-than-tall screens: the picture's column is exactly the picture's shape
+   at full height, so nothing is cropped or letterboxed */
+@media (orientation: landscape) {
+  .grail-chapter {
+    --media-width: min(calc(100svh * var(--ratio)), 58vw);
+    display: grid;
+    grid-template-columns: var(--media-width) 1fr;
+    align-items: center;
+  }
+
+  .grail-chapter--flip {
+    grid-template-columns: 1fr var(--media-width);
+  }
+
+  .grail-chapter--flip .grail-media {
+    order: 2;
+  }
+
+  .grail-media {
+    width: 100%;
+    margin: 0;
+    aspect-ratio: auto;
+    align-self: stretch;
+    min-height: 100%;
+  }
+
+  .grail-copy {
+    padding: clamp(1.5rem, 5vw, 5rem);
+  }
+
+  .grail-headline {
+    font-size: clamp(2rem, 5vw, 5.5rem);
+  }
+
+  .grail-quote {
+    font-size: clamp(1.125rem, 1.8vw, 1.625rem);
+  }
+
+  .grail-intro {
+    margin-top: 0.75rem;
+    font-size: 1rem;
+  }
+
+  /* The wide video fills the whole screen, with the words over a fade */
+  .grail-chapter--wide {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+
+  .grail-chapter--wide .grail-media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .grail-chapter--wide .grail-media::after {
+    content: "";
+    position: absolute;
+    inset: 40% 0 0;
+    background: linear-gradient(to top, rgb(22 12 8 / 0.96) 10%, transparent);
+    pointer-events: none;
+  }
+
+  /* Over footage, so cream in both themes */
+  .grail-chapter--wide .grail-copy {
+    position: relative;
+    z-index: 2;
+    color: #f3ede1;
+    max-width: 60rem;
+    padding-top: 0;
+    pointer-events: none;
+  }
+
+  .grail-chapter--wide .grail-copy a {
+    pointer-events: auto;
+  }
+}
+
+/* Sideways phones are short: drop the description to fit the screen */
+@media (orientation: landscape) and (max-height: 500px) {
+  .grail-intro {
+    display: none;
+  }
+
+  .grail-headline {
+    font-size: clamp(1.625rem, 4.5vw, 2.5rem);
+  }
+}
+
+/* The end of the story: the line draws, then the art arrives */
+[data-reveal="out"] .grail-end-line {
+  transform: scaleX(0);
+}
+
+[data-reveal="out"] .grail-end-label,
+[data-reveal="out"] .grail-next-girl,
+[data-reveal="out"] .grail-next-words,
+[data-reveal="out"] .grail-next-label {
+  opacity: 0;
+}
+
+[data-reveal="in"] .grail-end-line {
+  animation: grail-line-draw 1s cubic-bezier(0.7, 0, 0.2, 1) backwards;
+}
+
+[data-reveal="in"] .grail-end-label {
+  animation: grail-rise 0.5s ease-out 0.8s backwards;
+}
+
+[data-reveal="in"] .grail-next-girl {
+  animation: grail-next-girl 0.7s cubic-bezier(0.2, 1.3, 0.4, 1) 1.1s backwards;
+}
+
+[data-reveal="in"] .grail-next-words {
+  animation: grail-next-words 0.8s cubic-bezier(0.2, 1.3, 0.4, 1) 1.5s backwards;
+}
+
+[data-reveal="in"] .grail-next-label {
+  animation: grail-rise 0.5s ease-out 2s backwards;
+}
+
+[data-reveal="out"].grail-join > * {
+  opacity: 0;
+}
+
+[data-reveal="in"].grail-join > * {
+  animation: grail-rise 0.6s ease-out backwards;
+}
+
+[data-reveal="in"].grail-join > :nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+[data-reveal="in"].grail-join > :nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+[data-reveal="in"].grail-join > :nth-child(4) {
+  animation-delay: 0.36s;
+}
+
+@keyframes grail-line-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes grail-next-girl {
+  from {
+    opacity: 0;
+    transform: translateY(12%) scale(0.88);
+  }
+}
+
+@keyframes grail-next-words {
+  from {
+    opacity: 0;
+    transform: translateY(-85%) scale(1.1);
+  }
+}
+
+/* Entrance: the same for every chapter, a slow zoom and the words sliding in */
+[data-reveal="out"] .grail-copy > *,
+[data-reveal="out"] .grail-media {
+  opacity: 0;
+}
+
+/* The picture wipes open first, then the words follow */
+[data-reveal="in"] .grail-media {
+  animation: grail-media-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+[data-reveal="in"] .grail-media > .grail-photo.is-active {
+  animation: grail-zoom 5s ease-out backwards;
+}
+
+[data-reveal="in"] .grail-copy > * {
+  animation: grail-rise 0.6s ease-out 0.3s backwards;
+}
+
+[data-reveal="in"] .grail-copy > :nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+[data-reveal="in"] .grail-copy > :nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+[data-reveal="in"] .grail-copy > :nth-child(n + 4) {
+  animation-delay: 0.6s;
+}
+
+@keyframes grail-media-in {
+  from {
+    opacity: 0;
+    clip-path: inset(10% 10% 10% 10%);
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes grail-zoom {
+  from {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes grail-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] .grail-media,
+  [data-reveal] .grail-media img,
+  [data-reveal] .grail-copy > *,
+  [data-reveal] .grail-end-line,
+  [data-reveal] .grail-end-label,
+  [data-reveal] .grail-next-girl,
+  [data-reveal] .grail-next-words,
+  [data-reveal] .grail-next-label,
+  [data-reveal].grail-join > * {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

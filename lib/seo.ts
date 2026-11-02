@@ -15,12 +15,33 @@ export const siteUrl = (
   "https://gsdesignresearch.com"
 ).replace(/\/$/, "");
 
-/** Default social-share image (1200x630 recommended). Lives in /public. */
+/** Default social-share image and its real size. Lives in /public. */
 export const defaultOgImage = "/drop-fallback-image.jpg";
+export const defaultOgImageSize = { width: 1080, height: 1350 };
+
+/** How the brand describes itself to search engines. */
+export const brandDescription =
+  "Grail Seekers by GS Design Research: limited-edition streetwear from Oklahoma City. Shop hoodies, crewnecks, tees and collabs with shipping or local pickup.";
+
+/** Search snippet for a product: its own words plus what it is and where it's from. */
+export function productMetaDescription(
+  name: string,
+  description: string | undefined,
+  price: number,
+): string {
+  const own = description?.trim().replace(/[.!]+$/, "");
+  const text = `${name}${own ? `: ${own}` : ""}. $${price}. Limited-edition streetwear from Grail Seekers in Oklahoma City, with shipping or local pickup.`;
+
+  return text.length <= 160
+    ? text
+    : `${text.slice(0, 157).replace(/\s+\S*$/, "")}...`;
+}
 
 /** Brand keywords that describe the business for search engines. */
 export const siteKeywords = [
   "Grail Seekers",
+  "GS Design Research",
+  "Oklahoma City streetwear",
   "streetwear",
   "limited edition apparel",
   "streetwear drops",
@@ -74,11 +95,15 @@ export function buildMetadata({
       ? image
       : absoluteUrl(image)
     : absoluteUrl(defaultOgImage);
+  // Only images passed in are cropped to 1200x630; the default keeps its size
+  const ogImageSize = image ? { width: 1200, height: 630 } : defaultOgImageSize;
 
   const resolvedTitle = title ?? siteConfig.name;
 
   return {
-    title,
+    // Only set when given: an explicit `title: undefined` makes Next drop the
+    // root layout's default title, leaving the page with no <title> at all.
+    ...(title ? { title } : {}),
     description,
     keywords: keywords ?? siteKeywords,
     alternates: { canonical },
@@ -89,7 +114,7 @@ export function buildMetadata({
       title: resolvedTitle,
       description,
       siteName: siteConfig.name,
-      images: [{ url: ogImage, width: 1200, height: 630, alt: resolvedTitle }],
+      images: [{ url: ogImage, ...ogImageSize, alt: resolvedTitle }],
       ...(publishedTime ? { publishedTime } : {}),
       ...(authors ? { authors } : {}),
     },

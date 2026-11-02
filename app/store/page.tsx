@@ -16,7 +16,7 @@ export const revalidate = 60; // Revalidate this page every 60 seconds
 export const metadata: Metadata = buildMetadata({
   title: "Store",
   description:
-    "Shop the full Grail Seekers collection — limited-edition hoodies, tees, and accessories. Fast shipping or local pickup.",
+    "Shop the full Grail Seekers collection: limited-edition hoodies, crewnecks, tees and collabs from Oklahoma City, with shipping or local pickup.",
   path: "/store",
 });
 
@@ -41,11 +41,15 @@ export default async function StorePage() {
     await getStoreData();
 
   return (
-    <StoreContent
-      bundles={bundles}
-      categories={categories}
-      featuredCollections={featuredCollections}
-      products={products}
-    />
+    <>
+      {/* Visually hidden: the page's heading for search engines and screen readers */}
+      <h1 className="sr-only">Shop Grail Seekers Limited-Edition Streetwear</h1>
+      <StoreContent
+        bundles={bundles}
+        categories={categories}
+        featuredCollections={featuredCollections}
+        products={products}
+      />
+    </>
   );
 }

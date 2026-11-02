@@ -46,7 +46,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: "daily", priority: 1 },
     { url: `${siteUrl}/store`, changeFrequency: "daily", priority: 0.9 },
-    { url: `${siteUrl}/store/bundles`, changeFrequency: "daily", priority: 0.8 },
+    // Left out while there are no bundles, so Google doesn't index an empty page
+    ...(bundles.length > 0
+      ? [
+          {
+            url: `${siteUrl}/store/bundles`,
+            changeFrequency: "daily" as const,
+            priority: 0.8,
+          },
+        ]
+      : []),
+    { url: `${siteUrl}/about`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${siteUrl}/contact`, changeFrequency: "yearly", priority: 0.4 },
   ];
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { cache } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -13,17 +14,23 @@ import { buildMetadata } from "@/lib/seo";
 
 export const revalidate = 60; // Revalidate this page every 60 seconds
 
-export const metadata: Metadata = buildMetadata({
-  title: "News",
-  description:
-    "The latest drops, stories, and updates from Grail Seekers. Streetwear culture, collection releases, and behind-the-scenes.",
-  path: "/news",
-});
-
-async function getPostsData() {
+const getPostsData = cache(async () => {
   const posts = await client.fetch<Post[]>(allPostsQuery);
 
   return { posts };
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { posts } = await getPostsData();
+
+  return buildMetadata({
+    title: "News",
+    description:
+      "The latest drops, stories, and updates from Grail Seekers. Streetwear culture, collection releases, and behind-the-scenes.",
+    path: "/news",
+    // An empty page shouldn't be indexed
+    noindex: posts.length === 0,
+  });
 }
 
 export default async function NewsPage() {
