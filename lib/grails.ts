@@ -200,7 +200,7 @@ export const grailChapters: GrailChapter[] = [
     headline: "Two years of Han Jan",
     quote: "Go buy G$ so I can afford a gf",
     intro:
-      "We sponsored Han Jan Pocha Kitchen’s two-year anniversary with a collab shirt, and gave one away every hour of the party.",
+      "We sponsored Han Jan Pocha Kitchen’s two-year anniversary with a collab shirt.",
     link: {
       href: "/store/products/gs-x-han-jan-collab",
       label: "Shop the collab",
