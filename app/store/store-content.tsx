@@ -132,6 +132,13 @@ export default function StoreContent({
     fetchSkus();
   }, []);
 
+  // Only offer categories that have something in them
+  const visibleCategories = categories.filter((category) =>
+    products.some((product) =>
+      product.categories?.some((cat) => cat._id === category._id),
+    ),
+  );
+
   // Filter products based on selected category
   const filteredProducts = selectedCategory
     ? products.filter(
@@ -219,7 +226,7 @@ export default function StoreContent({
           >
             All
           </button>
-          {categories.map((category) => (
+          {visibleCategories.map((category) => (
             <button
               key={category._id}
               className={`px-4 py-2 rounded-full transition-colors ${
@@ -269,7 +276,7 @@ export default function StoreContent({
           </div>
         </div>
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 mt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
             {filteredProducts.map((product) => (
               <Link
                 key={product._id}
@@ -292,7 +299,7 @@ export default function StoreContent({
                     </div>
                   )}
                 </div>
-                <h3 className="font-medium text-lg group-hover:underline">
+                <h3 className="text-sm font-medium group-hover:underline sm:text-lg">
                   {product.name}
                 </h3>
                 <div className="flex items-center gap-2">

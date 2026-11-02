@@ -164,11 +164,25 @@ export const AddToCartButton = ({
   const variantsNotSelected = availableQuantity === -1;
   const isDisabled = availableQuantity <= 0;
 
+  // Names what's still missing, e.g. "Select a size"
+  const getSelectPrompt = () => {
+    const missing = product.variants?.find((variant) => {
+      const name = variant.name.toLowerCase();
+
+      if (name === "size") return !selectedVariant?.size;
+      if (name === "color") return !selectedVariant?.color;
+
+      return true;
+    });
+
+    return missing ? `Select a ${missing.name.toLowerCase()}` : "Select options";
+  };
+
   const getButtonText = () => {
     if (isAdding) return "Added!";
-    if (variantsNotSelected) return "Select Options";
+    if (variantsNotSelected) return getSelectPrompt();
     if (availableQuantity === 0) return "Sold Out";
-    return "Add to Cart";
+    return `Add to Cart: $${product.price}`;
   };
 
   return (
