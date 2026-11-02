@@ -57,7 +57,7 @@ export default function AboutPage() {
           <Link className={inlineLinkClass} href="/store">
             store
           </Link>
-          , with shipping or local pickup. For questions or collaborations,{" "}
+          . For questions or collaborations,{" "}
           <Link className={inlineLinkClass} href="/contact">
             get in touch
           </Link>

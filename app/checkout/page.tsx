@@ -8,6 +8,8 @@ import { getIdToken } from "firebase/auth";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { StripePaymentForm } from "@/components/stripe-payment-form";
+import { ExpressCheckout } from "@/components/express-checkout";
+import type { CustomerDetails } from "@/lib/express-checkout-details";
 import { PromoCode, DiscountInfo } from "@/components/promo-code";
 import { urlForImage } from "@/sanity/lib/image";
 import { productImageUrl } from "@/lib/product-image";
@@ -15,9 +17,6 @@ import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage }
 import { getSpendDiscount, type SpendCampaign } from "@/lib/spend-campaign";
 import { DeliveryMethodToggle } from "@/components/delivery-method-toggle";
 import type { DeliveryMethod } from "@/components/delivery-method-toggle";
-import { PickupLocationSelector } from "@/components/pickup-location-selector";
-import { PickupModeSelector } from "@/components/pickup-mode-selector";
-import type { PickupLocation } from "@/components/pickup-location-selector";
 
 interface ShippingInfo {
   firstName: string;
@@ -61,9 +60,6 @@ export default function CheckoutPage() {
   });
 
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("shipping");
-  const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
-  const [selectedPickupLocationId, setSelectedPickupLocationId] = useState<string>("");
-  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [showApartment, setShowApartment] = useState(false);
   const [spendCampaign, setSpendCampaign] = useState<SpendCampaign | null>(null);
 
@@ -81,23 +77,6 @@ export default function CheckoutPage() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [clearCart]);
-
-  // Fetch pickup locations on mount
-  useEffect(() => {
-    async function fetchLocations() {
-      setIsLoadingLocations(true);
-      try {
-        const res = await fetch("/api/pickup-locations");
-        const data = await res.json();
-        setPickupLocations(data.locations ?? []);
-      } catch {
-        console.error("Failed to fetch pickup locations");
-      } finally {
-        setIsLoadingLocations(false);
-      }
-    }
-    fetchLocations();
-  }, []);
 
   // Spend & Save campaign, for previewing the discount. The server works the
   // discount out again when the payment is created and charges its own figure.
@@ -179,6 +158,119 @@ export default function CheckoutPage() {
     return Math.max(0, subtotal - discount - getCampaignDiscount()) + serviceFeeCalc.finalServiceFee;
   };
 
+  // Creates the order and the payment, for the card form and the wallets alike.
+  // Returns null, with the reason shown on the page, if it can't go ahead.
+  const createPayment = async (details: CustomerDetails): Promise<string | null> => {
+    // Get user token if authenticated
+    let userToken = null;
+    let userId = null;
+
+    if (user) {
+      try {
+        userToken = await getIdToken(user);
+        userId = user.uid;
+      } catch (error) {
+        console.warn("Could not get user token:", error);
+      }
+    }
+
+    // Create payment intent with proper data structure
+    const response = await fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(userToken && { Authorization: `Bearer ${userToken}` }),
+      },
+      body: JSON.stringify({
+        items: cart.map((item) => ({
+          id: item.product._id,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          variantId: item.selectedVariant?.sku || null,
+          variantSize: item.selectedVariant?.size || null,
+          variantColor: item.selectedVariant?.color || null,
+          // Bundle lines carry their component choices. The server re-reads
+          // the bundle from Sanity and expands it into one OrderItem per
+          // component, so stock is deducted per product as normal.
+          bundle: item.bundle
+            ? {
+                bundleId: item.bundle.bundleId,
+                slug: item.bundle.slug,
+                selections: item.bundle.selections.map((sel) => ({
+                  productId: sel.productId,
+                  productSlug: sel.productSlug,
+                  quantity: sel.quantity,
+                  sku: sel.sku,
+                  size: sel.size ?? null,
+                  color: sel.color ?? null,
+                })),
+              }
+            : undefined,
+        })),
+        shipping: {
+          cost: 0,
+        },
+        // The server prices everything itself — item prices, the promo
+        // discount and the service fee. It only needs the code, plus the
+        // total shown here so it can refuse to charge a different one.
+        discount: appliedDiscount ? { code: appliedDiscount.code } : undefined,
+        expectedTotal: getDiscountedTotal(),
+        deliveryMethod,
+        shippingApartment: deliveryMethod === "shipping" && details.address?.apartment
+          ? details.address.apartment
+          : undefined,
+        metadata: {
+          customer_name: details.name,
+          customer_email: details.email,
+          customer_phone: details.phone,
+          shipping_address: deliveryMethod === "shipping" && details.address
+            ? `${details.address.line1}, ${details.address.city}, ${details.address.state}, ${details.address.postalCode}, ${details.address.country}`
+            : "",
+          user_id: userId || "",
+          promo_code: appliedDiscount?.code || "",
+        },
+      }),
+    });
+
+    const result = await response.json().catch(() => null);
+
+    // A price, the promo code or the Spend & Save offer changed since this
+    // page was rendered. Nothing has been charged or ordered yet: pull in
+    // the real figures so the summary matches, and let the customer decide.
+    if (response.status === 409 && result?.totalChanged) {
+      if (Array.isArray(result.prices)) applyServerPrices(result.prices);
+
+      if (appliedDiscount && typeof result.discountAmount === "number") {
+        setAppliedDiscount({ ...appliedDiscount, discountAmount: result.discountAmount });
+      }
+
+      const res = await fetch("/api/spend-campaign").catch(() => null);
+      const data = res ? await res.json().catch(() => null) : null;
+
+      setSpendCampaign(data?.campaign ?? null);
+      setPaymentError(
+        `Your total has changed to $${Number(result.total).toFixed(2)} because a price or offer changed. Please review your order and pay again.`,
+      );
+
+      return null;
+    }
+
+    if (!response.ok || !result?.clientSecret) {
+      // Server messages here are written for the customer (out of stock,
+      // retired product, promo code no longer valid).
+      setPaymentError(result?.error || "We couldn't start your payment. Please try again.");
+
+      return null;
+    }
+    return result.clientSecret as string;
+  };
+
+  const finishOrder = (paymentIntentId: string) => {
+    clearCart();
+    window.location.href = `/order/success?payment_intent=${paymentIntentId}`;
+  };
+
   const handlePayment = async () => {
     if (!stripe || !elements) {
       setPaymentError("Stripe is not ready yet. Please wait and try again.");
@@ -211,126 +303,24 @@ export default function CheckoutPage() {
       }
     }
 
-    // Collect-later pickup needs a location. In-person sales need nothing
-    // beyond the contact details already validated above.
-    if (deliveryMethod === "pickup") {
-      if (!selectedPickupLocationId) {
-        setPaymentError("Please select a pickup location.");
-        return;
-      }
-    }
-
     setIsProcessing(true);
 
     try {
-      // Get user token if authenticated
-      let userToken = null;
-      let userId = null;
-
-      if (user) {
-        try {
-          userToken = await getIdToken(user);
-          userId = user.uid;
-        } catch (error) {
-          console.warn("Could not get user token:", error);
-        }
-      }
-
-      // Create payment intent with proper data structure
-      const response = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(userToken && { Authorization: `Bearer ${userToken}` }),
+      const clientSecret = await createPayment({
+        name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+        email: shippingInfo.email,
+        phone: shippingInfo.phone,
+        address: {
+          line1: shippingInfo.address,
+          apartment: shippingInfo.apartment,
+          city: shippingInfo.city,
+          state: shippingInfo.state,
+          postalCode: shippingInfo.zipCode,
+          country: shippingInfo.country,
         },
-        body: JSON.stringify({
-          items: cart.map((item) => ({
-            id: item.product._id,
-            name: item.product.name,
-            price: item.product.price,
-            quantity: item.quantity,
-            variantId: item.selectedVariant?.sku || null,
-            variantSize: item.selectedVariant?.size || null,
-            variantColor: item.selectedVariant?.color || null,
-            // Bundle lines carry their component choices. The server re-reads
-            // the bundle from Sanity and expands it into one OrderItem per
-            // component, so stock is deducted per product as normal.
-            bundle: item.bundle
-              ? {
-                  bundleId: item.bundle.bundleId,
-                  slug: item.bundle.slug,
-                  selections: item.bundle.selections.map((sel) => ({
-                    productId: sel.productId,
-                    productSlug: sel.productSlug,
-                    quantity: sel.quantity,
-                    sku: sel.sku,
-                    size: sel.size ?? null,
-                    color: sel.color ?? null,
-                  })),
-                }
-              : undefined,
-          })),
-          shipping: {
-            cost: 0,
-          },
-          // The server prices everything itself — item prices, the promo
-          // discount and the service fee. It only needs the code, plus the
-          // total shown here so it can refuse to charge a different one.
-          discount: appliedDiscount ? { code: appliedDiscount.code } : undefined,
-          expectedTotal: getDiscountedTotal(),
-          deliveryMethod,
-          pickupLocationId: deliveryMethod === "pickup" ? selectedPickupLocationId : undefined,
-          pickupLocationName: deliveryMethod === "pickup"
-            ? (pickupLocations.find(l => l._id === selectedPickupLocationId)?.name ?? "")
-            : undefined,
-          shippingApartment: deliveryMethod === "shipping" && shippingInfo.apartment
-            ? shippingInfo.apartment
-            : undefined,
-          metadata: {
-            customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
-            customer_email: shippingInfo.email,
-            customer_phone: shippingInfo.phone,
-            shipping_address: deliveryMethod === "shipping"
-              ? `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country}`
-              : "",
-            user_id: userId || "",
-            promo_code: appliedDiscount?.code || "",
-          },
-        }),
       });
 
-      const result = await response.json().catch(() => null);
-
-      // A price, the promo code or the Spend & Save offer changed since this
-      // page was rendered. Nothing has been charged or ordered yet: pull in
-      // the real figures so the summary matches, and let the customer decide.
-      if (response.status === 409 && result?.totalChanged) {
-        if (Array.isArray(result.prices)) applyServerPrices(result.prices);
-
-        if (appliedDiscount && typeof result.discountAmount === "number") {
-          setAppliedDiscount({ ...appliedDiscount, discountAmount: result.discountAmount });
-        }
-
-        const res = await fetch("/api/spend-campaign").catch(() => null);
-        const data = res ? await res.json().catch(() => null) : null;
-
-        setSpendCampaign(data?.campaign ?? null);
-        setPaymentError(
-          `Your total has changed to $${Number(result.total).toFixed(2)} because a price or offer changed. Please review your order and pay again.`,
-        );
-
-        return;
-      }
-
-      if (!response.ok || !result?.clientSecret) {
-        // Server messages here are written for the customer (out of stock,
-        // retired product, promo code no longer valid).
-        setPaymentError(result?.error || "We couldn't start your payment. Please try again.");
-
-        return;
-      }
-
-      const { clientSecret } = result;
+      if (!clientSecret) return;
 
       // Confirm payment
       const { error, paymentIntent } = await stripe.confirmCardPayment(
@@ -345,11 +335,7 @@ export default function CheckoutPage() {
       if (error) {
         setPaymentError(`Payment failed: ${error.message}`);
       } else if (paymentIntent?.status === "succeeded") {
-        // Clear cart first
-        clearCart();
-
-        // Redirect to success page with payment intent ID
-        window.location.href = `/order/success?payment_intent=${paymentIntent.id}`;
+        finishOrder(paymentIntent.id);
       }
     } catch (error) {
       setPaymentError("An error occurred during payment processing. Please try again.");
@@ -365,6 +351,9 @@ export default function CheckoutPage() {
   const serviceFeeDisplay = formatServiceFeeDisplay(serviceFeeCalc);
   const total = getDiscountedTotal();
   const campaign = getSpendDiscount(subtotal, spendCampaign);
+  // In cents for the wallets. Worked out from the total so the lines always add up.
+  const totalCents = Math.round(total * 100);
+  const feeCents = Math.min(totalCents, Math.round(serviceFeeCalc.finalServiceFee * 100));
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -374,6 +363,31 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Shipping and Payment Forms */}
           <div className="space-y-8">
+            {/* How the order gets to them, chosen first because it decides what
+                the wallets and the form below need to ask for */}
+            <div className="space-y-4">
+              <DeliveryMethodToggle value={deliveryMethod} onChange={setDeliveryMethod} />
+            </div>
+
+            <ExpressCheckout
+              allowedCountries={["US", "CA"]}
+              createPayment={createPayment}
+              feeCents={feeCents}
+              itemsCents={totalCents - feeCents}
+              needsShippingAddress={deliveryMethod === "shipping"}
+              totalCents={totalCents}
+              onError={setPaymentError}
+              onPaid={finishOrder}
+            />
+
+            {/* Wallet problems are shown up here, next to the wallet buttons. The
+                same message also shows by the card form's Pay button. */}
+            {paymentError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-700">{paymentError}</p>
+              </div>
+            )}
+
             {/* Shipping Information */}
             <div className="space-y-6">
               <div className="flex justify-between items-center">
@@ -383,8 +397,6 @@ export default function CheckoutPage() {
                     : "Contact Information"}
                 </h2>
               </div>
-
-              <DeliveryMethodToggle value={deliveryMethod} onChange={setDeliveryMethod} />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -596,28 +608,6 @@ export default function CheckoutPage() {
                   </div>
                 </>
               )}
-
-              {(deliveryMethod === "pickup" || deliveryMethod === "inperson") && (
-                <div className="space-y-4">
-                  <PickupModeSelector
-                    value={deliveryMethod}
-                    onChange={(mode) => {
-                      setDeliveryMethod(mode);
-                      // Drop any stale location when switching to in person
-                      if (mode === "inperson") setSelectedPickupLocationId("");
-                    }}
-                  />
-
-                  {deliveryMethod === "pickup" && (
-                    <PickupLocationSelector
-                      locations={pickupLocations}
-                      selectedId={selectedPickupLocationId}
-                      onSelect={setSelectedPickupLocationId}
-                      isLoading={isLoadingLocations}
-                    />
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Payment Form */}
@@ -724,13 +714,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between items-center">
                 <span>Fulfillment:</span>
                 <span>
-                  {deliveryMethod === "inperson"
-                    ? "In Person"
-                    : deliveryMethod === "pickup"
-                      ? pickupLocations.find(l => l._id === selectedPickupLocationId)?.name
-                        ? `Pickup — ${pickupLocations.find(l => l._id === selectedPickupLocationId)!.name}`
-                        : "Pickup"
-                      : "Shipping"}
+                  {deliveryMethod === "inperson" ? "In Person" : "Shipping"}
                 </span>
               </div>
               <div className="flex justify-between items-center">

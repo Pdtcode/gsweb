@@ -21,7 +21,7 @@ export const defaultOgImageSize = { width: 1080, height: 1350 };
 
 /** How the brand describes itself to search engines. */
 export const brandDescription =
-  "Grail Seekers by GS Design Research: limited-edition streetwear from Oklahoma City. Shop hoodies, crewnecks, tees and collabs with shipping or local pickup.";
+  "Grail Seekers by GS Design Research: limited-edition streetwear from Oklahoma City. Shop hoodies, crewnecks, tees and collabs, shipped to your door.";
 
 /** Search snippet for a product: its own words plus what it is and where it's from. */
 export function productMetaDescription(
@@ -30,7 +30,7 @@ export function productMetaDescription(
   price: number,
 ): string {
   const own = description?.trim().replace(/[.!]+$/, "");
-  const text = `${name}${own ? `: ${own}` : ""}. $${price}. Limited-edition streetwear from Grail Seekers in Oklahoma City, with shipping or local pickup.`;
+  const text = `${name}${own ? `: ${own}` : ""}. $${price}. Limited-edition streetwear from Grail Seekers in Oklahoma City.`;
 
   return text.length <= 160
     ? text

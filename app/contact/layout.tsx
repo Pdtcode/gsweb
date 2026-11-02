@@ -5,7 +5,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildMetadata({
   title: "Contact",
   description:
-    "Get in touch with Grail Seekers. Questions about orders, drops, pickup, or collaborations — we're here to help.",
+    "Get in touch with Grail Seekers. Questions about orders, drops, or collaborations — we're here to help.",
   path: "/contact",
 });
 

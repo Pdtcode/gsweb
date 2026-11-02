@@ -182,7 +182,7 @@ export const AddToCartButton = ({
     if (isAdding) return "Added!";
     if (variantsNotSelected) return getSelectPrompt();
     if (availableQuantity === 0) return "Sold Out";
-    return `Add to Cart: $${product.price}`;
+    return "Add to Cart";
   };
 
   return (

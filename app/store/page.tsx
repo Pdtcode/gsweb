@@ -16,7 +16,7 @@ export const revalidate = 60; // Revalidate this page every 60 seconds
 export const metadata: Metadata = buildMetadata({
   title: "Store",
   description:
-    "Shop the full Grail Seekers collection: limited-edition hoodies, crewnecks, tees and collabs from Oklahoma City, with shipping or local pickup.",
+    "Shop the full Grail Seekers collection: limited-edition hoodies, crewnecks, tees and collabs from Oklahoma City.",
   path: "/store",
 });
 
