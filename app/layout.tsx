@@ -27,8 +27,8 @@ import {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${siteConfig.name} (GS Design Research) | Streetwear Drops`,
-    template: `%s - ${siteConfig.name}`,
+    default: "GS Design Research",
+    template: "%s - GS Design Research",
   },
   description: brandDescription,
   applicationName: siteConfig.name,
