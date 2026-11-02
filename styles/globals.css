@@ -507,6 +507,18 @@ body:has(.grails) {
   }
 }
 
+/* Phones: photos always run the full width. Rotating photos can differ slightly
+   in shape, so they fill the lead photo's box rather than leaving side gaps. */
+@media (orientation: portrait) and (max-width: 767px) {
+  .grail-chapter:not(.grail-chapter--wide, .grail-chapter--tall) .grail-media {
+    width: 100%;
+  }
+
+  .grail-media > .grail-photo {
+    object-fit: cover;
+  }
+}
+
 /* Wider-than-tall screens: the picture's column is exactly the picture's shape
    at full height, so nothing is cropped or letterboxed */
 @media (orientation: landscape) {
