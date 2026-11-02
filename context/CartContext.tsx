@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 import { Product } from "@/types";
+import { availableQuantityFor } from "@/lib/product-stock";
 
 // One component of a bundle, with the variant the customer picked
 export interface CartBundleSelection {
@@ -110,6 +111,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Helper function to get available inventory for a product/variant
   const getAvailableInventory = (product: Product, selectedVariant?: { size?: string; color?: string; sku?: string }) => {
+    // Real stock from the database when the product came with it. The rest is
+    // Sanity's starting stock, which goes stale after the first sale.
+    const liveStock = availableQuantityFor(product, selectedVariant);
+
+    if (product.availableVariants?.length && liveStock >= 0) return liveStock;
+
     // If product has variants
     if (product.variants && product.variants.length > 0) {
       // If a variant is selected, find its inventory

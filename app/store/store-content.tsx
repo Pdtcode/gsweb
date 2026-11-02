@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
 import { productImageUrl } from "@/lib/product-image";
+import { lifestylePhotos } from "@/lib/product-lifestyle";
 import { Category, Collection, Product } from "@/types";
 import { BundleCard, type BundleCardData } from "@/components/bundle-card";
 
@@ -79,6 +80,17 @@ interface SkuLookup {
 //    </div>
 //  );
 //}
+
+// A worn photo if there is one, otherwise the product's next shot
+function hoverPhoto(product: Product) {
+  const worn = lifestylePhotos[product.slug.current]?.[0]?.url;
+
+  if (worn) return worn;
+
+  const next = product.images?.[0];
+
+  return next ? productImageUrl(next, 800, product.imageDisplay) : null;
+}
 
 export default function StoreContent({
   products,
@@ -291,6 +303,17 @@ export default function StoreContent({
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                       src={productImageUrl(product.mainImage, 800, product.imageDisplay)}
+                    />
+                  )}
+                  {/* Second photo on hover. Mouse only, since a tap on a phone
+                      should open the product. */}
+                  {hoverPhoto(product) && (
+                    <Image
+                      fill
+                      alt=""
+                      className="object-cover opacity-0 transition-opacity duration-300 [@media(hover:hover)]:group-hover:opacity-100"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      src={hoverPhoto(product)!}
                     />
                   )}
                   {!product.inStock && (

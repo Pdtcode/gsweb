@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { title } from "@/components/primitives";
 import { AddToCartButtonWrapper } from "@/components/product-actions";
 import { ProductImageGallery } from "@/components/product-image-gallery";
+import { lifestylePhotos } from "@/lib/product-lifestyle";
 import { Product } from "@/types";
 
 interface RealTimeProductProps {
@@ -58,7 +59,7 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 pb-8 pt-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product Image Gallery */}
         <ProductImageGallery
@@ -67,6 +68,7 @@ export function RealTimeProduct({ initialProduct, slug }: RealTimeProductProps) 
           additionalImages={product.images}
           imageDisplay={product.imageDisplay}
           inStock={isInStock()}
+          lifestyle={lifestylePhotos[slug]}
         />
 
         {/* Product Details */}

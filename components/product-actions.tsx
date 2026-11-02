@@ -1,11 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Product } from "@/types";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { VariantSelector } from "@/components/variant-selector";
 import { InventoryDisplay } from "@/components/inventory-display";
+import { QuantityStepper } from "@/components/quantity-stepper";
 import { useSkuContext } from "@/lib/contexts/sku-context";
+import { availableQuantityFor, selectOptionPrompt } from "@/lib/product-stock";
+
+// Loaded on its own so Stripe doesn't weigh down every product page's first paint
+const ProductExpressCheckout = dynamic(
+  () =>
+    import("@/components/product-express-checkout").then(
+      (module) => module.ProductExpressCheckout,
+    ),
+  { ssr: false },
+);
 
 export function AddToCartButtonWrapper({ product }: { product: Product }) {
   const { getSkuByVariantOptions, skuData } = useSkuContext();
@@ -14,6 +26,14 @@ export function AddToCartButtonWrapper({ product }: { product: Product }) {
     color?: string;
     sku?: string;
   }>({});
+  const [chosenQuantity, setChosenQuantity] = useState(1);
+  const chosenVariant = Object.keys(selectedVariant).length > 0 ? selectedVariant : undefined;
+
+  // Stays at 1 until every option is chosen, since only then is the stock known.
+  // A quantity above the stock of a newly picked option comes down to fit.
+  const available = availableQuantityFor(product, chosenVariant);
+  const maxQuantity = Math.max(available, 1);
+  const quantity = Math.min(chosenQuantity, maxQuantity);
 
   const handleVariantChange = (selectedOptions: { [key: string]: string }) => {
     // Map variant options to the expected format
@@ -90,6 +110,7 @@ export function AddToCartButtonWrapper({ product }: { product: Product }) {
       {/* Variant Selector */}
       {product.variants && product.variants.length > 0 && (
         <VariantSelector
+          availableVariants={product.availableVariants}
           variants={product.variants}
           onVariantChange={handleVariantChange}
         />
@@ -101,11 +122,21 @@ export function AddToCartButtonWrapper({ product }: { product: Product }) {
         selectedVariant={selectedVariant}
       />
 
-      {/* Action Buttons */}
-      <div className="flex gap-4 w-full">
+      {/* Action Buttons. On phones this is a bar stuck to the bottom of the screen,
+          so buying stays in reach while scrolling through photos. */}
+      <div className="product-buy-bar fixed inset-x-0 bottom-0 z-40 flex w-full items-center gap-4 border-t border-gray-200 bg-background px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 md:static md:border-0 md:bg-transparent md:p-0 dark:border-gray-800">
+        <QuantityStepper
+          disabled={available === 0}
+          max={maxQuantity}
+          quantity={quantity}
+          onChange={setChosenQuantity}
+        />
         <AddToCartButton
+          className="min-w-0 flex-1 md:flex-none"
           product={product}
-          selectedVariant={Object.keys(selectedVariant).length > 0 ? selectedVariant : undefined}
+          quantity={quantity}
+          selectedVariant={chosenVariant}
+          onAdded={() => setChosenQuantity(1)}
         />
 
         {product.shopURL && (
@@ -119,6 +150,17 @@ export function AddToCartButtonWrapper({ product }: { product: Product }) {
           </a>
         )}
       </div>
+
+      {/* Buys this item straight away, leaving the cart as it is. Sits in the page
+          rather than the phone's sticky bar, which is already full. */}
+      {available !== 0 && (
+        <ProductExpressCheckout
+          optionPrompt={available === -1 ? selectOptionPrompt(product, chosenVariant) : null}
+          product={product}
+          quantity={quantity}
+          selectedVariant={chosenVariant}
+        />
+      )}
     </div>
   );
 }

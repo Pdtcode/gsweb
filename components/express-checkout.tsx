@@ -30,6 +30,9 @@ interface ExpressCheckoutProps {
   // Called once we know whether a wallet will show, so checkout can appear with
   // the button already in place
   onSettled: () => void;
+  // For use without the card form: no "or pay by card", and no gap on devices
+  // with no wallet
+  standalone?: boolean;
 }
 
 function ExpressButtons({
@@ -116,7 +119,7 @@ function ExpressButtons({
         // Checked before anything is created or charged
         if (!isCompleteForOrder(details, needsShippingAddress)) {
           fail(
-            "Your wallet didn't share everything we need for this order. Please check its details, or pay by card below.",
+            "Your wallet didn't share everything we need for this order. Please check its details, or pay by card.",
           );
 
           return;
@@ -166,10 +169,15 @@ export function ExpressCheckout(props: ExpressCheckoutProps) {
   if (noWallets) return null;
 
   return (
-    <div className="space-y-4">
+    <div className={props.standalone ? "relative" : "space-y-4"}>
       {/* Hidden with visibility, not display: none, as Stripe's docs do. The
           element has to keep its size to load and report which wallets exist. */}
-      <div style={{ visibility: available ? "visible" : "hidden" }}>
+      <div
+        style={{
+          visibility: available ? "visible" : "hidden",
+          ...(props.standalone && !available ? { position: "absolute", width: "100%" } : {}),
+        }}
+      >
         <Elements
           options={{
             mode: "payment",
@@ -183,7 +191,7 @@ export function ExpressCheckout(props: ExpressCheckoutProps) {
           <ExpressButtons {...props} onAvailable={setAvailable} />
         </Elements>
       </div>
-      {available && (
+      {available && !props.standalone && (
         <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
           <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
           Or pay by card

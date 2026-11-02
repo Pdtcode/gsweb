@@ -95,6 +95,13 @@ body {
   transition-delay: 2s;
 }
 
+/* The product page's fixed buy bar must not cover the end of the page on phones */
+@media (max-width: 767px) {
+  body:has(.product-buy-bar) footer {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+}
+
 /* Hero stage: shirt beside the call to action on wide screens and on short ones
    (sideways phones), where stacking would push the button off the first screen */
 @media (min-width: 1024px), (max-height: 500px) {

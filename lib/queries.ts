@@ -74,6 +74,7 @@ export const allProductsQuery = groq`*[_type == "product" && dropExclusive != tr
   price,
   comparePrice,
   mainImage,
+  images,
   imageDisplay,
   inStock,
   totalInventory,

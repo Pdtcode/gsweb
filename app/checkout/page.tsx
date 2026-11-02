@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getIdToken } from "firebase/auth";
 
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -11,6 +10,20 @@ import { StripePaymentForm } from "@/components/stripe-payment-form";
 import CircularTextSpinner from "@/components/circular-text-spinner";
 import { ExpressCheckout } from "@/components/express-checkout";
 import type { CustomerDetails } from "@/lib/express-checkout-details";
+import { requestPayment } from "@/lib/checkout-payment";
+import {
+  addressErrors,
+  cleanText,
+  emailError,
+  emailTypoSuggestion,
+  nameError,
+  normalizeEmail,
+  normalizePhone,
+  normalizePostalCode,
+  normalizeRegion,
+  phoneError,
+  regionsFor,
+} from "@/lib/checkout-validation";
 import { PromoCode, DiscountInfo } from "@/components/promo-code";
 import { urlForImage } from "@/sanity/lib/image";
 import { productImageUrl } from "@/lib/product-image";
@@ -32,6 +45,8 @@ interface ShippingInfo {
   country: string;
 }
 
+type FieldErrors = Partial<Record<keyof ShippingInfo, string>>;
+
 interface ServiceFeeDiscount {
   type: 'percentage' | 'fixed';
   value: number;
@@ -46,6 +61,7 @@ export default function CheckoutPage() {
   const [appliedDiscount, setAppliedDiscount] = useState<DiscountInfo | undefined>(undefined);
   const [serviceFeeDiscount, setServiceFeeDiscount] = useState<ServiceFeeDiscount | undefined>(undefined);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: "",
@@ -126,8 +142,75 @@ export default function CheckoutPage() {
   };
 
   const handleShippingChange = (field: keyof ShippingInfo, value: string) => {
-    setShippingInfo((prev) => ({ ...prev, [field]: value }));
+    setShippingInfo((prev) => {
+      // Each country has its own states and postal format
+      if (field === "country") return { ...prev, country: value, state: "", zipCode: "" };
+
+      return { ...prev, [field]: value };
+    });
+    // A fix clears the message straight away; the next check runs on leaving the field
+    setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
   };
+
+  // Errors by field for the current details
+  const checkFields = (info: ShippingInfo): FieldErrors => {
+    const errors: FieldErrors = {
+      firstName: nameError(info.firstName, "first name") ?? undefined,
+      lastName: nameError(info.lastName, "last name") ?? undefined,
+      email: emailError(info.email) ?? undefined,
+      phone: phoneError(info.phone, info.country) ?? undefined,
+    };
+
+    if (deliveryMethod === "shipping") {
+      const address = addressErrors({
+        line1: info.address,
+        apartment: info.apartment,
+        city: info.city,
+        state: info.state,
+        postalCode: info.zipCode,
+        country: info.country,
+      });
+
+      errors.address = address.line1;
+      errors.apartment = address.apartment;
+      errors.city = address.city;
+      errors.state = address.state;
+      errors.zipCode = address.postalCode;
+      errors.country = address.country;
+    }
+
+    return errors;
+  };
+
+  // Checks one field when the customer leaves it, and tidies what they typed
+  const handleFieldBlur = (field: keyof ShippingInfo) => {
+    setFieldErrors((prev) => ({ ...prev, [field]: checkFields(shippingInfo)[field] }));
+
+    if (field === "zipCode" && shippingInfo.zipCode) {
+      setShippingInfo((prev) => ({
+        ...prev,
+        zipCode: normalizePostalCode(prev.zipCode, prev.country),
+      }));
+    }
+  };
+
+  const fieldProps = (field: keyof ShippingInfo) => ({
+    "aria-describedby": fieldErrors[field] ? `${field}-error` : undefined,
+    "aria-invalid": Boolean(fieldErrors[field]),
+    className: `w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-900 ${
+      fieldErrors[field]
+        ? "border-red-500 dark:border-red-500"
+        : "border-gray-300 dark:border-gray-700"
+    }`,
+    onBlur: () => handleFieldBlur(field),
+  });
+
+  const fieldError = (field: keyof ShippingInfo) =>
+    fieldErrors[field] ? (
+      <p className="mt-1 text-sm text-red-600 dark:text-red-400" id={`${field}-error`}>
+        {fieldErrors[field]}
+      </p>
+    ) : null;
 
   const handlePromoApplied = (discount: DiscountInfo, serviceFeeDiscountData?: ServiceFeeDiscount) => {
     setAppliedDiscount(discount);
@@ -174,79 +257,14 @@ export default function CheckoutPage() {
   // Creates the order and the payment, for the card form and the wallets alike.
   // Returns null, with the reason shown on the page, if it can't go ahead.
   const createPayment = async (details: CustomerDetails): Promise<string | null> => {
-    // Get user token if authenticated
-    let userToken = null;
-    let userId = null;
-
-    if (user) {
-      try {
-        userToken = await getIdToken(user);
-        userId = user.uid;
-      } catch (error) {
-        console.warn("Could not get user token:", error);
-      }
-    }
-
-    // Create payment intent with proper data structure
-    const response = await fetch("/api/create-payment-intent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(userToken && { Authorization: `Bearer ${userToken}` }),
-      },
-      body: JSON.stringify({
-        items: cart.map((item) => ({
-          id: item.product._id,
-          name: item.product.name,
-          price: item.product.price,
-          quantity: item.quantity,
-          variantId: item.selectedVariant?.sku || null,
-          variantSize: item.selectedVariant?.size || null,
-          variantColor: item.selectedVariant?.color || null,
-          // Bundle lines carry their component choices. The server re-reads
-          // the bundle from Sanity and expands it into one OrderItem per
-          // component, so stock is deducted per product as normal.
-          bundle: item.bundle
-            ? {
-                bundleId: item.bundle.bundleId,
-                slug: item.bundle.slug,
-                selections: item.bundle.selections.map((sel) => ({
-                  productId: sel.productId,
-                  productSlug: sel.productSlug,
-                  quantity: sel.quantity,
-                  sku: sel.sku,
-                  size: sel.size ?? null,
-                  color: sel.color ?? null,
-                })),
-              }
-            : undefined,
-        })),
-        shipping: {
-          cost: 0,
-        },
-        // The server prices everything itself — item prices, the promo
-        // discount and the service fee. It only needs the code, plus the
-        // total shown here so it can refuse to charge a different one.
-        discount: appliedDiscount ? { code: appliedDiscount.code } : undefined,
-        expectedTotal: getDiscountedTotal(),
-        deliveryMethod,
-        shippingApartment: deliveryMethod === "shipping" && details.address?.apartment
-          ? details.address.apartment
-          : undefined,
-        metadata: {
-          customer_name: details.name,
-          customer_email: details.email,
-          customer_phone: details.phone,
-          shipping_address: deliveryMethod === "shipping" && details.address
-            ? `${details.address.line1}, ${details.address.city}, ${details.address.state}, ${details.address.postalCode}, ${details.address.country}`
-            : "",
-          user_id: userId || "",
-          promo_code: appliedDiscount?.code || "",
-        },
-      }),
+    const { response, result } = await requestPayment({
+      items: cart,
+      details,
+      deliveryMethod,
+      expectedTotal: getDiscountedTotal(),
+      user,
+      discountCode: appliedDiscount?.code,
     });
-
-    const result = await response.json().catch(() => null);
 
     // A price, the promo code or the Spend & Save offer changed since this
     // page was rendered. Nothing has been charged or ordered yet: pull in
@@ -292,43 +310,34 @@ export default function CheckoutPage() {
 
     setPaymentError(null); // Clear any previous errors
 
-    // Shared validation: name, email, phone always required
-    if (
-      !shippingInfo.firstName ||
-      !shippingInfo.lastName ||
-      !shippingInfo.email ||
-      !shippingInfo.phone
-    ) {
-      setPaymentError("Please fill in your name, email, and phone.");
-      return;
-    }
+    const errors = checkFields(shippingInfo);
 
-    // Shipping-only validation: address fields required
-    if (deliveryMethod === "shipping") {
-      if (
-        !shippingInfo.address ||
-        !shippingInfo.city ||
-        !shippingInfo.state ||
-        !shippingInfo.zipCode
-      ) {
-        setPaymentError("Please fill in all shipping address fields.");
-        return;
-      }
+    setFieldErrors(errors);
+
+    const firstProblem = (Object.keys(errors) as (keyof ShippingInfo)[]).find(
+      (field) => errors[field],
+    );
+
+    if (firstProblem) {
+      setPaymentError("Please fix the highlighted fields.");
+      document.getElementById(firstProblem)?.focus();
+
+      return;
     }
 
     setIsProcessing(true);
 
     try {
       const clientSecret = await createPayment({
-        name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
-        email: shippingInfo.email,
-        phone: shippingInfo.phone,
+        name: `${cleanText(shippingInfo.firstName)} ${cleanText(shippingInfo.lastName)}`,
+        email: normalizeEmail(shippingInfo.email),
+        phone: normalizePhone(shippingInfo.phone, shippingInfo.country),
         address: {
-          line1: shippingInfo.address,
-          apartment: shippingInfo.apartment,
-          city: shippingInfo.city,
-          state: shippingInfo.state,
-          postalCode: shippingInfo.zipCode,
+          line1: cleanText(shippingInfo.address),
+          apartment: cleanText(shippingInfo.apartment),
+          city: cleanText(shippingInfo.city),
+          state: normalizeRegion(shippingInfo.state, shippingInfo.country),
+          postalCode: normalizePostalCode(shippingInfo.zipCode, shippingInfo.country),
           country: shippingInfo.country,
         },
       });
@@ -341,6 +350,12 @@ export default function CheckoutPage() {
         {
           payment_method: {
             card: elements.getElement("card"),
+            // Recorded on the payment in Stripe, alongside the card and its ZIP
+            billing_details: {
+              name: `${cleanText(shippingInfo.firstName)} ${cleanText(shippingInfo.lastName)}`,
+              email: normalizeEmail(shippingInfo.email),
+              phone: normalizePhone(shippingInfo.phone, shippingInfo.country),
+            },
           },
         },
       );
@@ -388,7 +403,14 @@ export default function CheckoutPage() {
             {/* How the order gets to them, chosen first because it decides what
                 the wallets and the form below need to ask for */}
             <div className="space-y-4">
-              <DeliveryMethodToggle value={deliveryMethod} onChange={setDeliveryMethod} />
+              <DeliveryMethodToggle
+                value={deliveryMethod}
+                onChange={(method) => {
+                  setDeliveryMethod(method);
+                  setFieldErrors({});
+                  setPaymentError(null);
+                }}
+              />
             </div>
 
             <ExpressCheckout
@@ -431,7 +453,8 @@ export default function CheckoutPage() {
                   </label>
                   <input
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                    {...fieldProps("firstName")}
+                    autoComplete="given-name"
                     id="firstName"
                     type="text"
                     value={shippingInfo.firstName}
@@ -439,6 +462,7 @@ export default function CheckoutPage() {
                       handleShippingChange("firstName", e.target.value)
                     }
                   />
+                  {fieldError("firstName")}
                 </div>
                 <div>
                   <label
@@ -449,7 +473,8 @@ export default function CheckoutPage() {
                   </label>
                   <input
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                    {...fieldProps("lastName")}
+                    autoComplete="family-name"
                     id="lastName"
                     type="text"
                     value={shippingInfo.lastName}
@@ -457,6 +482,7 @@ export default function CheckoutPage() {
                       handleShippingChange("lastName", e.target.value)
                     }
                   />
+                  {fieldError("lastName")}
                 </div>
               </div>
 
@@ -469,7 +495,10 @@ export default function CheckoutPage() {
                 </label>
                 <input
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                  {...fieldProps("email")}
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  inputMode="email"
                   id="email"
                   type="email"
                   value={shippingInfo.email}
@@ -477,6 +506,18 @@ export default function CheckoutPage() {
                     handleShippingChange("email", e.target.value)
                   }
                 />
+                {fieldError("email")}
+                {emailTypoSuggestion(shippingInfo.email) && (
+                  <button
+                    className="mt-1 block text-left text-sm text-amber-700 underline dark:text-amber-400"
+                    type="button"
+                    onClick={() =>
+                      handleShippingChange("email", emailTypoSuggestion(shippingInfo.email)!)
+                    }
+                  >
+                    Did you mean {emailTypoSuggestion(shippingInfo.email)}?
+                  </button>
+                )}
               </div>
 
               <div>
@@ -488,7 +529,9 @@ export default function CheckoutPage() {
                 </label>
                 <input
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                  {...fieldProps("phone")}
+                  autoComplete="tel"
+                  inputMode="tel"
                   id="phone"
                   type="tel"
                   value={shippingInfo.phone}
@@ -496,6 +539,7 @@ export default function CheckoutPage() {
                     handleShippingChange("phone", e.target.value)
                   }
                 />
+                {fieldError("phone")}
               </div>
 
               {deliveryMethod === "shipping" && (
@@ -510,7 +554,8 @@ export default function CheckoutPage() {
                     </label>
                     <input
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                      {...fieldProps("address")}
+                      autoComplete="address-line1"
                       id="address"
                       type="text"
                       value={shippingInfo.address}
@@ -518,6 +563,7 @@ export default function CheckoutPage() {
                         handleShippingChange("address", e.target.value)
                       }
                     />
+                    {fieldError("address")}
                   </div>
 
                   {/* Progressive apartment reveal */}
@@ -538,7 +584,8 @@ export default function CheckoutPage() {
                         Apt, Suite, Floor (optional)
                       </label>
                       <input
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                        {...fieldProps("apartment")}
+                        autoComplete="address-line2"
                         id="apartment"
                         type="text"
                         value={shippingInfo.apartment}
@@ -546,6 +593,7 @@ export default function CheckoutPage() {
                           handleShippingChange("apartment", e.target.value)
                         }
                       />
+                      {fieldError("apartment")}
                     </div>
                   )}
 
@@ -560,7 +608,8 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         required
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                        {...fieldProps("city")}
+                        autoComplete="address-level2"
                         id="city"
                         type="text"
                         value={shippingInfo.city}
@@ -568,35 +617,56 @@ export default function CheckoutPage() {
                           handleShippingChange("city", e.target.value)
                         }
                       />
+                      {fieldError("city")}
                     </div>
                     <div>
                       <label
                         className="block text-sm font-medium mb-2"
                         htmlFor="state"
                       >
-                        State
+                        {shippingInfo.country === "CA" ? "Province" : "State"}
                       </label>
-                      <input
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
-                        id="state"
-                        type="text"
-                        value={shippingInfo.state}
-                        onChange={(e) =>
-                          handleShippingChange("state", e.target.value)
-                        }
-                      />
+                      {regionsFor(shippingInfo.country) ? (
+                        <select
+                          required
+                          {...fieldProps("state")}
+                          autoComplete="address-level1"
+                          id="state"
+                          value={shippingInfo.state}
+                          onChange={(e) => handleShippingChange("state", e.target.value)}
+                        >
+                          <option value="">Select</option>
+                          {Object.entries(regionsFor(shippingInfo.country)!).map(([code, name]) => (
+                            <option key={code} value={code}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          required
+                          {...fieldProps("state")}
+                          autoComplete="address-level1"
+                          id="state"
+                          type="text"
+                          value={shippingInfo.state}
+                          onChange={(e) => handleShippingChange("state", e.target.value)}
+                        />
+                      )}
+                      {fieldError("state")}
                     </div>
                     <div>
                       <label
                         className="block text-sm font-medium mb-2"
                         htmlFor="zipCode"
                       >
-                        ZIP Code
+                        {shippingInfo.country === "US" ? "ZIP Code" : "Postal Code"}
                       </label>
                       <input
                         required
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                        {...fieldProps("zipCode")}
+                        autoComplete="postal-code"
+                        inputMode={shippingInfo.country === "US" || shippingInfo.country === "MX" ? "numeric" : "text"}
                         id="zipCode"
                         type="text"
                         value={shippingInfo.zipCode}
@@ -604,6 +674,7 @@ export default function CheckoutPage() {
                           handleShippingChange("zipCode", e.target.value)
                         }
                       />
+                      {fieldError("zipCode")}
                     </div>
                   </div>
 
@@ -617,7 +688,8 @@ export default function CheckoutPage() {
                     </label>
                     <select
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900"
+                      {...fieldProps("country")}
+                      autoComplete="country"
                       id="country"
                       value={shippingInfo.country}
                       onChange={(e) =>

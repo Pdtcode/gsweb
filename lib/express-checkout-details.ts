@@ -1,3 +1,14 @@
+import {
+  addressErrors,
+  cleanText as clean,
+  emailError,
+  nameError,
+  normalizeEmail,
+  normalizePhone,
+  normalizePostalCode,
+  normalizeRegion,
+} from "@/lib/checkout-validation";
+
 // What the checkout needs from a customer, whichever way they pay: typed into
 // the form, or supplied by Apple Pay / Google Pay.
 export interface CustomerDetails {
@@ -36,11 +47,6 @@ export interface WalletConfirmEvent {
   };
 }
 
-// The server splits the address on commas, so one inside a field would shift
-// every field after it.
-const clean = (value?: string | null) =>
-  (value ?? "").replace(/,/g, " ").replace(/\s+/g, " ").trim();
-
 export function walletDetailsToCustomer(
   event: WalletConfirmEvent,
   needsAddress: boolean,
@@ -49,19 +55,22 @@ export function walletDetailsToCustomer(
   const billing = event.billingDetails;
   const address = shipping?.address;
 
+  const country = clean(address?.country) || "US";
+
   return {
     name: clean(shipping?.name) || clean(billing?.name),
-    email: clean(billing?.email),
-    phone: clean(billing?.phone),
+    email: normalizeEmail(billing?.email),
+    // A number that can't be read is left blank rather than saved wrong
+    phone: normalizePhone(billing?.phone, country),
     address:
       needsAddress && address
         ? {
             line1: clean(address.line1),
             apartment: clean(address.line2),
             city: clean(address.city),
-            state: clean(address.state),
-            postalCode: clean(address.postal_code),
-            country: clean(address.country) || "US",
+            state: normalizeRegion(address.state, country),
+            postalCode: normalizePostalCode(address.postal_code, country),
+            country,
           }
         : undefined,
   };
@@ -73,10 +82,9 @@ export function isCompleteForOrder(
   details: CustomerDetails,
   needsAddress: boolean,
 ): boolean {
-  if (!details.name || !details.email) return false;
+  if (nameError(details.name) || emailError(details.email)) return false;
   if (!needsAddress) return true;
+  if (!details.address) return false;
 
-  const a = details.address;
-
-  return Boolean(a?.line1 && a.city && a.state && a.postalCode && a.country);
+  return Object.keys(addressErrors(details.address)).length === 0;
 }

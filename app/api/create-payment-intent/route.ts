@@ -10,6 +10,7 @@ import { getProductPrices, getPromoCode } from "@/lib/checkout-pricing-server";
 import { evaluatePromo } from "@/lib/promo";
 import { calculateServiceFee, getServiceFeePercentage } from "@/lib/service-fee";
 import { connectSplitParams } from "@/lib/connect-split";
+import { normalizeShippingAddress, serverDetailsError } from "@/lib/checkout-validation";
 
 // Make sure the Stripe secret key is defined
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -90,6 +91,19 @@ export async function POST(request: Request) {
         { error: "deliveryMethod must be 'shipping', 'pickup' or 'inperson'" },
         { status: 400 },
       );
+    }
+
+    // Refuse bad customer details before anything is created or charged
+    const detailsProblem = serverDetailsError({
+      name: metadata?.customer_name,
+      email: metadata?.customer_email,
+      phone: metadata?.customer_phone,
+      shippingAddress: metadata?.shipping_address,
+      needsAddress: deliveryMethod === "shipping",
+    });
+
+    if (detailsProblem) {
+      return NextResponse.json({ error: detailsProblem }, { status: 400 });
     }
 
     // Only collect-later pickups need a location verified against Sanity
@@ -357,7 +371,7 @@ export async function POST(request: Request) {
     // Extract customer info from metadata if available
     const customerName = metadata?.customer_name || "";
     const customerEmail = metadata?.customer_email || "";
-    const shippingAddress = metadata?.shipping_address || "";
+    const shippingAddress = normalizeShippingAddress(metadata?.shipping_address || "");
 
     // Parse shipping address for storing in shipping object
     const addressParts = shippingAddress

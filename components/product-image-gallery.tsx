@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { SanityImageObject } from "@sanity/image-url/lib/types/types";
 import { productImageUrl } from "@/lib/product-image";
+import type { LifestylePhoto } from "@/lib/product-lifestyle";
 import type { ImageDisplay } from "@/types";
 
 interface ProductImageGalleryProps {
@@ -12,6 +13,8 @@ interface ProductImageGalleryProps {
   additionalImages?: SanityImageObject[];
   inStock: boolean;
   imageDisplay?: ImageDisplay;
+  // Worn photos, shown after the product shots
+  lifestyle?: LifestylePhoto[];
 }
 
 export function ProductImageGallery({
@@ -20,9 +23,21 @@ export function ProductImageGallery({
   additionalImages,
   inStock,
   imageDisplay,
+  lifestyle = [],
 }: ProductImageGalleryProps) {
-  // Combine main image with additional images for the full gallery
-  const allImages = [mainImage, ...(additionalImages || [])];
+  // Product shots first, then the worn photos
+  const allImages = [
+    ...[mainImage, ...(additionalImages || [])].map((image, index) => ({
+      full: productImageUrl(image, 1000, imageDisplay),
+      thumb: productImageUrl(image, 200, imageDisplay),
+      alt: index === 0 ? productName : `${productName} - Image ${index + 1}`,
+    })),
+    ...lifestyle.map((photo) => ({
+      full: photo.url,
+      thumb: photo.url,
+      alt: photo.alt,
+    })),
+  ];
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   return (
@@ -32,9 +47,9 @@ export function ProductImageGallery({
         <Image
           fill
           priority
-          alt={productName}
+          alt={allImages[selectedImageIndex].alt}
           className="object-cover"
-          src={productImageUrl(allImages[selectedImageIndex], 1000, imageDisplay)}
+          src={allImages[selectedImageIndex].full}
           sizes="(max-width: 768px) 100vw, 50vw"
         />
         {!inStock && (
@@ -59,9 +74,9 @@ export function ProductImageGallery({
             >
               <Image
                 fill
-                alt={`${productName} - Image ${index + 1}`}
+                alt={image.alt}
                 className="object-cover"
-                src={productImageUrl(image, 200, imageDisplay)}
+                src={image.thumb}
                 sizes="(max-width: 768px) 25vw, 12.5vw"
               />
             </button>
