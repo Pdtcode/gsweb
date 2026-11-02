@@ -64,7 +64,7 @@ export const grailChapters: GrailChapter[] = [
   },
   {
     id: "crewneck",
-    headline: "The first cut and sewn piece",
+    headline: "First Cut & Sewn",
     quote: "Thank you for supporting my bad habits.",
     intro:
       "A lightweight, oversized crewneck inspired by one Lex has had for years, and the debut of the new Holy Grail tag.",
@@ -113,7 +113,7 @@ export const grailChapters: GrailChapter[] = [
   },
   {
     id: "gs-volleyball",
-    headline: "Then we took it to the sand",
+    headline: "Hit the Sand",
     quote: "It got a little serious out there",
     intro:
       "The GS Volleyball Tournament at Boombox in Oklahoma City. The entry fee was one piece from the collection.",
@@ -180,7 +180,7 @@ export const grailChapters: GrailChapter[] = [
   },
   {
     id: "tokyo",
-    headline: "Win a trip to Tokyo. Malcolm did.",
+    headline: "Tokyo Giveaway",
     quote: "Let’s do it again sometime",
     intro:
       "The Crash Dummy hoodie rollout came with a giveaway for a roundtrip ticket to Tokyo. Malcolm won it, then skated in the brand on the trip.",

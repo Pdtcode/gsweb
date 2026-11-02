@@ -364,9 +364,9 @@ body:has(.grails) {
 
 .grail-headline {
   font-family: var(--font-udmincho), serif;
-  font-size: clamp(2rem, 9.5vw, 3rem);
+  font-size: clamp(1.625rem, 7.4vw, 3rem);
   font-weight: 600;
-  line-height: 1.06;
+  line-height: 1.1;
   text-transform: uppercase;
 }
 
