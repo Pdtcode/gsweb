@@ -44,6 +44,24 @@ function normalizeBackground(background?: string): string {
 }
 
 /**
+ * The photo to show for a chosen color: the first one tagged with it in Sanity,
+ * otherwise the main photo.
+ */
+export function productPhotoForColor(
+  product: { mainImage?: any; images?: any[] },
+  color?: string,
+) {
+  const wanted = color?.trim().toLowerCase();
+  const match =
+    wanted &&
+    [product.mainImage, ...(product.images ?? [])].find(
+      (image) => image?.color?.trim().toLowerCase() === wanted,
+    );
+
+  return match || product.mainImage;
+}
+
+/**
  * Build a square product image URL honouring the product's display settings.
  *
  * Falls back to the previous behaviour (a centred crop) whenever no settings

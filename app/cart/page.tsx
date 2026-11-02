@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useCart, getCartItemId, getCartItemKey } from "@/context/CartContext";
 import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
-import { productImageUrl } from "@/lib/product-image";
+import { productImageUrl, productPhotoForColor } from "@/lib/product-image";
 import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
 import { getSpendDiscount, type SpendCampaign } from "@/lib/spend-campaign";
 
@@ -113,7 +113,7 @@ export default function CartPage() {
                         alt={item.product.name}
                         sizes="80px"
                         className="object-cover"
-                        src={productImageUrl(item.product.mainImage, 200, item.product.imageDisplay)}
+                        src={productImageUrl(productPhotoForColor(item.product, item.selectedVariant?.color), 200, item.product.imageDisplay)}
                       />
                     )}
                   </div>
@@ -250,7 +250,7 @@ export default function CartPage() {
           );
         })()}
 
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Link
             className="text-center text-gray-700 dark:text-gray-300 hover:underline"
             href="/store"
@@ -259,7 +259,7 @@ export default function CartPage() {
           </Link>
 
           <Link
-            className="bg-gray-900 dark:bg-gray-100 text-white dark:text-black px-6 py-3 rounded-lg inline-block transition hover:opacity-90"
+            className="text-center bg-gray-900 dark:bg-gray-100 text-white dark:text-black px-6 py-3 rounded-lg inline-block transition hover:opacity-90"
             href="/checkout"
           >
             Proceed to Checkout

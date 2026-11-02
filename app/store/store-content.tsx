@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { title } from "@/components/primitives";
 import { urlForImage } from "@/sanity/lib/image";
 import { productImageUrl } from "@/lib/product-image";
-import { lifestylePhotos } from "@/lib/product-lifestyle";
 import { Category, Collection, Product } from "@/types";
 import { BundleCard, type BundleCardData } from "@/components/bundle-card";
 
@@ -81,12 +80,8 @@ interface SkuLookup {
 //  );
 //}
 
-// A worn photo if there is one, otherwise the product's next shot
+// The product's next shot, usually its back
 function hoverPhoto(product: Product) {
-  const worn = lifestylePhotos[product.slug.current]?.[0]?.url;
-
-  if (worn) return worn;
-
   const next = product.images?.[0];
 
   return next ? productImageUrl(next, 800, product.imageDisplay) : null;

@@ -26,7 +26,7 @@ import {
 } from "@/lib/checkout-validation";
 import { PromoCode, DiscountInfo } from "@/components/promo-code";
 import { urlForImage } from "@/sanity/lib/image";
-import { productImageUrl } from "@/lib/product-image";
+import { productImageUrl, productPhotoForColor } from "@/lib/product-image";
 import { calculateServiceFee, formatServiceFeeDisplay, getServiceFeePercentage } from "@/lib/service-fee";
 import { getSpendDiscount, type SpendCampaign } from "@/lib/spend-campaign";
 import { DeliveryMethodToggle } from "@/components/delivery-method-toggle";
@@ -747,7 +747,7 @@ export default function CheckoutPage() {
                         sizes="64px"
                         className="object-cover rounded-md"
                         src={productImageUrl(
-                          item.product.mainImage,
+                          productPhotoForColor(item.product, item.selectedVariant?.color),
                           128,
                           item.product.imageDisplay,
                         )}

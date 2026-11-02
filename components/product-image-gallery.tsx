@@ -4,7 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import { SanityImageObject } from "@sanity/image-url/lib/types/types";
 import { productImageUrl } from "@/lib/product-image";
-import type { LifestylePhoto } from "@/lib/product-lifestyle";
 import type { ImageDisplay } from "@/types";
 
 interface ProductImageGalleryProps {
@@ -13,8 +12,6 @@ interface ProductImageGalleryProps {
   additionalImages?: SanityImageObject[];
   inStock: boolean;
   imageDisplay?: ImageDisplay;
-  // Worn photos, shown after the product shots
-  lifestyle?: LifestylePhoto[];
 }
 
 export function ProductImageGallery({
@@ -23,21 +20,12 @@ export function ProductImageGallery({
   additionalImages,
   inStock,
   imageDisplay,
-  lifestyle = [],
 }: ProductImageGalleryProps) {
-  // Product shots first, then the worn photos
-  const allImages = [
-    ...[mainImage, ...(additionalImages || [])].map((image, index) => ({
-      full: productImageUrl(image, 1000, imageDisplay),
-      thumb: productImageUrl(image, 200, imageDisplay),
-      alt: index === 0 ? productName : `${productName} - Image ${index + 1}`,
-    })),
-    ...lifestyle.map((photo) => ({
-      full: photo.url,
-      thumb: photo.url,
-      alt: photo.alt,
-    })),
-  ];
+  const allImages = [mainImage, ...(additionalImages || [])].map((image, index) => ({
+    full: productImageUrl(image, 1000, imageDisplay),
+    thumb: productImageUrl(image, 200, imageDisplay),
+    alt: index === 0 ? productName : `${productName} - Image ${index + 1}`,
+  }));
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   return (
