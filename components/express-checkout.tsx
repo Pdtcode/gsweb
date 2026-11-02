@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Elements,
   ExpressCheckoutElement,
@@ -27,6 +27,9 @@ interface ExpressCheckoutProps {
   createPayment: (details: CustomerDetails) => Promise<string | null>;
   onPaid: (paymentIntentId: string) => void;
   onError: (message: string) => void;
+  // Called once we know whether a wallet will show, so checkout can appear with
+  // the button already in place
+  onSettled: () => void;
 }
 
 function ExpressButtons({
@@ -38,6 +41,7 @@ function ExpressButtons({
   createPayment,
   onPaid,
   onError,
+  onSettled,
   onAvailable,
 }: ExpressCheckoutProps & { onAvailable: (available: boolean) => void }) {
   const stripe = useStripe();
@@ -77,14 +81,16 @@ function ExpressButtons({
             : {}),
         });
       }}
-      onReady={({ availablePaymentMethods }) =>
+      onLoadError={onSettled}
+      onReady={({ availablePaymentMethods }) => {
         onAvailable(
           Boolean(
             availablePaymentMethods?.applePay ||
               availablePaymentMethods?.googlePay,
           ),
-        )
-      }
+        );
+        onSettled();
+      }}
       onConfirm={async (event) => {
         if (!stripe || !elements) {
           event.paymentFailed({ reason: "fail" });
@@ -150,8 +156,14 @@ function ExpressButtons({
 // customer's device has neither set up, leaving just the card form.
 export function ExpressCheckout(props: ExpressCheckoutProps) {
   const [available, setAvailable] = useState(false);
+  const noWallets = props.totalCents <= 0;
+  const { onSettled } = props;
 
-  if (props.totalCents <= 0) return null;
+  useEffect(() => {
+    if (noWallets) onSettled();
+  }, [noWallets, onSettled]);
+
+  if (noWallets) return null;
 
   return (
     <div className="space-y-4">

@@ -335,15 +335,17 @@ body:has(.grails) {
 .grail-media {
   position: relative;
   flex: none;
-  width: min(100%, calc(70svh * var(--ratio)));
-  margin-inline: auto;
-  aspect-ratio: var(--ratio);
+  /* Always the full width. Short windows limit the height instead, so the
+     picture never leaves gaps at the sides. */
+  width: 100%;
+  height: min(calc(100vw / var(--ratio)), 70svh);
   overflow: hidden;
 }
 
-/* Stacked, and crossfaded as the chapter rotates through them */
+/* Stacked, and crossfaded as the chapter rotates through them. Cover fills the
+   box at any window shape, trimming the edges if the shapes differ. */
 .grail-media > .grail-photo {
-  object-fit: contain;
+  object-fit: cover;
   opacity: 0;
   transition: opacity 0.7s ease;
 }
@@ -507,15 +509,11 @@ body:has(.grails) {
   }
 }
 
-/* Phones: photos always run the full width. Rotating photos can differ slightly
-   in shape, so they fill the lead photo's box rather than leaving side gaps. */
+/* Phones: the whole photo at full width, even if that's taller than 70% of the
+   screen. Wide and tall videos keep their own rules. */
 @media (orientation: portrait) and (max-width: 767px) {
   .grail-chapter:not(.grail-chapter--wide, .grail-chapter--tall) .grail-media {
-    width: 100%;
-  }
-
-  .grail-media > .grail-photo {
-    object-fit: cover;
+    height: calc(100vw / var(--ratio));
   }
 }
 
@@ -539,8 +537,7 @@ body:has(.grails) {
 
   .grail-media {
     width: 100%;
-    margin: 0;
-    aspect-ratio: auto;
+    height: auto;
     align-self: stretch;
     min-height: 100%;
   }

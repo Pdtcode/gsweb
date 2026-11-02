@@ -190,7 +190,16 @@ function HeroCopy({
         className={`${heroPrimaryButton} ${compact ? "mt-3 w-full" : "mt-5"}`}
         href={`/store/products/${product.slug}`}
       >
-        {product.inStock ? "Buy the shirt so I can afford a gf" : "See the collab"}
+        {product.inStock ? (
+          <>
+            <span className="block">Buy the shirt</span>
+            <span className="mt-0.5 block text-[0.6875rem] font-medium normal-case tracking-normal opacity-85">
+              so I can afford a gf
+            </span>
+          </>
+        ) : (
+          "See the collab"
+        )}
       </Link>
       <div className={compact ? "mt-3" : "mt-5"}>
         <ViewAllLink />

@@ -38,12 +38,11 @@ const CircularTextSpinner = ({
       return (
         <div
           key={index}
-          className="absolute transform -translate-x-1/2 -translate-y-1/2"
+          className="absolute"
           style={{
             left: "50%",
             top: "50%",
-            transformOrigin: `0 ${size / 2}px`,
-            transform: `rotate(${angle}deg) translateY(-${size / 2 - 30}px)`,
+            transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${size / 2 - 24}px)`,
             fontFamily: fontFamily,
             color: textColor,
             fontSize: "1.8rem",

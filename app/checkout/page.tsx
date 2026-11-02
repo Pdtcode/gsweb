@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getIdToken } from "firebase/auth";
@@ -8,6 +8,7 @@ import { getIdToken } from "firebase/auth";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { StripePaymentForm } from "@/components/stripe-payment-form";
+import CircularTextSpinner from "@/components/circular-text-spinner";
 import { ExpressCheckout } from "@/components/express-checkout";
 import type { CustomerDetails } from "@/lib/express-checkout-details";
 import { PromoCode, DiscountInfo } from "@/components/promo-code";
@@ -77,6 +78,18 @@ export default function CheckoutPage() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [clearCart]);
+
+  // Hold the page behind the spinner until Stripe says whether Apple Pay or
+  // Google Pay will show, so the button doesn't pop in after the page appears.
+  // The limit means a slow wallet check can never block paying by card.
+  const [walletsSettled, setWalletsSettled] = useState(false);
+  const settleWallets = useCallback(() => setWalletsSettled(true), []);
+
+  useEffect(() => {
+    const limit = window.setTimeout(settleWallets, 3000);
+
+    return () => window.clearTimeout(limit);
+  }, [settleWallets]);
 
   // Spend & Save campaign, for previewing the discount. The server works the
   // discount out again when the payment is created and charges its own figure.
@@ -357,6 +370,15 @@ export default function CheckoutPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {!walletsSettled && (
+        <div
+          aria-label="Loading checkout"
+          className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[#160c08]"
+          role="status"
+        >
+          <CircularTextSpinner size={260} />
+        </div>
+      )}
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
@@ -378,6 +400,7 @@ export default function CheckoutPage() {
               totalCents={totalCents}
               onError={setPaymentError}
               onPaid={finishOrder}
+              onSettled={settleWallets}
             />
 
             {/* Wallet problems are shown up here, next to the wallet buttons. The
