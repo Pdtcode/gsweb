@@ -127,6 +127,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
+      // Matches checkout: free shipping, to the countries its form offers
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: 0,
+          currency: "USD",
+        },
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: ["US", "CA", "MX"],
+        },
+      },
       seller: {
         "@type": "Organization",
         name: siteConfig.name,
